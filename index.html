@@ -7,6 +7,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+    <!-- QR Code -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -1020,6 +1025,123 @@
         #creatorPreview tr:nth-child(even) td { background: #f8f9fa; }
         #creatorPreview tr.break-row td { background: #fff3cd; font-style: italic; color: #856404; }
         #creatorPreview .total-row td { background: #e8f5e9; font-weight: 700; }
+        /* ── Session bar ── */
+        .session-bar {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            background: linear-gradient(135deg,#667eea18,#764ba218);
+            border: 1.5px solid #667eea44;
+            border-radius: 12px;
+            padding: 12px 18px;
+            margin-bottom: 20px;
+        }
+        .session-code-badge {
+            background: linear-gradient(135deg,#667eea,#764ba2);
+            color: white;
+            font-size: 1.1em;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            padding: 6px 16px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+        }
+        .session-bar-label { color:#555; font-size:0.85em; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; }
+        .session-link-btn {
+            background:#f0f0f0; border:1.5px solid #ddd; border-radius:8px;
+            padding:6px 14px; font-size:0.85em; font-weight:600; cursor:pointer;
+            color:#444; transition:all .2s; display:flex; align-items:center; gap:6px;
+        }
+        .session-link-btn:hover { background:#667eea; color:white; border-color:#667eea; }
+        .session-link-btn.copied { background:#2ecc71; color:white; border-color:#2ecc71; }
+        .firebase-status {
+            display:inline-flex; align-items:center; gap:8px;
+            padding:5px 12px; border-radius:20px; font-size:0.82em; font-weight:600;
+        }
+        .firebase-status.connected    { background:#d4edda; color:#155724; }
+        .firebase-status.connecting   { background:#fff3cd; color:#856404; }
+        .firebase-status.disconnected { background:#f8d7da; color:#721c24; }
+        .status-dot { width:8px; height:8px; border-radius:50%; background:currentColor; }
+
+        /* ── Per-speaker modal ── */
+        .speaker-links-modal {
+            position:fixed; inset:0; background:rgba(0,0,0,0.6);
+            display:flex; align-items:center; justify-content:center; z-index:9999;
+        }
+        .speaker-links-card {
+            background:white; border-radius:16px; padding:32px;
+            max-width:420px; width:92%; box-shadow:0 20px 60px rgba(0,0,0,.3);
+            max-height:90vh; overflow-y:auto;
+        }
+        .speaker-links-card h3 { font-size:1.4em; color:#333; margin-bottom:6px; }
+        .speaker-links-card .topic-tag {
+            font-size:0.85em; color:#667eea; font-weight:600;
+            background:#667eea15; padding:3px 10px; border-radius:20px;
+            display:inline-block; margin-bottom:18px;
+        }
+        .qr-wrap { display:flex; justify-content:center; margin:16px 0; }
+        .copy-link-row { display:flex; gap:10px; align-items:center; margin-top:12px; }
+        .copy-link-row input {
+            flex:1; padding:8px 12px; border:1.5px solid #ddd;
+            border-radius:8px; font-size:0.82em; color:#555; background:#f9f9f9;
+        }
+
+        /* ── Speaker personal view ── */
+        .sp-view {
+            min-height:100vh; background:linear-gradient(160deg,#0f2044,#2a5298);
+            color:white; display:flex; flex-direction:column; overflow:hidden;
+        }
+        .sp-header {
+            padding:14px 24px; background:rgba(0,0,0,.35);
+            border-bottom:1px solid rgba(255,255,255,.1);
+            display:flex; justify-content:space-between; align-items:center;
+        }
+        .sp-header .event-name { font-size:0.9em; font-weight:600; opacity:.85; letter-spacing:.04em; }
+        .sp-header .my-name    { font-size:0.85em; opacity:.6; }
+        /* waiting state */
+        .sp-waiting {
+            flex:1; display:flex; flex-direction:column;
+            align-items:center; justify-content:center; padding:40px 30px; text-align:center;
+        }
+        .sp-queue-badge {
+            font-size:1.1em; font-weight:700; letter-spacing:.06em;
+            background:rgba(255,255,255,.15); border:2px solid rgba(255,255,255,.3);
+            border-radius:30px; padding:10px 24px; margin-bottom:24px;
+        }
+        .sp-eta-big {
+            font-size:clamp(4em,12vw,8em); font-weight:800;
+            font-family:'Courier New',monospace; line-height:1;
+            margin-bottom:8px;
+        }
+        .sp-eta-label { font-size:1.2em; opacity:.7; margin-bottom:32px; }
+        .sp-next-badge {
+            background:rgba(255,193,7,.25); border:2px solid rgba(255,193,7,.7);
+            color:#ffe082; font-size:1.4em; font-weight:700;
+            padding:14px 30px; border-radius:12px; animation:pulseYellow 2s infinite;
+        }
+        @keyframes pulseYellow {
+            0%,100%{box-shadow:0 0 0 0 rgba(255,193,7,.4);}
+            50%{box-shadow:0 0 0 12px rgba(255,193,7,0);}
+        }
+        /* live state — mirrors presentation view inside sp-view */
+        .sp-live { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+        /* done state */
+        .sp-done {
+            flex:1; display:flex; flex-direction:column;
+            align-items:center; justify-content:center; padding:40px; text-align:center;
+        }
+        .sp-done h2 { font-size:2.5em; margin-bottom:12px; }
+        .sp-done .perf-grid {
+            display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;
+            margin-top:24px; width:100%; max-width:480px;
+        }
+        .sp-done .perf-card {
+            background:rgba(255,255,255,.1); border-radius:10px; padding:16px;
+            text-align:center;
+        }
+        .sp-done .perf-val { font-size:2em; font-weight:700; }
+        .sp-done .perf-lbl { font-size:0.8em; opacity:.7; margin-top:4px; }
         #fullscreenBtn:hover {
             background: rgba(0,0,0,0.75);
         }
@@ -1104,12 +1226,19 @@
                 </div>
                 <div class="control-buttons">
                     <button class="btn btn-primary" onclick="openPresentation()">📺 Presentation</button>
-                    <button class="btn btn-primary" onclick="openSpeakerPortal()">👤 Speaker View</button>
                     <button class="btn btn-success" onclick="showReport()">📊 View Report</button>
                     <button class="btn btn-secondary" onclick="resetApp()">🔄 New Event</button>
                 </div>
             </div>
             
+            <!-- Session share bar -->
+            <div class="session-bar" id="sessionBar">
+                <span class="session-bar-label">Live Session</span>
+                <span class="session-code-badge" id="sessionCodeDisplay">—</span>
+                <button class="session-link-btn" onclick="copySessionLink('presentation')" id="copyPrBtn">📺 Presentation Link</button>
+                <span id="fbStatusBadge" class="firebase-status connecting"><span class="status-dot"></span> Connecting…</span>
+            </div>
+
             <div class="timer-display">
                 <div class="current-speaker" id="currentSpeaker">No active speaker</div>
                 <div class="current-topic" id="currentTopic"></div>
@@ -1197,61 +1326,83 @@
             </div>
         </div>
 
-        <!-- Speaker Portal -->
-        <div id="speakerPortal" class="speaker-portal hidden">
-            <h2>👤 Speaker Portal</h2>
-            
-            <div id="speakerWaiting" class="speaker-status-message">
-                <h3>You're not currently scheduled to speak</h3>
-                <p>This view will activate when it's your turn</p>
+        <!-- Per-Speaker Personal View (full-screen, driven by ?view=speaker&session=X&si=N) -->
+        <div id="speakerPortal" class="sp-view hidden">
+            <div class="sp-header">
+                <span class="event-name" id="spEventName">Service Timer</span>
+                <span class="my-name" id="spMyName"></span>
             </div>
-            
-            <div id="speakerActive" class="speaker-timer-view hidden">
-                <div class="your-turn-badge">
-                    <div class="live-dot" style="display: inline-block; margin-right: 10px;"></div>
-                    YOU'RE LIVE
-                </div>
-                
-                <div class="speaker-topic-display" id="speakerTopicDisplay"></div>
-                
-                <div class="speaker-timer-large" id="speakerTimer">--:--</div>
-                <div class="timer-label" id="speakerTimerLabel">Remaining</div>
-                
-                <div class="speaker-progress-container">
-                    <div class="speaker-progress-bar" id="speakerProgressBar" style="width: 0%"></div>
-                </div>
-                
-                <div class="milestones">
-                    <div class="milestone" id="milestone80">
-                        <div class="milestone-label">80%</div>
-                        <div class="milestone-time" id="time80">--:--</div>
-                    </div>
-                    <div class="milestone" id="milestone90">
-                        <div class="milestone-label">90%</div>
-                        <div class="milestone-time" id="time90">--:--</div>
-                    </div>
-                    <div class="milestone" id="milestone100">
-                        <div class="milestone-label">100%</div>
-                        <div class="milestone-time" id="time100">--:--</div>
-                    </div>
+
+            <!-- Waiting state -->
+            <div id="spWaiting" class="sp-waiting">
+                <div class="sp-queue-badge" id="spQueueBadge">Loading…</div>
+                <div class="sp-eta-big" id="spEtaBig">--</div>
+                <div class="sp-eta-label" id="spEtaLabel">estimated minutes before your slot</div>
+                <div id="spNextBadge" class="sp-next-badge hidden">⚡ YOU'RE UP NEXT — GET READY!</div>
+                <div id="spConnStatus" class="firebase-status connecting" style="margin-top:24px;">
+                    <span class="status-dot"></span> Connecting…
                 </div>
             </div>
-            
-            <div id="speakerCompleted" class="performance-summary hidden">
-                <h3>📊 Your Performance</h3>
-                <div class="performance-stats">
-                    <div class="stat-card">
-                        <div class="stat-value" id="allocatedTime">--</div>
-                        <div class="stat-label">Allocated Time</div>
+
+            <!-- Live state — mirrors the presentation view -->
+            <div id="spLive" class="sp-live hidden">
+                <!-- reuses presentation-view inner structure -->
+                <div class="speaker-display">
+                    <div class="live-indicator" style="background:rgba(255,71,87,.25);border:2px solid rgba(255,71,87,.7);">
+                        <div class="live-dot"></div>
+                        <span>YOU'RE LIVE</span>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="actualTime">--</div>
-                        <div class="stat-label">Actual Time</div>
+                    <div class="speaker-name-block">
+                        <div class="speaker-name" id="spLiveName"></div>
+                        <div class="speaker-topic" id="spLiveTopic"></div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="adherence">--%</div>
-                        <div class="stat-label">Adherence</div>
+                </div>
+                <div id="spTimerContainer" style="flex:1;display:flex;align-items:center;justify-content:center;min-height:0;">
+                    <div class="presentation-timer" id="spTimer">--:--</div>
+                    <div id="spOvertimeDisplay" class="hidden" style="display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                        <div class="overtime-counter" id="spOvertimeCounter">+0:00</div>
+                        <div class="times-up-text">TIME'S UP!</div>
                     </div>
+                </div>
+                <div class="presentation-label" id="spLabel">Remaining</div>
+                <div class="presentation-progress">
+                    <div class="presentation-progress-bar" id="spProgressBar" style="width:0%"></div>
+                </div>
+            </div>
+
+            <!-- Done state -->
+            <div id="spDone" class="sp-done hidden">
+                <h2>✅ Well Done!</h2>
+                <p style="opacity:.75;font-size:1.1em;">Your session has ended</p>
+                <div class="perf-grid">
+                    <div class="perf-card">
+                        <div class="perf-val" id="spAllocated">--</div>
+                        <div class="perf-lbl">Allocated</div>
+                    </div>
+                    <div class="perf-card">
+                        <div class="perf-val" id="spActual">--</div>
+                        <div class="perf-lbl">Actual</div>
+                    </div>
+                    <div class="perf-card">
+                        <div class="perf-val" id="spVariance">--</div>
+                        <div class="perf-lbl">Variance</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Speaker Links Modal (shown from organiser panel) -->
+        <div id="speakerLinksModal" class="speaker-links-modal hidden" onclick="if(event.target===this)closeSpeakerLinksModal()">
+            <div class="speaker-links-card">
+                <h3 id="slmName">Speaker</h3>
+                <span class="topic-tag" id="slmTopic"></span>
+                <div class="qr-wrap"><div id="slmQR"></div></div>
+                <div class="copy-link-row">
+                    <input type="text" id="slmLinkInput" readonly>
+                    <button class="session-link-btn" id="slmCopyBtn" onclick="copySlmLink()">📋 Copy</button>
+                </div>
+                <div style="margin-top:20px;text-align:right;">
+                    <button class="btn btn-secondary" onclick="closeSpeakerLinksModal()">Close</button>
                 </div>
             </div>
         </div>
@@ -1425,40 +1576,171 @@
             isPaused: false,
             isRunning: false,
             speakers: [],
-            speakerHistory: [], // Track previous states for going back
+            speakerHistory: [],
             showTimeUp: false,
-            timeUpInterval: null
+            timeUpInterval: null,
+            sessionCode: null
         };
+
+        // ── Firebase ────────────────────────────────────────────────
+        const firebaseConfig = {
+            apiKey: "AIzaSyDzwXVSeqLZDQllPyCUH3syY3exLvPTe84",
+            authDomain: "service-timer-20fa3.firebaseapp.com",
+            databaseURL: "https://service-timer-20fa3-default-rtdb.firebaseio.com",
+            projectId: "service-timer-20fa3",
+            storageBucket: "service-timer-20fa3.firebasestorage.app",
+            messagingSenderId: "465286347571",
+            appId: "1:465286347571:web:0211a121d81b5764b9dc46"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const BASE_URL = 'https://ayenijeremiaho.github.io/service-timer/';
+
+        function generateSessionCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let c = 'EVT-';
+            for (let i = 0; i < 4; i++) c += chars[Math.floor(Math.random()*chars.length)];
+            return c;
+        }
+
+        function syncToFirebase() {
+            if (!appState.sessionCode) return;
+            db.ref('sessions/' + appState.sessionCode).set({
+                event: appState.event,
+                currentSpeakerIndex: appState.currentSpeakerIndex,
+                timerSeconds: appState.timerSeconds,
+                isRunning: appState.isRunning,
+                isPaused: appState.isPaused,
+                speakers: appState.speakers,
+                updatedAt: Date.now()
+            }).catch(console.error);
+        }
+
+        let fbListener = null;
+        function subscribeToSession(sessionCode, onData) {
+            if (fbListener) { fbListener.off(); fbListener = null; }
+            fbListener = db.ref('sessions/' + sessionCode);
+            fbListener.on('value', snap => {
+                const data = snap.val();
+                if (!data) { setFbStatus('disconnected','Session not found'); return; }
+                setFbStatus('connected','Live');
+                onData(data);
+            }, err => { console.error(err); setFbStatus('disconnected','Error'); });
+        }
+
+        function setFbStatus(state, label) {
+            ['fbStatusBadge','spConnStatus'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) { el.className='firebase-status '+state; el.innerHTML='<span class="status-dot"></span> '+label; }
+            });
+        }
+
+        function cleanupOldSessions() {
+            const cutoff = Date.now() - 24*60*60*1000;
+            db.ref('sessions').once('value', snap => {
+                snap.forEach(child => {
+                    const d = child.val();
+                    if (d && d.updatedAt && d.updatedAt < cutoff) db.ref('sessions/'+child.key).remove();
+                });
+            }).catch(console.error);
+        }
+
+        function copySessionLink(viewType) {
+            if (!appState.sessionCode) return;
+            const url = BASE_URL+'?view='+viewType+'&session='+appState.sessionCode;
+            navigator.clipboard.writeText(url).then(() => {
+                const btn = document.getElementById('copyPrBtn');
+                if (btn) { const o=btn.innerHTML; btn.innerHTML='✅ Copied!'; btn.classList.add('copied');
+                    setTimeout(()=>{btn.innerHTML=o;btn.classList.remove('copied');},2000); }
+            });
+        }
+
+        // ── Per-speaker modal ────────────────────────────────────────
+        let slmQRInstance = null;
+        function openSpeakerLinksModal(speakerIndex) {
+            if (!appState.sessionCode || !appState.speakers[speakerIndex]) return;
+            const sp = appState.speakers[speakerIndex];
+            const url = BASE_URL+'?view=speaker&session='+appState.sessionCode+'&si='+speakerIndex;
+            document.getElementById('slmName').textContent = sp.name;
+            document.getElementById('slmTopic').textContent = sp.topic;
+            document.getElementById('slmLinkInput').value = url;
+            // QR code
+            const qrDiv = document.getElementById('slmQR');
+            qrDiv.innerHTML = '';
+            slmQRInstance = new QRCode(qrDiv, { text: url, width: 180, height: 180,
+                colorDark:'#1a3a6e', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.M });
+            document.getElementById('speakerLinksModal').classList.remove('hidden');
+        }
+        function closeSpeakerLinksModal() {
+            document.getElementById('speakerLinksModal').classList.add('hidden');
+        }
+        function copySlmLink() {
+            const input = document.getElementById('slmLinkInput');
+            navigator.clipboard.writeText(input.value).then(() => {
+                const btn = document.getElementById('slmCopyBtn');
+                const o = btn.innerHTML; btn.innerHTML='✅ Copied!'; btn.classList.add('copied');
+                setTimeout(()=>{btn.innerHTML=o;btn.classList.remove('copied');},2000);
+            });
+        }
 
         // Initialize
         function init() {
             loadStateFromStorage();
             setupFileUpload();
             setupStorageListener();
-            
-            // Set today's date as default
+            cleanupOldSessions();
+
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('eventDate').value = today;
-            
-            // Add first speaker by default in manual entry
             addSpeaker();
-            
-            // Check current view
+
             const urlParams = new URLSearchParams(window.location.search);
-            const view = urlParams.get('view');
-            
-            if (view === 'presentation') {
+            const view    = urlParams.get('view');
+            const session = urlParams.get('session');
+            const si      = urlParams.get('si'); // speaker index
+
+            if (view === 'presentation' && session) {
+                appState.sessionCode = session;
+                setFbStatus('connecting','Connecting…');
+                subscribeToSession(session, data => {
+                    appState.event               = data.event;
+                    appState.currentSpeakerIndex = data.currentSpeakerIndex;
+                    appState.timerSeconds        = data.timerSeconds;
+                    appState.isRunning           = data.isRunning;
+                    appState.isPaused            = data.isPaused;
+                    appState.speakers            = data.speakers || [];
+                    updatePresentationView();
+                });
                 showView('presentationView');
-                updatePresentationView();
-            } else if (view === 'speaker') {
+
+            } else if (view === 'speaker' && session) {
+                appState.sessionCode = session;
+                const speakerIdx = si !== null ? parseInt(si) : -1;
+                setFbStatus('connecting','Connecting…');
+                subscribeToSession(session, data => {
+                    appState.event               = data.event;
+                    appState.currentSpeakerIndex = data.currentSpeakerIndex;
+                    appState.timerSeconds        = data.timerSeconds;
+                    appState.isRunning           = data.isRunning;
+                    appState.isPaused            = data.isPaused;
+                    appState.speakers            = data.speakers || [];
+                    updatePersonalSpeakerView(speakerIdx);
+                });
                 showView('speakerPortal');
-                updateSpeakerView();
+
             } else if (view === 'create') {
                 showView('creatorScreen');
                 initCreator();
-            } else if (appState.event) {
-                showView('organizerPanel');
-                renderOrganizerPanel();
+
+            } else {
+                // Organiser
+                if (!appState.sessionCode) appState.sessionCode = generateSessionCode();
+                if (appState.event) {
+                    saveStateToStorage();
+                    showView('organizerPanel');
+                    renderOrganizerPanel();
+                }
+                // else startup screen stays visible
             }
         }
 
@@ -1542,6 +1824,7 @@
                     console.log('PDF parsed successfully:', parsedEvent);
                     appState.event = parsedEvent;
                     appState.speakers = parsedEvent.speakers;
+                    appState.sessionCode = generateSessionCode();
                     saveStateToStorage();
                     showView('organizerPanel');
                     renderOrganizerPanel();
@@ -1898,6 +2181,10 @@
             
             document.getElementById('eventTitle').textContent = appState.event.name;
             document.getElementById('eventDate').textContent = new Date(appState.event.date).toLocaleDateString();
+            if (!appState.sessionCode) { appState.sessionCode = generateSessionCode(); saveStateToStorage(); }
+            const cdEl = document.getElementById('sessionCodeDisplay');
+            if (cdEl) cdEl.textContent = appState.sessionCode;
+            setFbStatus('connected','Live');
             
             const speakersList = document.getElementById('speakersList');
             speakersList.innerHTML = '';
@@ -1917,11 +2204,14 @@
                         <h4>${speaker.name}</h4>
                         <p>${speaker.topic}</p>
                     </div>
-                    <div class="speaker-status">
-                        <span class="status-badge ${speaker.status}">${speaker.status.toUpperCase()}</span>
-                        <div class="time-info">
-                            Allocated: ${formatTimeDetailed(allocatedSeconds)}
-                            ${actualSeconds > 0 ? `<br>Actual: ${formatTimeDetailed(actualSeconds)} ${varianceText}` : ''}
+                    <div class="speaker-status" style="display:flex;align-items:center;gap:14px;">
+                        <button class="session-link-btn" onclick="openSpeakerLinksModal(${index})" title="Share link with speaker">🔗 Share</button>
+                        <div>
+                            <span class="status-badge ${speaker.status}">${speaker.status.toUpperCase()}</span>
+                            <div class="time-info">
+                                Allocated: ${formatTimeDetailed(allocatedSeconds)}
+                                ${actualSeconds > 0 ? `<br>Actual: ${formatTimeDetailed(actualSeconds)} ${varianceText}` : ''}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -2162,7 +2452,8 @@
 
         // Presentation View Functions
         function openPresentation() {
-            window.open(window.location.pathname + '?view=presentation', 'presentation', 'width=1920,height=1080');
+            const url = BASE_URL+'?view=presentation&session='+(appState.sessionCode||'');
+            window.open(url, 'presentation', 'width=1920,height=1080');
         }
 
         function updatePresentationView() {
@@ -2265,94 +2556,147 @@
 
         // Speaker Portal Functions
         function openSpeakerPortal() {
-            window.open(window.location.pathname + '?view=speaker', 'speaker', 'width=900,height=800');
+            // No-op: speakers use individual links via the 🔗 Share button on each row
         }
 
-        function updateSpeakerView() {
-            if (!appState.event || appState.currentSpeakerIndex < 0 || appState.currentSpeakerIndex >= appState.speakers.length) {
-                document.getElementById('speakerWaiting').classList.remove('hidden');
-                document.getElementById('speakerActive').classList.add('hidden');
-                document.getElementById('speakerCompleted').classList.add('hidden');
+        // Legacy stub (no longer used for remote views)
+        function updateSpeakerView() {}
+
+        function updatePersonalSpeakerView(mySpeakerIndex) {
+            if (!appState.event || !appState.speakers.length) return;
+
+            const pv = document.getElementById('presentationView');
+            if (pv) pv.classList.remove('overtime-mode'); // ensure clean bg
+
+            // Set header names
+            const evNameEl = document.getElementById('spEventName');
+            if (evNameEl) evNameEl.textContent = appState.event ? appState.event.name : 'Service';
+            const mySpEl = document.getElementById('spMyName');
+            if (mySpEl && mySpeakerIndex >= 0 && appState.speakers[mySpeakerIndex]) {
+                mySpEl.textContent = appState.speakers[mySpeakerIndex].name;
+            }
+
+            const myIdx   = mySpeakerIndex;
+            const currIdx = appState.currentSpeakerIndex;
+            const mySpeaker = myIdx >= 0 ? appState.speakers[myIdx] : null;
+
+            const spWaiting = document.getElementById('spWaiting');
+            const spLive    = document.getElementById('spLive');
+            const spDone    = document.getElementById('spDone');
+            const spView    = document.getElementById('speakerPortal');
+
+            function showPanel(id) {
+                [spWaiting, spLive, spDone].forEach(el => { if(el) el.classList.add('hidden'); });
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('hidden');
+            }
+
+            // ── DONE ──────────────────────────────────────────────────
+            if (mySpeaker && mySpeaker.status === 'completed') {
+                showPanel('spDone');
+                spView.style.background = 'linear-gradient(160deg,#0a3d0a,#1a6b1a)';
+                const alloc = Math.floor(mySpeaker.allocatedMinutes * 60);
+                const actual = mySpeaker.actualSeconds || 0;
+                const variance = actual - alloc;
+                document.getElementById('spAllocated').textContent = formatTimeDetailed(alloc);
+                document.getElementById('spActual').textContent    = actual > 0 ? formatTimeDetailed(actual) : '--';
+                const varEl = document.getElementById('spVariance');
+                varEl.textContent = actual > 0 ? (variance >= 0 ? '+' : '') + formatTimeDetailed(Math.abs(variance)) : '--';
+                varEl.style.color  = variance > 30 ? '#ff8a8a' : variance < -30 ? '#90ee90' : 'white';
                 return;
             }
-            
-            const currentSpeaker = appState.speakers[appState.currentSpeakerIndex];
-            
-            if (currentSpeaker.status === 'active' && appState.isRunning) {
-                document.getElementById('speakerWaiting').classList.add('hidden');
-                document.getElementById('speakerActive').classList.remove('hidden');
-                document.getElementById('speakerCompleted').classList.add('hidden');
-                
-                const allocatedSeconds = Math.floor(currentSpeaker.allocatedMinutes * 60);
-                const isOvertime = appState.timerSeconds > allocatedSeconds;
-                const displaySeconds = isOvertime ? 
-                    appState.timerSeconds - allocatedSeconds : 
-                    allocatedSeconds - appState.timerSeconds;
-                
-                document.getElementById('speakerTopicDisplay').textContent = currentSpeaker.topic;
-                document.getElementById('speakerTimer').textContent = 
-                    (isOvertime ? '+' : '') + formatTime(displaySeconds);
-                document.getElementById('speakerTimerLabel').textContent = isOvertime ? 'OVERTIME' : 'REMAINING';
-                
-                // Update colors
-                const timer = document.getElementById('speakerTimer');
-                const progressBar = document.getElementById('speakerProgressBar');
-                
-                timer.classList.remove('warning', 'danger');
-                progressBar.classList.remove('warning', 'danger');
-                
-                const percent = isOvertime ? 100 : (appState.timerSeconds / allocatedSeconds) * 100;
-                progressBar.style.width = percent + '%';
-                
+
+            // ── LIVE ──────────────────────────────────────────────────
+            if (myIdx >= 0 && currIdx === myIdx && appState.isRunning) {
+                showPanel('spLive');
+                const allocSec   = Math.floor(mySpeaker.allocatedMinutes * 60);
+                const isOvertime = appState.timerSeconds > allocSec;
+                const dispSec    = isOvertime ? appState.timerSeconds - allocSec : allocSec - appState.timerSeconds;
+                const percent    = Math.min((appState.timerSeconds / allocSec) * 100, 100);
+
+                document.getElementById('spLiveName').textContent  = mySpeaker.name;
+                document.getElementById('spLiveTopic').textContent = mySpeaker.topic;
+
+                const timerEl   = document.getElementById('spTimer');
+                const otDisp    = document.getElementById('spOvertimeDisplay');
+                const otCounter = document.getElementById('spOvertimeCounter');
+                const labelEl   = document.getElementById('spLabel');
+                const progBar   = document.getElementById('spProgressBar');
+
                 if (isOvertime) {
-                    timer.classList.add('danger');
-                    progressBar.classList.add('danger');
-                } else if (percent >= 90) {
-                    timer.classList.add('danger');
-                    progressBar.classList.add('danger');
-                } else if (percent >= 80) {
-                    timer.classList.add('warning');
-                    progressBar.classList.add('warning');
+                    spView.style.background = 'linear-gradient(160deg,#5a0000,#a00000)';
+                    timerEl.classList.add('hidden');
+                    otDisp.classList.remove('hidden'); otDisp.style.display='flex';
+                    otCounter.textContent = '+' + formatTime(dispSec);
+                    labelEl.textContent = 'OVERTIME';
+                    progBar.style.width = '100%';
+                    progBar.classList.add('danger');
+                } else {
+                    spView.style.background = '';
+                    timerEl.classList.remove('hidden','warning','danger');
+                    otDisp.classList.add('hidden'); otDisp.style.display='none';
+                    timerEl.textContent = formatTime(dispSec);
+                    labelEl.textContent = 'Remaining';
+                    progBar.style.width  = percent + '%';
+                    progBar.classList.remove('danger');
+                    if (percent >= 90) { timerEl.classList.add('danger'); progBar.classList.add('danger'); }
+                    else if (percent >= 80) { timerEl.classList.add('warning'); progBar.classList.add('warning'); }
                 }
-                
-                // Update milestones
-                const time80 = Math.floor(allocatedSeconds * 0.8);
-                const time90 = Math.floor(allocatedSeconds * 0.9);
-                const time100 = allocatedSeconds;
-                
-                document.getElementById('time80').textContent = formatTime(time80);
-                document.getElementById('time90').textContent = formatTime(time90);
-                document.getElementById('time100').textContent = formatTime(time100);
-                
-                document.getElementById('milestone80').classList.toggle('passed', appState.timerSeconds > time80);
-                document.getElementById('milestone90').classList.toggle('passed', appState.timerSeconds > time90);
-                document.getElementById('milestone100').classList.toggle('passed', appState.timerSeconds > time100);
-                
-                document.getElementById('milestone80').classList.toggle('active', appState.timerSeconds >= time80 && appState.timerSeconds <= time90);
-                document.getElementById('milestone90').classList.toggle('active', appState.timerSeconds > time90 && appState.timerSeconds <= time100);
-                document.getElementById('milestone100').classList.toggle('active', appState.timerSeconds > time100);
-            } else if (currentSpeaker.status === 'completed' && currentSpeaker.actualSeconds > 0) {
-                document.getElementById('speakerWaiting').classList.add('hidden');
-                document.getElementById('speakerActive').classList.add('hidden');
-                document.getElementById('speakerCompleted').classList.remove('hidden');
-                
-                const allocatedSeconds = Math.floor(currentSpeaker.allocatedMinutes * 60);
-                const variance = currentSpeaker.actualSeconds - allocatedSeconds;
-                const adherence = Math.round((allocatedSeconds / currentSpeaker.actualSeconds) * 100);
-                
-                document.getElementById('allocatedTime').textContent = formatTimeDetailed(allocatedSeconds);
-                document.getElementById('actualTime').textContent = formatTimeDetailed(currentSpeaker.actualSeconds);
-                document.getElementById('adherence').textContent = adherence + '%';
-            } else {
-                document.getElementById('speakerWaiting').classList.remove('hidden');
-                document.getElementById('speakerActive').classList.add('hidden');
-                document.getElementById('speakerCompleted').classList.add('hidden');
+                return;
             }
+
+            // ── WAITING ───────────────────────────────────────────────
+            showPanel('spWaiting');
+            spView.style.background = '';
+
+            if (myIdx < 0 || !mySpeaker) {
+                document.getElementById('spQueueBadge').textContent = 'Watching live';
+                document.getElementById('spEtaBig').textContent     = '--';
+                document.getElementById('spEtaLabel').textContent   = 'You are not assigned a slot';
+                document.getElementById('spNextBadge').classList.add('hidden');
+                return;
+            }
+
+            // How many speakers are ahead?
+            const speakersAhead = Math.max(0, myIdx - Math.max(currIdx, 0));
+            const isNext = currIdx >= 0 && myIdx === currIdx + 1;
+
+            // Estimate wait: sum remaining time of current + all upcoming before me
+            let etaSec = 0;
+            if (currIdx >= 0 && appState.isRunning) {
+                const currAlloc = Math.floor(appState.speakers[currIdx].allocatedMinutes * 60);
+                etaSec += Math.max(0, currAlloc - appState.timerSeconds);
+            }
+            for (let i = Math.max(currIdx+1, 0); i < myIdx; i++) {
+                etaSec += Math.floor(appState.speakers[i].allocatedMinutes * 60);
+            }
+            const etaMins = Math.ceil(etaSec / 60);
+
+            if (!appState.isRunning) {
+                document.getElementById('spQueueBadge').textContent = 'Waiting for service to start';
+                document.getElementById('spEtaBig').textContent     = etaMins > 0 ? etaMins : '--';
+                document.getElementById('spEtaLabel').textContent   = etaMins > 0 ? 'estimated minutes before your slot' : 'Service has not started yet';
+            } else if (speakersAhead === 0 && !isNext) {
+                // Current speaker is me but timer hasn't been activated yet for my slot
+                document.getElementById('spQueueBadge').textContent = 'Your turn is next';
+                document.getElementById('spEtaBig').textContent     = '~' + etaMins;
+                document.getElementById('spEtaLabel').textContent   = 'estimated minutes before your slot';
+            } else {
+                document.getElementById('spQueueBadge').textContent =
+                    speakersAhead === 1 ? '1 speaker before you' : speakersAhead + ' speakers before you';
+                document.getElementById('spEtaBig').textContent     = '~' + etaMins;
+                document.getElementById('spEtaLabel').textContent   = 'estimated minutes before your slot';
+            }
+
+            const nextBadge = document.getElementById('spNextBadge');
+            if (isNext) nextBadge.classList.remove('hidden');
+            else nextBadge.classList.add('hidden');
         }
 
         // State Management
         function saveStateToStorage() {
             localStorage.setItem('serviceTimerState', JSON.stringify(appState));
+            syncToFirebase();
         }
 
         function loadStateFromStorage() {
@@ -2369,53 +2713,26 @@
         }
 
         function setupStorageListener() {
+            // Same-device cross-tab sync only; remote views use Firebase
             window.addEventListener('storage', (e) => {
                 if (e.key === 'serviceTimerState') {
                     loadStateFromStorage();
-                    
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const view = urlParams.get('view');
-                    
-                    if (view === 'presentation') {
-                        updatePresentationView();
-                    } else if (view === 'speaker') {
-                        updateSpeakerView();
-                    } else if (appState.event) {
-                        renderOrganizerPanel();
-                    }
+                    const v = new URLSearchParams(window.location.search).get('view');
+                    if (v === 'presentation') updatePresentationView();
+                    else if (appState.event) renderOrganizerPanel();
                 }
             });
-            
-            // For same-window updates
-            setInterval(() => {
-                const urlParams = new URLSearchParams(window.location.search);
-                const view = urlParams.get('view');
-                
-                if (view === 'presentation') {
-                    updatePresentationView();
-                } else if (view === 'speaker') {
-                    updateSpeakerView();
-                }
-            }, 500);
         }
 
         function resetApp() {
             if (window.confirm('Are you sure you want to create a new event? This will clear the current event.')) {
-                if (appState.timerInterval) {
-                    clearInterval(appState.timerInterval);
-                }
-                
+                if (appState.timerInterval) clearInterval(appState.timerInterval);
+                if (appState.sessionCode) db.ref('sessions/'+appState.sessionCode).remove().catch(console.error);
                 appState = {
-                    event: null,
-                    currentSpeakerIndex: -1,
-                    timerSeconds: 0,
-                    timerInterval: null,
-                    isPaused: false,
-                    isRunning: false,
-                    speakers: [],
-                    speakerHistory: []
+                    event:null, currentSpeakerIndex:-1, timerSeconds:0, timerInterval:null,
+                    isPaused:false, isRunning:false, speakers:[], speakerHistory:[],
+                    showTimeUp:false, timeUpInterval:null, sessionCode:null
                 };
-                
                 localStorage.removeItem('serviceTimerState');
                 showView('startupScreen');
             }
@@ -2964,17 +3281,16 @@
             const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
             const pageW = doc.internal.pageSize.getWidth();
 
-            // ── Header ──
+            // ── Header: event name as main title, date on right ──
             doc.setFontSize(13);
             doc.setFont('helvetica', 'bold');
-            doc.text('HOLY COMMUNION / REVELATION SERVICE - ORDER OF PROGRAM', pageW / 2, 18, { align: 'center' });
+            doc.text(eventName.toUpperCase(), pageW / 2, 18, { align: 'center' });
 
-            // Two-column sub-header: theme left, date right
-            doc.setFontSize(11);
-            doc.setFont('helvetica', 'bold');
-            doc.text(eventName.toUpperCase(), pageW * 0.28, 28, { align: 'center' });
+            // Sub-header: theme label left, date right
+            doc.setFontSize(10);
             doc.setFont('helvetica', 'normal');
-            doc.text(dateStr, pageW * 0.75, 28, { align: 'center' });
+            doc.text('ORDER OF PROGRAM', pageW * 0.28, 27, { align: 'center' });
+            doc.text(dateStr, pageW * 0.75, 27, { align: 'center' });
 
             // ── Table ──
             const totalH = Math.floor(totalMins/60);
