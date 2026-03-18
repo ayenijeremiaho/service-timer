@@ -1194,203 +1194,6 @@
             font-family:'Courier New', monospace;
             letter-spacing:0.04em; text-align:right;
         }
-        /* ── End-time prediction bar ── */
-        .endtime-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 12px;
-            background: #f8f9ff;
-            border: 1.5px solid #e0e4ff;
-            border-radius: 10px;
-            padding: 10px 18px;
-            margin-bottom: 16px;
-            font-size: 0.92em;
-        }
-        .endtime-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
-        }
-        .endtime-label {
-            font-size: 0.72em;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: #888;
-        }
-        .endtime-value {
-            font-size: 1.15em;
-            font-weight: 700;
-            color: #333;
-            font-family: 'Courier New', monospace;
-        }
-        .endtime-value.behind { color: #ff4757; }
-        .endtime-value.ahead  { color: #2ecc71; }
-        .endtime-value.ontime { color: #667eea; }
-
-        /* ── Pause reason modal ── */
-        .pause-reason-modal {
-            position: fixed; inset: 0;
-            background: rgba(0,0,0,0.55);
-            display: flex; align-items: center; justify-content: center;
-            z-index: 9999;
-        }
-        .pause-reason-card {
-            background: white; border-radius: 14px; padding: 32px;
-            max-width: 400px; width: 92%;
-            box-shadow: 0 20px 60px rgba(0,0,0,.25);
-        }
-        .pause-reason-card h3 { font-size: 1.3em; color: #333; margin-bottom: 16px; }
-        .pause-reason-options {
-            display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;
-        }
-        .pause-reason-btn {
-            padding: 12px 16px; border: 2px solid #e0e0e0;
-            border-radius: 8px; background: #f8f9fa;
-            font-size: 0.95em; font-weight: 600; color: #333;
-            cursor: pointer; text-align: left; transition: all .2s;
-        }
-        .pause-reason-btn:hover,
-        .pause-reason-btn.selected { background: #667eea; color: white; border-color: #667eea; }
-
-        /* ── Dark mode ── */
-        body.dark-mode {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-        }
-        body.dark-mode .organizer-panel,
-        body.dark-mode .manual-entry-form,
-        body.dark-mode .startup-screen,
-        body.dark-mode .speaker-portal {
-            background: #1e2235;
-            color: #e0e0e0;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-        }
-        body.dark-mode .panel-header h1,
-        body.dark-mode .form-header h2,
-        body.dark-mode .speakers-list h3,
-        body.dark-mode .speaker-info h4 { color: #e0e0e0; }
-        body.dark-mode .panel-header     { border-bottom-color: #333; }
-        body.dark-mode .speaker-item     { background: #252840; border-left-color: #444; }
-        body.dark-mode .speaker-item.active    { background: #1a2a3a; border-left-color: #2196f3; }
-        body.dark-mode .speaker-item.completed { background: #1a2e1a; border-left-color: #4caf50; }
-        body.dark-mode .speaker-info p,
-        body.dark-mode .time-info,
-        body.dark-mode #eventDate         { color: #999; }
-        body.dark-mode .endtime-bar       { background: #252840; border-color: #333; }
-        body.dark-mode .endtime-label     { color: #777; }
-        body.dark-mode .endtime-value     { color: #ddd; }
-        body.dark-mode .session-bar       { background: rgba(102,126,234,0.1); border-color: rgba(102,126,234,0.3); }
-        body.dark-mode .session-bar-label { color: #aaa; }
-        body.dark-mode .session-link-btn  { background: #2a2d45; border-color: #444; color: #ccc; }
-        body.dark-mode .form-group label  { color: #ccc; }
-        body.dark-mode .form-group input,
-        body.dark-mode .form-group textarea { background: #252840; border-color: #444; color: #e0e0e0; }
-        body.dark-mode .startup-screen h1,
-        body.dark-mode .startup-screen p  { color: #e0e0e0; }
-        body.dark-mode #creatorPreview td,
-        body.dark-mode #creatorPreview tr:nth-child(even) td { background: #252840; color: #ddd; }
-
-        /* ── Theme toggle button ── */
-        #themeToggleBtn {
-            position: fixed; bottom: 20px; right: 20px;
-            background: rgba(0,0,0,0.45); border: 2px solid rgba(255,255,255,0.25);
-            border-radius: 50%; width: 44px; height: 44px;
-            color: white; font-size: 1.2em; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            z-index: 999; transition: all 0.3s;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-        #themeToggleBtn:hover { transform: scale(1.1); }
-
-        /* ── Organiser fullscreen ── */
-        #orgFullscreenBtn {
-            background: none; border: 1.5px solid #ddd; border-radius: 8px;
-            padding: 8px 14px; font-size: 0.85em; font-weight: 600;
-            cursor: pointer; color: #555; transition: all 0.2s;
-            display: flex; align-items: center; gap: 6px;
-        }
-        #orgFullscreenBtn:hover { background: #667eea; color: white; border-color: #667eea; }
-        body.dark-mode #orgFullscreenBtn { border-color: #555; color: #aaa; }
-
-        /* ── Speaker reorder buttons ── */
-        .reorder-btns {
-            display: flex; flex-direction: column; gap: 3px;
-            margin-right: 6px;
-        }
-        .reorder-btn {
-            background: none; border: 1px solid #ddd; border-radius: 4px;
-            width: 24px; height: 22px; cursor: pointer; font-size: 0.75em;
-            display: flex; align-items: center; justify-content: center;
-            color: #888; transition: all 0.15s; padding: 0; line-height: 1;
-        }
-        .reorder-btn:hover { background: #667eea; color: white; border-color: #667eea; }
-        .reorder-btn:disabled { opacity: 0.25; cursor: default; }
-        body.dark-mode .reorder-btn { border-color: #555; color: #777; }
-
-        /* ── Stage manager view ── */
-        .stage-view {
-            background: #0d0d0d; min-height: 100vh;
-            color: white; padding: 0; overflow: hidden;
-            display: flex; flex-direction: column;
-        }
-        .stage-header {
-            background: #1a1a1a; padding: 12px 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid #333; flex-shrink: 0;
-        }
-        .stage-header .sh-event { font-size: 0.9em; font-weight: 600; color: #ccc; }
-        .stage-header .sh-badge {
-            font-size: 0.75em; font-weight: 700; letter-spacing: 0.1em;
-            background: #333; color: #aaa; padding: 4px 10px; border-radius: 20px;
-        }
-        .stage-body { flex: 1; display: flex; overflow: hidden; }
-        .stage-current {
-            flex: 1; display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            padding: 30px; border-right: 1px solid #222; text-align: center;
-        }
-        .stage-current .sc-label {
-            font-size: 0.7em; font-weight: 700; letter-spacing: 0.18em;
-            color: #555; text-transform: uppercase; margin-bottom: 10px;
-        }
-        .stage-current .sc-name {
-            font-size: clamp(2em, 4vw, 3.5em); font-weight: 800; margin-bottom: 6px;
-            line-height: 1.1;
-        }
-        .stage-current .sc-topic { font-size: 1.1em; color: #888; margin-bottom: 20px; }
-        .stage-current .sc-timer {
-            font-size: clamp(4em, 10vw, 8em); font-weight: 800;
-            font-family: 'Courier New', monospace; line-height: 1;
-            color: white;
-        }
-        .stage-current .sc-timer.warning { color: #f39c12; }
-        .stage-current .sc-timer.danger  { color: #ff4757; }
-        .stage-current .sc-status { font-size: 0.9em; color: #666; margin-top: 8px; }
-        .stage-sidebar {
-            width: 280px; display: flex; flex-direction: column;
-            padding: 16px; overflow-y: auto; gap: 8px; flex-shrink: 0;
-        }
-        .stage-sidebar .ss-label {
-            font-size: 0.7em; font-weight: 700; letter-spacing: 0.14em;
-            color: #555; text-transform: uppercase; margin-bottom: 4px;
-        }
-        .stage-slot {
-            background: #1a1a1a; border-radius: 8px; padding: 12px 14px;
-            border-left: 3px solid #333;
-        }
-        .stage-slot.active   { border-left-color: #667eea; background: #1a1d30; }
-        .stage-slot.completed{ border-left-color: #2ecc71; opacity: 0.5; }
-        .stage-slot .ss-name  { font-size: 0.9em; font-weight: 700; color: #ddd; margin-bottom: 2px; }
-        .stage-slot .ss-topic { font-size: 0.75em; color: #666; margin-bottom: 4px; }
-        .stage-slot .ss-time  { font-size: 0.8em; color: #888; font-family: 'Courier New', monospace; }
-        .stage-footer {
-            background: #111; padding: 10px 20px; border-top: 1px solid #222;
-            display: flex; justify-content: space-between; align-items: center;
-            flex-shrink: 0; font-size: 0.8em; color: #555;
-        }
         #fullscreenBtn:hover {
             background: rgba(0,0,0,0.75);
         }
@@ -1471,12 +1274,11 @@
             <div class="panel-header">
                 <div>
                     <h1 id="eventTitle">Service Timer</h1>
-                    <p id="eventDateDisplay" style="color: #666; margin-top: 5px;"></p>
+                    <p id="eventDate" style="color: #666; margin-top: 5px;"></p>
                 </div>
                 <div class="control-buttons">
                     <button class="btn btn-primary" onclick="openPresentation()">📺 Presentation</button>
                     <button class="btn btn-success" onclick="showReport()">📊 View Report</button>
-                    <button id="orgFullscreenBtn" onclick="toggleOrgFullscreen()" title="Fullscreen organiser panel">⛶ Fullscreen</button>
                     <button class="btn btn-secondary" onclick="resetApp()">🔄 New Event</button>
                 </div>
             </div>
@@ -1486,28 +1288,7 @@
                 <span class="session-bar-label">Live Session</span>
                 <span class="session-code-badge" id="sessionCodeDisplay">—</span>
                 <button class="session-link-btn" onclick="copySessionLink('presentation')" id="copyPrBtn">📺 Presentation Link</button>
-                <button class="session-link-btn" onclick="copySessionLink('stage')" id="copyStageBtn">🎬 Stage Manager Link</button>
                 <span id="fbStatusBadge" class="firebase-status connecting"><span class="status-dot"></span> Connecting…</span>
-            </div>
-
-            <!-- End-time prediction bar -->
-            <div class="endtime-bar" id="endtimeBar">
-                <div class="endtime-item">
-                    <span class="endtime-label">Est. End Time</span>
-                    <span class="endtime-value" id="estEndTime">--:--</span>
-                </div>
-                <div class="endtime-item">
-                    <span class="endtime-label">Time Remaining</span>
-                    <span class="endtime-value" id="serviceTimeLeft">--</span>
-                </div>
-                <div class="endtime-item">
-                    <span class="endtime-label">Running</span>
-                    <span class="endtime-value" id="serviceVariance">On Time</span>
-                </div>
-                <div class="endtime-item">
-                    <span class="endtime-label">Slots Done</span>
-                    <span class="endtime-value" id="slotsProgress">0 / 0</span>
-                </div>
             </div>
 
             <div class="timer-display">
@@ -1668,7 +1449,7 @@
         </div>
 
         <!-- Speaker Links Modal (shown from organiser panel) -->
-        <div id="speakerLinksModal" class="speaker-links-modal hidden" onclick="handleSlmBackdrop(event)">
+        <div id="speakerLinksModal" class="speaker-links-modal hidden" onclick="if(event.target===this)closeSpeakerLinksModal()">
             <div class="speaker-links-card">
                 <h3 id="slmName">Speaker</h3>
                 <span class="topic-tag" id="slmTopic"></span>
@@ -1691,8 +1472,7 @@
                     <p id="reportEventName"></p>
                 </div>
                 <div class="control-buttons">
-                    <button class="btn btn-success" onclick="downloadReport()">💾 CSV Report</button>
-                    <button class="btn btn-primary" onclick="downloadReportPDF()">📄 PDF Report</button>
+                    <button class="btn btn-success" onclick="downloadReport()">💾 Download Report</button>
                     <button class="btn btn-secondary" onclick="backToOrganizer()">← Back to Control</button>
                 </div>
             </div>
@@ -1799,22 +1579,7 @@
         </div>
     </div>
 
-        <!-- Pause Reason Modal -->
-    <div id="pauseReasonModal" class="pause-reason-modal hidden" onclick="handlePauseBackdrop(event)">
-        <div class="pause-reason-card">
-            <h3>⏸ Why are you pausing?</h3>
-            <div class="pause-reason-options">
-                <button class="pause-reason-btn" onclick="selectPauseReason('Technical Issue')">🔧 Technical Issue</button>
-                <button class="pause-reason-btn" onclick="selectPauseReason('Announcement')">📢 Announcement</button>
-                <button class="pause-reason-btn" onclick="selectPauseReason('Break / Interval')">☕ Break / Interval</button>
-                <button class="pause-reason-btn" onclick="selectPauseReason('Unplanned delay')">⚠️ Unplanned Delay</button>
-                <button class="pause-reason-btn" onclick="selectPauseReason('Other')">📝 Other</button>
-            </div>
-            <button class="btn btn-secondary" style="width:100%;" onclick="skipPauseReason()">Skip</button>
-        </div>
-    </div>
-
-    <!-- Adjust Time Modal -->
+        <!-- Adjust Time Modal -->
     <div id="adjustTimeModal" class="modal-overlay hidden" onclick="closeAdjustTimeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <h3>⏱️ Adjust Speaker Time</h3>
@@ -1852,38 +1617,6 @@
                 <button class="btn btn-secondary" onclick="closeAdjustTimeModal()">Cancel</button>
                 <button class="btn btn-primary" id="confirmAdjustBtn" onclick="confirmAdjustTime()" disabled>Confirm</button>
             </div>
-        </div>
-    </div>
-
-    <!-- Theme toggle button (global, always visible) -->
-    <button id="themeToggleBtn" onclick="toggleTheme()" title="Toggle dark/light mode">🌙</button>
-
-    <!-- Stage Manager View -->
-    <div id="stageView" class="stage-view hidden">
-        <div class="stage-header">
-            <span class="sh-event" id="stageEventName">Service Timer</span>
-            <span class="sh-badge">STAGE MANAGER VIEW — READ ONLY</span>
-            <span id="stageFbStatus" class="firebase-status connecting" style="font-size:0.8em;">
-                <span class="status-dot"></span> Connecting…
-            </span>
-        </div>
-        <div class="stage-body">
-            <div class="stage-current">
-                <div class="sc-label">Now Speaking</div>
-                <div class="sc-name" id="stageCurrentName">—</div>
-                <div class="sc-topic" id="stageCurrentTopic">—</div>
-                <div class="sc-timer" id="stageTimer">--:--</div>
-                <div class="sc-status" id="stageStatus">Waiting for service to start</div>
-            </div>
-            <div class="stage-sidebar">
-                <div class="ss-label">Programme</div>
-                <div id="stageSlotList"></div>
-            </div>
-        </div>
-        <div class="stage-footer">
-            <span id="stageEndTime">Est. end: --:--</span>
-            <span id="stageVariance">On Time</span>
-            <span id="stageSlotsProgress">0 / 0 slots</span>
         </div>
     </div>
 
@@ -1998,12 +1731,6 @@
         function closeSpeakerLinksModal() {
             document.getElementById('speakerLinksModal').classList.add('hidden');
         }
-        function handleSlmBackdrop(event) {
-            if (event.target === event.currentTarget) closeSpeakerLinksModal();
-        }
-        function handlePauseBackdrop(event) {
-            if (event.target === event.currentTarget) skipPauseReason();
-        }
         function copySlmLink() {
             const input = document.getElementById('slmLinkInput');
             navigator.clipboard.writeText(input.value).then(() => {
@@ -2019,7 +1746,6 @@
             setupFileUpload();
             setupStorageListener();
             cleanupOldSessions();
-            applyStoredTheme();
 
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('eventDate').value = today;
@@ -2030,24 +1756,7 @@
             const session = urlParams.get('session');
             const si      = urlParams.get('si'); // speaker index
 
-            if (view === 'stage' && session) {
-                appState.sessionCode = session;
-                setFbStatus('connecting','Connecting…');
-                subscribeToSession(session, data => {
-                    appState.event               = data.event;
-                    appState.currentSpeakerIndex = data.currentSpeakerIndex;
-                    appState.timerSeconds        = data.timerSeconds;
-                    appState.isRunning           = data.isRunning;
-                    appState.isPaused            = data.isPaused;
-                    appState.speakers            = data.speakers || [];
-                    updateStageView();
-                    // sync status badge inside stage view
-                    const sb = document.getElementById('stageFbStatus');
-                    if (sb) { sb.className='firebase-status connected'; sb.innerHTML='<span class="status-dot"></span> Live'; }
-                });
-                showView('stageView');
-
-            } else if (view === 'presentation' && session) {
+            if (view === 'presentation' && session) {
                 appState.sessionCode = session;
                 setFbStatus('connecting','Connecting…');
                 subscribeToSession(session, data => {
@@ -2094,15 +1803,11 @@
 
         // Navigation Functions
         function showView(viewId) {
-            const views = ['startupScreen', 'pdfUploadScreen', 'manualEntryScreen', 'organizerPanel', 'presentationView', 'speakerPortal', 'reportView', 'creatorScreen', 'stageView'];
+            const views = ['startupScreen', 'pdfUploadScreen', 'manualEntryScreen', 'organizerPanel', 'presentationView', 'speakerPortal', 'reportView', 'creatorScreen'];
             views.forEach(id => {
                 document.getElementById(id).classList.add('hidden');
             });
             document.getElementById(viewId).classList.remove('hidden');
-            // Hide theme toggle on immersive views
-            const noTheme = ['presentationView','speakerPortal','stageView'];
-            const themeBtn = document.getElementById('themeToggleBtn');
-            if (themeBtn) themeBtn.style.display = noTheme.includes(viewId) ? 'none' : 'flex';
         }
 
         function showFileUpload() {
@@ -2532,7 +2237,7 @@
             });
             
             document.getElementById('eventTitle').textContent = appState.event.name;
-            document.getElementById('eventDateDisplay').textContent = new Date(appState.event.date).toLocaleDateString();
+            document.getElementById('eventDate').textContent = new Date(appState.event.date).toLocaleDateString();
             if (!appState.sessionCode) { appState.sessionCode = generateSessionCode(); saveStateToStorage(); }
             const cdEl = document.getElementById('sessionCodeDisplay');
             if (cdEl) cdEl.textContent = appState.sessionCode;
@@ -2551,19 +2256,10 @@
                 const varianceText = actualSeconds > 0 ? 
                     `(${variance > 0 ? '+' : ''}${formatTimeDetailed(Math.abs(variance))})` : '';
                 
-                const canReorder = speaker.status === 'upcoming';
                 item.innerHTML = `
-                    <div style="display:flex;align-items:center;gap:6px;">
-                        <div class="reorder-btns">
-                            <button class="reorder-btn" onclick="moveSpeaker(${index},-1)"
-                                ${index === 0 || !canReorder ? 'disabled' : ''} title="Move up">▲</button>
-                            <button class="reorder-btn" onclick="moveSpeaker(${index},1)"
-                                ${index === appState.speakers.length-1 || !canReorder ? 'disabled' : ''} title="Move down">▼</button>
-                        </div>
-                        <div class="speaker-info">
-                            <h4>${speaker.name}</h4>
-                            <p>${speaker.topic}</p>
-                        </div>
+                    <div class="speaker-info">
+                        <h4>${speaker.name}</h4>
+                        <p>${speaker.topic}</p>
                     </div>
                     <div class="speaker-status" style="display:flex;align-items:center;gap:14px;">
                         <button class="session-link-btn" onclick="openSpeakerLinksModal(${index})" title="Share link with speaker">🔗 Share</button>
@@ -2581,132 +2277,6 @@
             });
             
             updateTimerDisplay();
-        }
-
-        // ── Feature 6: Speaker reordering ─────────────────────────────────
-        function moveSpeaker(index, direction) {
-            const speakers = appState.speakers;
-            const target = index + direction;
-            if (target < 0 || target >= speakers.length) return;
-            if (speakers[index].status !== 'upcoming' || speakers[target].status !== 'upcoming') return;
-            [speakers[index], speakers[target]] = [speakers[target], speakers[index]];
-            saveStateToStorage();
-            renderOrganizerPanel();
-        }
-
-        // ── Feature 8: Dark/light mode ──────────────────────────────────────
-        function toggleTheme() {
-            const isDark = document.body.classList.toggle('dark-mode');
-            document.getElementById('themeToggleBtn').textContent = isDark ? '☀️' : '🌙';
-            localStorage.setItem('timerTheme', isDark ? 'dark' : 'light');
-        }
-
-        function applyStoredTheme() {
-            const stored = localStorage.getItem('timerTheme');
-            if (stored === 'dark') {
-                document.body.classList.add('dark-mode');
-                const btn = document.getElementById('themeToggleBtn');
-                if (btn) btn.textContent = '☀️';
-            }
-        }
-
-        // ── Feature 9: Organiser panel fullscreen ───────────────────────────
-        function toggleOrgFullscreen() {
-            const panel = document.getElementById('organizerPanel');
-            if (!document.fullscreenElement) {
-                (panel.requestFullscreen || panel.webkitRequestFullscreen).call(panel);
-                document.getElementById('orgFullscreenBtn').textContent = '⛶ Exit';
-            } else {
-                (document.exitFullscreen || document.webkitExitFullscreen).call(document);
-                document.getElementById('orgFullscreenBtn').textContent = '⛶ Fullscreen';
-            }
-        }
-        document.addEventListener('fullscreenchange', () => {
-            const btn = document.getElementById('orgFullscreenBtn');
-            if (btn && btn.textContent.includes('Exit') && !document.fullscreenElement) {
-                btn.textContent = '⛶ Fullscreen';
-            }
-        });
-
-        // ── Stage Manager view ──────────────────────────────────────────────
-        function updateStageView() {
-            if (!appState.event || !appState.speakers.length) return;
-
-            // Header
-            const evEl = document.getElementById('stageEventName');
-            if (evEl) evEl.textContent = appState.event.name;
-
-            const currIdx = appState.currentSpeakerIndex;
-            const curr    = currIdx >= 0 ? appState.speakers[currIdx] : null;
-
-            // Current speaker
-            const nameEl   = document.getElementById('stageCurrentName');
-            const topicEl  = document.getElementById('stageCurrentTopic');
-            const timerEl  = document.getElementById('stageTimer');
-            const statusEl = document.getElementById('stageStatus');
-
-            if (!appState.isRunning || !curr) {
-                if (nameEl)  nameEl.textContent  = 'Waiting to start';
-                if (topicEl) topicEl.textContent = '';
-                if (timerEl) timerEl.textContent = '--:--';
-                if (statusEl)statusEl.textContent= 'Service has not started yet';
-                timerEl && timerEl.classList.remove('warning','danger');
-            } else {
-                const alloc      = Math.floor(curr.allocatedMinutes * 60);
-                const isOvertime = appState.timerSeconds > alloc;
-                const disp       = isOvertime ? appState.timerSeconds - alloc : alloc - appState.timerSeconds;
-                const pct        = Math.min((appState.timerSeconds / alloc) * 100, 100);
-
-                if (nameEl)  nameEl.textContent  = curr.name;
-                if (topicEl) topicEl.textContent = curr.topic;
-                if (timerEl) {
-                    timerEl.textContent = (isOvertime ? '+' : '') + formatTime(disp);
-                    timerEl.classList.remove('warning','danger');
-                    if (isOvertime || pct >= 90) timerEl.classList.add('danger');
-                    else if (pct >= 80)          timerEl.classList.add('warning');
-                }
-                if (statusEl) statusEl.textContent = isOvertime
-                    ? 'OVERTIME — ' + formatTime(disp) + ' over'
-                    : formatTime(disp) + ' remaining';
-            }
-
-            // Slot list
-            const listEl = document.getElementById('stageSlotList');
-            if (listEl) {
-                listEl.innerHTML = '';
-                appState.speakers.forEach((sp, i) => {
-                    const slot = document.createElement('div');
-                    slot.className = 'stage-slot ' + sp.status;
-                    const alloc = Math.floor(sp.allocatedMinutes * 60);
-                    slot.innerHTML = `
-                        <div class="ss-name">${sp.name}</div>
-                        <div class="ss-topic">${sp.topic}</div>
-                        <div class="ss-time">${formatTimeDetailed(alloc)}${sp.actualSeconds > 0 ? ' → ' + formatTimeDetailed(sp.actualSeconds) : ''}</div>
-                    `;
-                    listEl.appendChild(slot);
-                });
-            }
-
-            // Footer
-            let remSec = 0;
-            appState.speakers.forEach((sp, i) => {
-                if (sp.status === 'upcoming') remSec += Math.floor(sp.allocatedMinutes * 60);
-                else if (sp.status === 'active') remSec += Math.max(0, Math.floor(sp.allocatedMinutes * 60) - appState.timerSeconds);
-            });
-            const estEnd = new Date(Date.now() + remSec * 1000);
-            const hh = estEnd.getHours() % 12 || 12;
-            const mm = String(estEnd.getMinutes()).padStart(2,'0');
-            const ampm = estEnd.getHours() >= 12 ? 'PM' : 'AM';
-            const etEl = document.getElementById('stageEndTime');
-            const varEl= document.getElementById('stageVariance');
-            const pgEl = document.getElementById('stageSlotsProgress');
-            const done = appState.speakers.filter(s => s.status === 'completed').length;
-            if (etEl)  etEl.textContent  = 'Est. end: ' + (appState.isRunning ? `${hh}:${mm} ${ampm}` : '--:--');
-            if (pgEl)  pgEl.textContent  = done + ' / ' + appState.speakers.length + ' slots';
-            if (varEl) varEl.textContent = appState.isRunning ? 'Live' : 'Standby';
-
-            // Connection status
-            setFbStatus('connected','Live');
         }
 
         function startTimer() {
@@ -2736,20 +2306,6 @@
             document.getElementById('pauseBtn').classList.add('hidden');
             document.getElementById('resumeBtn').classList.remove('hidden');
             saveStateToStorage();
-            // Show reason picker
-            document.getElementById('pauseReasonModal').classList.remove('hidden');
-        }
-
-        function selectPauseReason(reason) {
-            appState.lastPauseReason = reason;
-            if (!appState.pauseLog) appState.pauseLog = [];
-            appState.pauseLog.push({ reason, time: new Date().toLocaleTimeString(), speakerIndex: appState.currentSpeakerIndex });
-            document.getElementById('pauseReasonModal').classList.add('hidden');
-            saveStateToStorage();
-        }
-
-        function skipPauseReason() {
-            document.getElementById('pauseReasonModal').classList.add('hidden');
         }
 
         function resumeTimer() {
@@ -2916,7 +2472,6 @@
             document.getElementById('currentSpeaker').textContent = speaker.name;
             document.getElementById('currentTopic').textContent = speaker.topic;
             document.getElementById('timerValue').textContent = formatTime(displaySeconds);
-            updateEndTimeBar();
             document.getElementById('timerLabel').textContent = isOvertime ? 
                 `OVERTIME • Allocated: ${formatTimeDetailed(allocatedSeconds)}` : 
                 `REMAINING • Allocated: ${formatTimeDetailed(allocatedSeconds)}`;
@@ -2943,78 +2498,6 @@
                     timerValue.classList.add('warning');
                     progressBar.classList.add('warning');
                 }
-            }
-        }
-
-        function updateEndTimeBar() {
-            if (!appState.event || !appState.speakers.length) return;
-
-            const now = new Date();
-            let remainingSeconds = 0;
-            let totalServiceSeconds = 0;
-            let completedSeconds = 0;
-
-            appState.speakers.forEach((sp, idx) => {
-                const alloc = Math.floor(sp.allocatedMinutes * 60);
-                totalServiceSeconds += alloc;
-                if (sp.status === 'completed') {
-                    completedSeconds += sp.actualSeconds || alloc;
-                } else if (sp.status === 'active') {
-                    remainingSeconds += Math.max(0, alloc - appState.timerSeconds);
-                } else {
-                    remainingSeconds += alloc;
-                }
-            });
-
-            // Estimated end time
-            const estEndMs   = now.getTime() + remainingSeconds * 1000;
-            const estEnd     = new Date(estEndMs);
-            const hh = estEnd.getHours() % 12 || 12;
-            const mm = String(estEnd.getMinutes()).padStart(2,'0');
-            const ampm = estEnd.getHours() >= 12 ? 'PM' : 'AM';
-            const estEndStr  = `${hh}:${mm} ${ampm}`;
-
-            // Service variance: difference between actual elapsed vs planned elapsed
-            const completedCount = appState.speakers.filter(s => s.status === 'completed').length;
-            let plannedElapsed = 0;
-            for (let i = 0; i < completedCount; i++) {
-                plannedElapsed += Math.floor(appState.speakers[i].allocatedMinutes * 60);
-            }
-            if (appState.currentSpeakerIndex >= 0) plannedElapsed += appState.timerSeconds;
-            const actualElapsed = completedSeconds + (appState.isRunning ? appState.timerSeconds : 0);
-            const varianceSec   = actualElapsed - plannedElapsed;
-
-            // Slots progress
-            const done  = appState.speakers.filter(s => s.status === 'completed').length;
-            const total = appState.speakers.length;
-
-            // Remaining in service
-            const remMins = Math.ceil(remainingSeconds / 60);
-            const remStr  = remainingSeconds > 0 ? (remMins + ' min') : 'Finishing';
-
-            // Update DOM
-            const estEl  = document.getElementById('estEndTime');
-            const remEl  = document.getElementById('serviceTimeLeft');
-            const varEl  = document.getElementById('serviceVariance');
-            const progEl = document.getElementById('slotsProgress');
-            if (!estEl) return;
-
-            estEl.textContent  = appState.isRunning ? estEndStr : '--:--';
-            remEl.textContent  = appState.isRunning ? remStr    : '--';
-            progEl.textContent = done + ' / ' + total;
-
-            varEl.className = 'endtime-value';
-            if (!appState.isRunning) {
-                varEl.textContent = 'Not started';
-            } else if (Math.abs(varianceSec) < 60) {
-                varEl.textContent = 'On Time';
-                varEl.classList.add('ontime');
-            } else if (varianceSec > 0) {
-                varEl.textContent = '+' + Math.ceil(varianceSec/60) + ' min';
-                varEl.classList.add('behind');
-            } else {
-                varEl.textContent = '-' + Math.ceil(Math.abs(varianceSec)/60) + ' min';
-                varEl.classList.add('ahead');
             }
         }
 
@@ -3316,8 +2799,7 @@
                 appState = {
                     event:null, currentSpeakerIndex:-1, timerSeconds:0, timerInterval:null,
                     isPaused:false, isRunning:false, speakers:[], speakerHistory:[],
-                    showTimeUp:false, timeUpInterval:null, sessionCode:null,
-                    pauseLog:[], lastPauseReason:null
+                    showTimeUp:false, timeUpInterval:null, sessionCode:null
                 };
                 localStorage.removeItem('serviceTimerState');
                 showView('startupScreen');
@@ -3511,150 +2993,6 @@
             a.click();
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
-        }
-
-        function downloadReportPDF() {
-            if (!appState.event) return;
-            const { jsPDF } = window.jspdf;
-            const doc  = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-            const pageW = doc.internal.pageSize.getWidth();
-            const pageH = doc.internal.pageSize.getHeight();
-            const margin = 15;
-            const eventName = appState.event.name;
-            const eventDate = new Date(appState.event.date).toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-            const generated = new Date().toLocaleString();
-
-            // ── Header band ──
-            doc.setFillColor(31, 60, 114);
-            doc.rect(0, 0, pageW, 36, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(16); doc.setFont('helvetica','bold');
-            doc.text(eventName, pageW/2, 14, { align:'center' });
-            doc.setFontSize(10); doc.setFont('helvetica','normal');
-            doc.text('Event Report  •  ' + eventDate, pageW/2, 22, { align:'center' });
-            doc.setFontSize(8); doc.setTextColor(200,210,240);
-            doc.text('Generated: ' + generated, pageW/2, 30, { align:'center' });
-
-            // ── Summary cards ──
-            let totalAlloc = 0, totalActual = 0, completedCount = 0;
-            appState.speakers.forEach(sp => {
-                const a = Math.floor(sp.allocatedMinutes * 60);
-                totalAlloc += a;
-                if (sp.actualSeconds) { totalActual += sp.actualSeconds; completedCount++; }
-            });
-            const totalVariance = totalActual - totalAlloc;
-
-            doc.setTextColor(50,50,50);
-            const cards = [
-                { label:'Speakers Done', value: completedCount + ' / ' + appState.speakers.length },
-                { label:'Total Allocated', value: formatTimeDetailed(totalAlloc) },
-                { label:'Total Actual', value: formatTimeDetailed(totalActual) },
-                { label:'Overall Variance', value: (totalVariance >= 0 ? '+' : '') + formatTimeDetailed(Math.abs(totalVariance)) }
-            ];
-            const cardW = (pageW - margin*2 - 9) / 4;
-            const cardY = 42;
-            cards.forEach((card, i) => {
-                const cx = margin + i * (cardW + 3);
-                doc.setFillColor(245, 246, 255);
-                doc.setDrawColor(200, 205, 240);
-                doc.roundedRect(cx, cardY, cardW, 20, 2, 2, 'FD');
-                doc.setFontSize(7); doc.setFont('helvetica','normal');
-                doc.setTextColor(120,120,160);
-                doc.text(card.label.toUpperCase(), cx + cardW/2, cardY + 6, { align:'center' });
-                doc.setFontSize(11); doc.setFont('helvetica','bold');
-                const isNeg = card.label === 'Overall Variance' && totalVariance < 0;
-                const isPos = card.label === 'Overall Variance' && totalVariance > 60;
-                doc.setTextColor(isPos ? 200:0, isNeg ? 150: isPos ? 50:50, isNeg ? 50: isPos ? 50:150);
-                doc.text(card.value, cx + cardW/2, cardY + 14, { align:'center' });
-            });
-
-            // ── Pause log (if any) ──
-            let tableStartY = cardY + 28;
-            if (appState.pauseLog && appState.pauseLog.length > 0) {
-                doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(80,80,80);
-                doc.text('Pause Log', margin, tableStartY);
-                tableStartY += 4;
-                doc.autoTable({
-                    startY: tableStartY,
-                    head: [['Time', 'Reason', 'During Slot']],
-                    body: appState.pauseLog.map(p => [
-                        p.time,
-                        p.reason,
-                        appState.speakers[p.speakerIndex] ? appState.speakers[p.speakerIndex].name : '—'
-                    ]),
-                    theme: 'grid',
-                    headStyles: { fillColor:[100,110,200], textColor:255, fontSize:8, fontStyle:'bold' },
-                    bodyStyles: { fontSize:8 },
-                    margin: { left:margin, right:margin }
-                });
-                tableStartY = doc.lastAutoTable.finalY + 8;
-            }
-
-            // ── Speaker detail table ──
-            doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(80,80,80);
-            doc.text('Speaker Detail', margin, tableStartY);
-            tableStartY += 4;
-
-            const tableBody = appState.speakers.map((sp, idx) => {
-                const alloc   = Math.floor(sp.allocatedMinutes * 60);
-                const actual  = sp.actualSeconds || 0;
-                const variance= actual - alloc;
-                let status = 'Pending';
-                if (sp.status==='completed') {
-                    if (actual===0) status='Not Used';
-                    else if (variance>0) status='Over Time';
-                    else if (variance<-60) status='Under Time';
-                    else status='On Time';
-                } else if (sp.status==='active') status='Active';
-                return [
-                    idx+1,
-                    sp.name,
-                    sp.topic,
-                    formatTimeDetailed(alloc),
-                    actual>0 ? formatTimeDetailed(actual) : 'Not Used',
-                    actual>0 ? (variance>=0?'+':'')+formatTimeDetailed(Math.abs(variance)) : '--',
-                    status
-                ];
-            });
-
-            doc.autoTable({
-                startY: tableStartY,
-                head: [['#','Speaker','Topic/Slot','Allocated','Actual','Variance','Status']],
-                body: tableBody,
-                theme: 'grid',
-                headStyles: { fillColor:[31,60,114], textColor:255, fontSize:8, fontStyle:'bold' },
-                columnStyles: {
-                    0: { cellWidth:8,  halign:'center' },
-                    1: { cellWidth:32 },
-                    2: { cellWidth:50 },
-                    3: { cellWidth:22, halign:'center' },
-                    4: { cellWidth:22, halign:'center' },
-                    5: { cellWidth:22, halign:'center' },
-                    6: { cellWidth:22, halign:'center' }
-                },
-                bodyStyles: { fontSize:8 },
-                didParseCell: (hook) => {
-                    if (hook.column.index===6 && hook.section==='body') {
-                        const v = hook.cell.raw;
-                        if (v==='Over Time')   { hook.cell.styles.textColor=[200,50,50];  hook.cell.styles.fontStyle='bold'; }
-                        if (v==='On Time')     { hook.cell.styles.textColor=[30,140,30];  hook.cell.styles.fontStyle='bold'; }
-                        if (v==='Under Time')  { hook.cell.styles.textColor=[50,100,200]; hook.cell.styles.fontStyle='bold'; }
-                    }
-                    if (hook.column.index===5 && hook.section==='body') {
-                        const v = hook.cell.raw;
-                        if (v && v.startsWith('+'))  hook.cell.styles.textColor=[200,50,50];
-                        else if (v && v.startsWith('-')) hook.cell.styles.textColor=[50,100,200];
-                    }
-                },
-                margin: { left:margin, right:margin }
-            });
-
-            // ── Footer ──
-            doc.setFontSize(7); doc.setTextColor(160,160,160); doc.setFont('helvetica','normal');
-            doc.text('Service Timer  •  ' + BASE_URL, pageW/2, pageH - 8, { align:'center' });
-
-            const safeDate = appState.event.date || new Date().toISOString().split('T')[0];
-            doc.save('Event_Report_' + eventName.replace(/[^a-z0-9]/gi,'_') + '_' + safeDate + '.pdf');
         }
 
         // Add Time Modal Functions
