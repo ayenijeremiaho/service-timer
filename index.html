@@ -2537,10 +2537,14 @@
     }
 
     function openProgramCreator() {
-        window.location.href = window.location.pathname + '?view=create';
+        window.history.pushState({}, '', window.location.pathname + '?view=create');
+        showView('creatorScreen');
+        initCreator();
     }
 
     function backToStartup() {
+        // Strip all query params from the URL cleanly
+        window.history.replaceState({}, '', window.location.pathname);
         showView('startupScreen');
     }
 
