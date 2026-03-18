@@ -1947,31 +1947,62 @@
         return c;
     }
 
+    // Throttle Firebase writes — only write at most once per second
+    let _lastSyncTime = 0;
+    let _syncPending  = false;
+
     function syncToFirebase() {
-        if (!appState.sessionCode || !appState.event) return;
-        // Sanitise speakers — strip any non-serialisable fields
+        if (!appState.sessionCode) return;
+        if (!appState.event || !appState.event.name) return;
+
+        // Throttle: batch rapid calls into one write per second
+        if (_syncPending) return;
+        _syncPending = true;
+        setTimeout(() => {
+            _syncPending = false;
+            _doFirebaseWrite();
+        }, 800);
+    }
+
+    function _doFirebaseWrite() {
+        if (!appState.sessionCode || !appState.event || !appState.event.name) return;
+
         const safeSpeakers = (appState.speakers || []).map(sp => ({
-            name:             sp.name             || '',
-            topic:            sp.topic            || '',
-            allocatedMinutes: sp.allocatedMinutes || 0,
-            actualSeconds:    sp.actualSeconds    || 0,
-            actualMinutes:    sp.actualMinutes    || 0,
-            status:           sp.status           || 'upcoming'
+            name:             String(sp.name  || ''),
+            topic:            String(sp.topic || ''),
+            allocatedMinutes: Number(sp.allocatedMinutes) || 0,
+            actualSeconds:    Number(sp.actualSeconds)    || 0,
+            actualMinutes:    Number(sp.actualMinutes)    || 0,
+            status:           String(sp.status || 'upcoming')
         }));
+
         const payload = {
             event: {
-                name: appState.event.name || '',
-                date: appState.event.date || ''
+                name: String(appState.event.name || ''),
+                date: String(appState.event.date || '')
             },
-            currentSpeakerIndex: appState.currentSpeakerIndex,
-            timerSeconds:        appState.timerSeconds,
-            isRunning:           !!appState.isRunning,
-            isPaused:            !!appState.isPaused,
+            currentSpeakerIndex: Number(appState.currentSpeakerIndex),
+            timerSeconds:        Number(appState.timerSeconds),
+            isRunning:           appState.isRunning  === true,
+            isPaused:            appState.isPaused   === true,
             speakers:            safeSpeakers,
             updatedAt:           Date.now()
         };
+
         db.ref('sessions/' + appState.sessionCode).set(payload)
-            .catch(err => console.error('Firebase sync error:', err));
+            .then(() => {
+                setFbStatus('connected', 'Live');
+            })
+            .catch(err => {
+                console.error('Firebase write error:', err);
+                setFbStatus('disconnected', 'Sync error');
+            });
+    }
+
+    // Call immediately (no throttle) for important state changes
+    function syncToFirebaseNow() {
+        _syncPending = false;
+        _doFirebaseWrite();
     }
 
     let fbListener = null;
@@ -2568,10 +2599,11 @@
 
         document.getElementById('eventTitle').textContent = appState.event.name;
         document.getElementById('eventDateDisplay').textContent = new Date(appState.event.date).toLocaleDateString();
-        if (!appState.sessionCode) { appState.sessionCode = generateSessionCode(); saveStateToStorage(); }
+        if (!appState.sessionCode) { appState.sessionCode = generateSessionCode(); }
         const cdEl = document.getElementById('sessionCodeDisplay');
         if (cdEl) cdEl.textContent = appState.sessionCode;
-        setFbStatus('connected','Live');
+        // Always push full state to Firebase when panel renders
+        syncToFirebaseNow();
 
         const speakersList = document.getElementById('speakersList');
         speakersList.innerHTML = '';
@@ -2763,6 +2795,7 @@
         }
 
         saveStateToStorage();
+        syncToFirebaseNow();
         renderOrganizerPanel();
     }
 
@@ -2771,6 +2804,7 @@
         document.getElementById('pauseBtn').classList.add('hidden');
         document.getElementById('resumeBtn').classList.remove('hidden');
         saveStateToStorage();
+        syncToFirebaseNow();
         // Show reason picker
         document.getElementById('pauseReasonModal').classList.remove('hidden');
     }
@@ -2792,6 +2826,7 @@
         document.getElementById('resumeBtn').classList.add('hidden');
         document.getElementById('pauseBtn').classList.remove('hidden');
         saveStateToStorage();
+        syncToFirebaseNow();
     }
 
     function clearOvertimeState() {
@@ -2864,11 +2899,13 @@
             });
 
             saveStateToStorage();
+            syncToFirebaseNow();
             renderOrganizerPanel();
         } else {
             // All speakers done
             console.log('All speakers completed');
             stopTimer();
+            syncToFirebaseNow();
             alert('All speakers completed!');
         }
     }
