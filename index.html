@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏱️</text></svg>">
     <title>Service Timer App</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -4630,8 +4631,7 @@
 
     // ── Start draft session ───────────────────────────────────
     function startDraftSession() {
-        const pin = prompt('Set a 4-digit PIN for this draft session:
-        (Collaborators will need this to join)');
+        const pin = prompt('Set a 4-digit PIN for this draft session.\n(Collaborators will need this to join)');
         if (pin === null) return;
         if (!/^\d{4}$/.test(pin)) { alert('PIN must be exactly 4 digits.'); return; }
 
