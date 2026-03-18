@@ -1411,6 +1411,239 @@
             font-size: 0.8em; color: #555;
             position: sticky; bottom: 0;
         }
+
+        /* ── Draft / Collaboration bar ── */
+        .draft-bar {
+            display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+            background: linear-gradient(135deg,#1a3a6e18,#2a529818);
+            border: 1.5px solid #2a529840; border-radius: 12px;
+            padding: 10px 16px; margin-bottom: 16px;
+        }
+        .draft-code-badge {
+            background: linear-gradient(135deg,#1e3c72,#2a5298);
+            color: white; font-family:'Courier New',monospace;
+            font-size: 1em; font-weight: 700; letter-spacing: 0.1em;
+            padding: 5px 14px; border-radius: 8px;
+        }
+        .draft-bar-label { font-size:0.8em; font-weight:700; color:#555;
+            text-transform:uppercase; letter-spacing:0.08em; }
+        .draft-status { font-size:0.8em; font-weight:600; padding:4px 10px;
+            border-radius:20px; display:flex; align-items:center; gap:5px; }
+        .draft-status.synced   { background:#d4edda; color:#155724; }
+        .draft-status.syncing  { background:#fff3cd; color:#856404; }
+        .draft-status.offline  { background:#f8d7da; color:#721c24; }
+
+        /* ── Presence avatars ── */
+        .presence-row {
+            display: flex; flex-wrap: wrap; gap: 6px;
+            margin-bottom: 12px; min-height: 28px;
+        }
+        .presence-tag {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 3px 10px; border-radius: 20px;
+            font-size: 0.78em; font-weight: 700; color: white;
+        }
+        .presence-dot { width:7px; height:7px; border-radius:50%; background:white; }
+
+        /* ── Row highlight when someone is editing ── */
+        .creator-row.editing-by-other {
+            outline: 2px solid transparent;
+            transition: outline-color 0.3s;
+        }
+        .editing-label {
+            font-size: 0.7em; font-weight: 700;
+            color: white; padding: 1px 7px; border-radius: 10px;
+            position: absolute; right: 40px; top: -10px;
+            white-space: nowrap; pointer-events: none;
+        }
+        .creator-row { position: relative; }
+
+        /* ── Template panel ── */
+        .template-panel {
+            background: #f0f4ff; border: 1.5px solid #c5d0f0;
+            border-radius: 12px; padding: 16px 18px; margin-bottom: 16px;
+        }
+        .template-panel h4 { font-size:0.9em; font-weight:700; color:#444;
+            text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px; }
+        .template-list { display:flex; flex-wrap:wrap; gap:8px; }
+        .template-chip {
+            display:inline-flex; align-items:center; gap:6px;
+            background:white; border:1.5px solid #c5d0f0; border-radius:20px;
+            padding:5px 12px; font-size:0.85em; font-weight:600; color:#333;
+            cursor:pointer; transition:all .2s;
+        }
+        .template-chip:hover { background:#667eea; color:white; border-color:#667eea; }
+        .template-chip .del-tmpl { color:#aaa; font-size:0.9em; margin-left:2px; }
+        .template-chip:hover .del-tmpl { color:rgba(255,255,255,.7); }
+        .no-templates { font-size:0.85em; color:#999; font-style:italic; }
+
+        /* ── PIN modal ── */
+        .pin-modal-overlay {
+            position:fixed; inset:0; background:rgba(0,0,0,0.6);
+            display:flex; align-items:center; justify-content:center; z-index:9999;
+        }
+        .pin-modal-card {
+            background:white; border-radius:16px; padding:36px;
+            max-width:380px; width:92%; box-shadow:0 20px 60px rgba(0,0,0,.3);
+            text-align:center;
+        }
+        .pin-modal-card h3 { font-size:1.4em; color:#333; margin-bottom:8px; }
+        .pin-modal-card p  { color:#666; font-size:0.95em; margin-bottom:20px; }
+        .pin-input {
+            width:100%; padding:14px; font-size:1.8em; text-align:center;
+            border:2px solid #e0e0e0; border-radius:10px; letter-spacing:0.4em;
+            font-family:'Courier New',monospace; font-weight:700;
+            margin-bottom:16px;
+        }
+        .pin-input:focus { outline:none; border-color:#667eea; }
+        .pin-error { color:#ff4757; font-size:0.85em; margin-bottom:10px; min-height:18px; }
+
+        /* ══════════════════════════════════════════════
+           MOBILE RESPONSIVE — all screens
+           Breakpoints: 600px (phone), 768px (tablet)
+           ══════════════════════════════════════════════ */
+
+        /* Global: reduce body padding on small screens */
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+
+            /* ── Startup / home screen ── */
+            .startup-screen {
+                padding: 28px 18px;
+                border-radius: 14px;
+            }
+            .startup-screen h1 { font-size: 1.8em; }
+            .startup-screen p  { font-size: 1em; margin-bottom: 24px; }
+            .option-cards {
+                grid-template-columns: 1fr;
+                gap: 14px;
+                margin-top: 20px;
+            }
+            .option-card { padding: 24px 20px; }
+            .option-card h2 { font-size: 1.4em; margin-bottom: 8px; }
+
+            /* ── Manual entry form ── */
+            .manual-entry-form { padding: 20px 16px; border-radius: 14px; }
+            .form-header { flex-wrap: wrap; gap: 10px; }
+            .form-header h2 { font-size: 1.5em; }
+            .speaker-fields { grid-template-columns: 1fr; }
+            .speaker-fields .form-group[style*="span 2"] { grid-column: span 1 !important; }
+            .speakers-header { flex-wrap: wrap; gap: 8px; }
+
+            /* ── Organiser panel ── */
+            .organizer-panel { padding: 16px 12px; border-radius: 14px; }
+            .panel-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+                margin-bottom: 16px;
+                padding-bottom: 16px;
+            }
+            .panel-header h1 { font-size: 1.4em; }
+            .control-buttons {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                width: 100%;
+            }
+            .control-buttons .btn,
+            .control-buttons button { flex: 1 1 auto; font-size: 0.82em; padding: 10px 10px; }
+            .timer-display { padding: 24px 16px; }
+            .timer-value   { font-size: 3.5em; }
+            .current-topic { font-size: 1.2em; }
+            .timer-controls {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .timer-controls .btn { flex: 1 1 40%; font-size: 0.85em; padding: 10px 8px; }
+
+            /* Session bar + end-time bar */
+            .session-bar  { gap: 8px; padding: 10px 12px; }
+            .endtime-bar  { gap: 8px; padding: 8px 12px; flex-wrap: wrap; }
+            .endtime-item { flex: 1 1 40%; }
+            .endtime-value { font-size: 1em; }
+
+            /* Speaker items — stack vertically */
+            .speaker-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+                padding: 14px 12px;
+            }
+            .speaker-status {
+                width: 100%;
+                display: flex !important;
+                align-items: center;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            /* ── Creator screen ── */
+            .creator-row {
+                grid-template-columns: 1fr 40px !important;
+                grid-template-rows: auto auto auto;
+            }
+            .creator-row input:first-child {
+                grid-column: 1 / 2;
+            }
+            /* Break row: topic spans full width */
+            .creator-row.break-row input:first-child {
+                grid-column: 1 / 2;
+            }
+            /* Column header labels — hide on mobile, too cramped */
+            .creator-col-headers { display: none !important; }
+
+            /* Template panel */
+            .template-panel { padding: 12px 14px; }
+            .template-chip  { font-size: 0.82em; }
+
+            /* Draft bar */
+            .draft-bar { gap: 8px; padding: 10px 12px; }
+            .draft-code-badge { font-size: 0.9em; }
+
+            /* Report view */
+            #reportView .panel-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+            #reportView .control-buttons { flex-wrap: wrap; width: 100%; }
+            #reportView .performance-stats { grid-template-columns: 1fr 1fr !important; }
+
+            /* Buttons: make touch-friendly */
+            .btn { padding: 11px 16px; }
+            .session-link-btn { padding: 8px 12px; font-size: 0.82em; }
+
+            /* PIN modal */
+            .pin-modal-card { padding: 24px 18px; }
+            .pin-input { font-size: 1.4em; }
+        }
+
+        @media (max-width: 768px) and (min-width: 601px) {
+            body { padding: 14px; }
+
+            .startup-screen { padding: 36px 24px; }
+            .option-cards { grid-template-columns: 1fr; gap: 16px; }
+
+            .panel-header { flex-wrap: wrap; gap: 12px; }
+            .control-buttons { flex-wrap: wrap; gap: 8px; }
+            .control-buttons .btn { font-size: 0.88em; padding: 10px 14px; }
+
+            .timer-controls { flex-wrap: wrap; gap: 8px; }
+
+            /* Creator rows: drop minister column to second line */
+            .creator-row { grid-template-columns: 2fr 80px 40px; }
+            .creator-row:not(.break-row) input:nth-child(2) {
+                grid-column: 1 / -1;
+                order: 3;
+            }
+        }
+
+        /* Creator col headers — add class so we can hide on mobile */
+        .creator-col-headers {
+            display: grid;
+            grid-template-columns: 2fr 2fr 80px 40px;
+            gap: 10px;
+            padding: 0 6px;
+            margin-bottom: 6px;
+        }
         #fullscreenBtn:hover {
             background: rgba(0,0,0,0.75);
         }
@@ -1769,19 +2002,47 @@
         <button class="btn btn-secondary" onclick="backToStartup()">← Back</button>
     </div>
 
+    <!-- Draft collaboration bar (shown when draft is active) -->
+    <div class="draft-bar hidden" id="draftBar">
+        <span class="draft-bar-label">Draft</span>
+        <span class="draft-code-badge" id="draftCodeDisplay">—</span>
+        <button class="session-link-btn" onclick="copyDraftLink()" id="copyDraftBtn">🔗 Copy Edit Link</button>
+        <span class="draft-status synced" id="draftSyncStatus"><span class="status-dot"></span> Saved</span>
+        <button class="session-link-btn" style="margin-left:auto;background:#fff0f0;color:#c0392b;border-color:#e0b0b0;" onclick="closeDraft()">✕ Close Draft</button>
+    </div>
+
+    <!-- Presence row -->
+    <div class="presence-row" id="presenceRow"></div>
+
+    <!-- Template panel -->
+    <div class="template-panel" id="templatePanel">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+            <h4 style="margin:0;">📁 Templates</h4>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:0.78em;color:#888;">Workspace:</span>
+                <span class="draft-code-badge" id="orgCodeBadge" style="font-size:0.82em;padding:3px 10px;cursor:pointer;" onclick="switchWorkspace()" title="Click to switch workspace">—</span>
+            </div>
+        </div>
+        <div class="template-list" id="templateList"><span class="no-templates">Set a workspace to see templates</span></div>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="session-link-btn" onclick="saveAsTemplate()">💾 Save as Template</button>
+            <button class="session-link-btn" onclick="startDraftSession()" id="startDraftBtn">🤝 Start Collaborative Draft</button>
+        </div>
+    </div>
+
     <!-- Event Details -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:10px;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:10px;">
         <div class="form-group" style="margin-bottom:0;">
             <label>Event Theme / Name *</label>
-            <input type="text" id="creatorEventName" placeholder="e.g., Sunday Service">
+            <input type="text" id="creatorEventName" placeholder="e.g., Sunday Service" oninput="draftFieldChanged()">
         </div>
         <div class="form-group" style="margin-bottom:0;">
             <label>Event Date *</label>
-            <input type="date" id="creatorEventDate">
+            <input type="date" id="creatorEventDate" onchange="draftFieldChanged()">
         </div>
         <div class="form-group" style="margin-bottom:0;">
             <label>Service Start Time *</label>
-            <input type="time" id="creatorStartTime" value="18:30">
+            <input type="time" id="creatorStartTime" value="18:30" onchange="draftFieldChanged()">
         </div>
     </div>
 
@@ -1794,9 +2055,7 @@
                 <button class="btn btn-primary" onclick="creatorAddRow()">+ Add Item</button>
             </div>
         </div>
-
-        <!-- Header labels -->
-        <div style="display:grid;grid-template-columns:2fr 2fr 80px 40px;gap:10px;padding:0 6px;margin-bottom:6px;">
+        <div class="creator-col-headers">
             <span style="font-weight:600;color:#555;font-size:0.85em;">EVENT / TOPIC</span>
             <span style="font-weight:600;color:#555;font-size:0.85em;">MINISTER / PERSON</span>
             <span style="font-weight:600;color:#555;font-size:0.85em;text-align:center;">DURATION (min)</span>
@@ -1816,6 +2075,19 @@
             </div>
         </div>
         <div id="creatorPreview" style="overflow-x:auto;border-radius:10px;border:2px solid #e0e0e0;"></div>
+    </div>
+</div>
+
+<!-- PIN modal (for joining a draft) -->
+<div class="pin-modal-overlay hidden" id="pinModal" onclick="handlePinBackdrop(event)">
+    <div class="pin-modal-card">
+        <h3 id="pinModalTitle">🔐 Enter PIN</h3>
+        <p id="pinModalDesc">Enter the 4-digit PIN to join this draft session</p>
+        <input type="password" class="pin-input" id="pinInput" maxlength="4"
+               placeholder="••••" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+        <div class="pin-error" id="pinError"></div>
+        <button class="btn btn-primary" style="width:100%;margin-bottom:10px;" onclick="submitPin()">Join Draft</button>
+        <button class="btn btn-secondary" style="width:100%;" onclick="closePinModal()">Cancel</button>
     </div>
 </div>
 
@@ -3600,16 +3872,31 @@
         const eventDate = new Date(appState.event.date).toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
         const generated = new Date().toLocaleString();
 
-        // ── Header band ──
-        doc.setFillColor(31, 60, 114);
-        doc.rect(0, 0, pageW, 36, 'F');
-        doc.setTextColor(255, 255, 255);
+        // ── Header band — wraps long event names ──
         doc.setFontSize(16); doc.setFont('helvetica','bold');
-        doc.text(eventName, pageW/2, 14, { align:'center' });
+        const maxTextW   = pageW - margin * 2;
+        const nameLines  = doc.splitTextToSize(eventName, maxTextW);
+        const lineHeight = 7;
+        const nameBlockH = nameLines.length * lineHeight;
+        const headerH    = nameBlockH + 22; // padding above + date + generated lines
+
+        doc.setFillColor(31, 60, 114);
+        doc.rect(0, 0, pageW, headerH, 'F');
+        doc.setTextColor(255, 255, 255);
+
+        // Event name — centred, wrapped
+        const nameStartY = 10;
+        nameLines.forEach((line, i) => {
+            doc.text(line, pageW/2, nameStartY + i * lineHeight, { align:'center' });
+        });
+
+        // Date line
         doc.setFontSize(10); doc.setFont('helvetica','normal');
-        doc.text('Event Report  •  ' + eventDate, pageW/2, 22, { align:'center' });
+        doc.text('Event Report  •  ' + eventDate, pageW/2, nameStartY + nameBlockH + 4, { align:'center' });
+
+        // Generated line
         doc.setFontSize(8); doc.setTextColor(200,210,240);
-        doc.text('Generated: ' + generated, pageW/2, 30, { align:'center' });
+        doc.text('Generated: ' + generated, pageW/2, nameStartY + nameBlockH + 11, { align:'center' });
 
         // ── Summary cards ──
         let totalAlloc = 0, totalActual = 0, completedCount = 0;
@@ -3628,7 +3915,7 @@
             { label:'Overall Variance', value: (totalVariance >= 0 ? '+' : '') + formatTimeDetailed(Math.abs(totalVariance)) }
         ];
         const cardW = (pageW - margin*2 - 9) / 4;
-        const cardY = 42;
+        const cardY = headerH + 6;
         cards.forEach((card, i) => {
             const cx = margin + i * (cardW + 3);
             doc.setFillColor(245, 246, 255);
@@ -4168,6 +4455,493 @@
         showView('organizerPanel');
         renderOrganizerPanel();
     }
+
+    // ═══════════════════════════════════════════════════════
+    // COLLABORATIVE DRAFT + TEMPLATES
+    // ═══════════════════════════════════════════════════════
+
+    // ── State ────────────────────────────────────────────────
+    let draftState = {
+        code:       null,   // DFT-XXXX
+        isOwner:    false,
+        listener:   null,
+        presListener: null,
+        userId:     null,   // random ID for this browser tab
+        userName:   null,   // entered by user
+        syncTimer:  null,
+        pinHash:    null
+    };
+
+    // Assign a stable userId for this tab session
+    draftState.userId = 'u-' + Math.random().toString(36).substr(2,8);
+
+    // Presence colours pool
+    const PRESENCE_COLORS = ['#e74c3c','#8e44ad','#2980b9','#27ae60','#d35400','#16a085','#c0392b','#7f8c8d'];
+    function getColor(userId) {
+        let hash = 0;
+        for (let c of userId) hash = (hash * 31 + c.charCodeAt(0)) & 0xffffffff;
+        return PRESENCE_COLORS[Math.abs(hash) % PRESENCE_COLORS.length];
+    }
+
+    // Simple PIN hash (not cryptographic — just obfuscation for convenience)
+    function hashPin(pin) {
+        let h = 0;
+        for (let c of String(pin)) h = (h * 7 + c.charCodeAt(0)) & 0xffffffff;
+        return String(Math.abs(h));
+    }
+
+    function generateDraftCode() {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let c = 'DFT-';
+        for (let i = 0; i < 4; i++) c += chars[Math.floor(Math.random()*chars.length)];
+        return c;
+    }
+
+    // ── Serialize / Deserialize rows ─────────────────────────
+    function serializeRows() {
+        return creatorGetRows().map((r,i) => ({
+            idx: i, topic: r.topic, minister: r.minister,
+            duration: r.duration, isBreak: r.isBreak ? 1 : 0
+        }));
+    }
+
+    function deserializeRows(rows) {
+        document.getElementById('creatorRows').innerHTML = '';
+        creatorRowCount = 0;
+        (rows || []).forEach(r => creatorAddRow(r.topic, r.minister || '', r.duration, r.isBreak === 1));
+    }
+
+    // ── Draft sync helpers ────────────────────────────────────
+    function draftPayload() {
+        return {
+            eventName:  document.getElementById('creatorEventName').value || '',
+            eventDate:  document.getElementById('creatorEventDate').value || '',
+            startTime:  document.getElementById('creatorStartTime').value || '18:30',
+            rows:       serializeRows(),
+            updatedAt:  Date.now()
+        };
+    }
+
+    function applyDraftData(data) {
+        // Apply without triggering another sync write
+        _draftSyncPaused = true;
+        document.getElementById('creatorEventName').value = data.eventName || '';
+        document.getElementById('creatorEventDate').value = data.eventDate || '';
+        document.getElementById('creatorStartTime').value = data.startTime || '18:30';
+        deserializeRows(data.rows || []);
+        creatorRefreshPreview();
+        _draftSyncPaused = false;
+    }
+
+    let _draftSyncPaused = false;
+    let _draftSyncTimeout = null;
+
+    function draftFieldChanged() {
+        if (_draftSyncPaused || !draftState.code) return;
+        setDraftStatus('syncing','Saving…');
+        clearTimeout(_draftSyncTimeout);
+        _draftSyncTimeout = setTimeout(pushDraftToFirebase, 1000);
+    }
+
+    function pushDraftToFirebase() {
+        if (!draftState.code) return;
+        const payload = draftPayload();
+        payload.pinHash = draftState.pinHash;
+        db.ref('drafts/' + draftState.code).update(payload)
+            .then(() => setDraftStatus('synced','Saved'))
+            .catch(err => { console.error(err); setDraftStatus('offline','Sync failed'); });
+    }
+
+    function setDraftStatus(state, label) {
+        const el = document.getElementById('draftSyncStatus');
+        if (!el) return;
+        el.className = 'draft-status ' + state;
+        el.innerHTML = '<span class="status-dot"></span> ' + label;
+    }
+
+    // ── Presence ─────────────────────────────────────────────
+    function startPresence() {
+        if (!draftState.code || !draftState.userName) return;
+        const ref = db.ref('drafts/' + draftState.code + '/presence/' + draftState.userId);
+        ref.set({ name: draftState.userName, row: -1, color: getColor(draftState.userId), at: Date.now() });
+        ref.onDisconnect().remove();
+
+        // Listen to all presence
+        if (draftState.presListener) draftState.presListener.off();
+        draftState.presListener = db.ref('drafts/' + draftState.code + '/presence');
+        draftState.presListener.on('value', snap => {
+            const data = snap.val() || {};
+            renderPresence(data);
+            renderRowHighlights(data);
+        });
+    }
+
+    function updateMyPresenceRow(rowId) {
+        if (!draftState.code || !draftState.userId) return;
+        db.ref('drafts/' + draftState.code + '/presence/' + draftState.userId + '/row')
+            .set(rowId).catch(console.error);
+    }
+
+    function renderPresence(presenceData) {
+        const row = document.getElementById('presenceRow');
+        if (!row) return;
+        row.innerHTML = '';
+        Object.entries(presenceData).forEach(([uid, p]) => {
+            if (uid === draftState.userId) return; // don't show self
+            const tag = document.createElement('span');
+            tag.className = 'presence-tag';
+            tag.style.background = p.color || '#667eea';
+            tag.innerHTML = `<span class="presence-dot"></span>${p.name || 'Someone'}`;
+            row.appendChild(tag);
+        });
+    }
+
+    function renderRowHighlights(presenceData) {
+        // Clear existing highlights
+        document.querySelectorAll('.creator-row').forEach(el => {
+            el.style.outline = '';
+            const lbl = el.querySelector('.editing-label');
+            if (lbl) lbl.remove();
+        });
+        // Apply highlights for other users' active rows
+        Object.entries(presenceData).forEach(([uid, p]) => {
+            if (uid === draftState.userId || p.row < 0) return;
+            const rows = document.querySelectorAll('.creator-row');
+            if (rows[p.row]) {
+                rows[p.row].style.outline = `2px solid ${p.color || '#667eea'}`;
+                const lbl = document.createElement('span');
+                lbl.className = 'editing-label';
+                lbl.style.background = p.color || '#667eea';
+                lbl.textContent = p.name || 'Someone';
+                rows[p.row].appendChild(lbl);
+            }
+        });
+    }
+
+    // Track which row each input belongs to and report to presence
+    function attachRowPresenceListeners() {
+        document.querySelectorAll('.creator-row').forEach((rowEl, idx) => {
+            rowEl.querySelectorAll('input').forEach(input => {
+                input.addEventListener('focus', () => updateMyPresenceRow(idx));
+                input.addEventListener('blur',  () => updateMyPresenceRow(-1));
+            });
+        });
+    }
+
+    // ── Start draft session ───────────────────────────────────
+    function startDraftSession() {
+        const pin = prompt('Set a 4-digit PIN for this draft session:
+        (Collaborators will need this to join)');
+        if (pin === null) return;
+        if (!/^\d{4}$/.test(pin)) { alert('PIN must be exactly 4 digits.'); return; }
+
+        const name = prompt('Your name (shown to collaborators):');
+        if (!name || !name.trim()) return;
+
+        draftState.code     = generateDraftCode();
+        draftState.isOwner  = true;
+        draftState.userName = name.trim();
+        draftState.pinHash  = hashPin(pin);
+
+        // Write initial draft to Firebase
+        const payload = draftPayload();
+        payload.pinHash   = draftState.pinHash;
+        payload.createdAt = Date.now();
+        db.ref('drafts/' + draftState.code).set(payload)
+            .then(() => {
+                activateDraftUI();
+                startPresence();
+                subscribeDraft();
+                setDraftStatus('synced','Saved');
+            })
+            .catch(err => { console.error(err); alert('Could not create draft: ' + err.message); });
+    }
+
+    function activateDraftUI() {
+        document.getElementById('draftBar').classList.remove('hidden');
+        document.getElementById('draftCodeDisplay').textContent = draftState.code;
+        document.getElementById('startDraftBtn').textContent = '✅ Draft Active';
+        document.getElementById('startDraftBtn').disabled = true;
+    }
+
+    // ── Subscribe to draft changes ────────────────────────────
+    function subscribeDraft() {
+        if (draftState.listener) { draftState.listener.off(); }
+        draftState.listener = db.ref('drafts/' + draftState.code);
+        draftState.listener.on('value', snap => {
+            const data = snap.val();
+            if (!data) return;
+            // Only apply if data is newer than local (avoid own echo)
+            if (data.updatedAt && data.updatedAt > (_lastLocalDraftSave || 0) + 500) {
+                applyDraftData(data);
+            }
+        });
+    }
+    let _lastLocalDraftSave = 0;
+
+    // ── Join draft via URL (?view=create&draft=DFT-XXXX) ─────
+    function joinDraftFromUrl(draftCode) {
+        // First fetch the draft to check it exists + get pin hash
+        db.ref('drafts/' + draftCode).once('value').then(snap => {
+            const data = snap.val();
+            if (!data) { alert('Draft not found or has expired.'); return; }
+
+            // Show PIN modal
+            draftState.code    = draftCode;
+            draftState.isOwner = false;
+            draftState._pendingData = data;
+            showPinModal('🔐 Join Collaborative Draft',
+                'Enter the 4-digit PIN shared by the draft creator', data.pinHash);
+        }).catch(err => { alert('Could not load draft: ' + err.message); });
+    }
+
+    // ── PIN modal ────────────────────────────────────────────
+    let _pinModalExpectedHash = null;
+    let _pinModalOnSuccess    = null;
+
+    function showPinModal(title, desc, expectedHash) {
+        _pinModalExpectedHash = expectedHash;
+        document.getElementById('pinModalTitle').textContent = title;
+        document.getElementById('pinModalDesc').textContent  = desc;
+        document.getElementById('pinInput').value  = '';
+        document.getElementById('pinError').textContent = '';
+        document.getElementById('pinModal').classList.remove('hidden');
+        setTimeout(() => document.getElementById('pinInput').focus(), 100);
+    }
+
+    function closePinModal() {
+        document.getElementById('pinModal').classList.add('hidden');
+        draftState.code = null;
+    }
+
+    function handlePinBackdrop(e) {
+        if (e.target === e.currentTarget) closePinModal();
+    }
+
+    function submitPin() {
+        const pin = document.getElementById('pinInput').value.trim();
+        const errEl = document.getElementById('pinError');
+        if (!/^\d{4}$/.test(pin)) { errEl.textContent = 'Enter a 4-digit PIN'; return; }
+        if (hashPin(pin) !== _pinModalExpectedHash) { errEl.textContent = 'Incorrect PIN. Try again.'; return; }
+
+        // PIN correct — ask for name then join
+        document.getElementById('pinModal').classList.add('hidden');
+        const name = prompt('Your name (shown to collaborators):');
+        if (!name || !name.trim()) return;
+        draftState.userName = name.trim();
+
+        // Apply the pending data
+        applyDraftData(draftState._pendingData);
+        activateDraftUI();
+        startPresence();
+        subscribeDraft();
+    }
+
+    // ── Copy draft edit link ──────────────────────────────────
+    function copyDraftLink() {
+        if (!draftState.code) return;
+        const url = BASE_URL + '?view=create&draft=' + draftState.code;
+        navigator.clipboard.writeText(url).then(() => {
+            const btn = document.getElementById('copyDraftBtn');
+            const o = btn.innerHTML; btn.innerHTML = '✅ Copied!';
+            setTimeout(() => btn.innerHTML = o, 2000);
+        });
+    }
+
+    // ── Close / delete draft ──────────────────────────────────
+    function closeDraft() {
+        if (!confirm('Close and delete this draft session? Collaborators will lose access.')) return;
+        if (draftState.listener)    { draftState.listener.off(); draftState.listener = null; }
+        if (draftState.presListener){ draftState.presListener.off(); draftState.presListener = null; }
+        if (draftState.code) db.ref('drafts/' + draftState.code).remove().catch(console.error);
+        draftState.code    = null;
+        draftState.isOwner = false;
+        document.getElementById('draftBar').classList.add('hidden');
+        document.getElementById('presenceRow').innerHTML = '';
+        document.getElementById('startDraftBtn').textContent = '🤝 Start Collaborative Draft';
+        document.getElementById('startDraftBtn').disabled = false;
+        setDraftStatus('synced','Saved');
+    }
+
+    // ── Override creatorRefreshPreview to also sync + attach listeners ──
+    const _origRefreshPreview = creatorRefreshPreview;
+    // (We'll patch draftFieldChanged into the existing oninput handlers via
+    //  attachRowPresenceListeners after each render — see patched creatorAddRow below)
+
+    // ── Templates ─────────────────────────────────────────────
+    const TEMPLATES_FB_PATH = 'templates/';
+
+    // ── Organisation workspace ────────────────────────────────
+    function getOrgCode() {
+        return localStorage.getItem('stOrgCode') || null;
+    }
+    function setOrgCode(code) {
+        localStorage.setItem('stOrgCode', code.toUpperCase().trim());
+    }
+    function sanitiseOrgCode(raw) {
+        return raw.toUpperCase().replace(/[^A-Z0-9\-]/g, '').substring(0, 30);
+    }
+    function updateOrgBadge(code) {
+        const badge = document.getElementById('orgCodeBadge');
+        if (badge) badge.textContent = code || '—';
+    }
+    function ensureOrgCode(callback) {
+        const existing = getOrgCode();
+        if (existing) { callback(existing); return; }
+        const raw = prompt(
+            '\uD83C\uDFE2 Set up your Organisation Workspace\n\n' +
+            'Enter a short unique code for your organisation.\n' +
+            'Everyone in your team should use the same code.\n\n' +
+            'Examples: RCCG-IKEJA, CHAPEL-LAGOS, BETHEL-ABUJA\n\n' +
+            'Saved on this device \u2014 you only type it once.'
+        );
+        if (!raw || !raw.trim()) return;
+        const code = sanitiseOrgCode(raw);
+        if (code.length < 3) { alert('Code must be at least 3 characters.'); return; }
+        setOrgCode(code);
+        updateOrgBadge(code);
+        callback(code);
+    }
+    function switchWorkspace() {
+        const current = getOrgCode() || '';
+        const raw = prompt(
+            'Switch Workspace\n\nCurrent: ' + (current || 'none') +
+            '\n\nEnter new code, or leave blank to clear:'
+        );
+        if (raw === null) return;
+        if (!raw.trim()) {
+            localStorage.removeItem('stOrgCode');
+            updateOrgBadge(null);
+            const list = document.getElementById('templateList');
+            if (list) list.innerHTML = '<span class="no-templates">No workspace set</span>';
+            return;
+        }
+        const code = sanitiseOrgCode(raw);
+        if (code.length < 3) { alert('Code must be at least 3 characters.'); return; }
+        setOrgCode(code);
+        updateOrgBadge(code);
+        loadTemplates();
+    }
+
+    function loadTemplates() {
+        const code = getOrgCode();
+        updateOrgBadge(code);
+        const list = document.getElementById('templateList');
+        if (!code) {
+            if (list) list.innerHTML = '<span class="no-templates">Set a workspace to see templates</span>';
+            return;
+        }
+        db.ref(TEMPLATES_FB_PATH + code).once('value').then(snap => {
+            const data = snap.val() || {};
+            renderTemplateList(Object.entries(data).map(([id, t]) => ({ id, ...t })));
+        }).catch(err => {
+            if (list) list.innerHTML = '<span class="no-templates">Could not load templates</span>';
+        });
+    }
+
+    function renderTemplateList(templates) {
+        const list = document.getElementById('templateList');
+        if (!list) return;
+        if (!templates.length) {
+            list.innerHTML = '<span class="no-templates">No templates yet for this workspace</span>';
+            return;
+        }
+        list.innerHTML = '';
+        templates.sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
+        templates.forEach(t => {
+            const chip = document.createElement('span');
+            chip.className = 'template-chip';
+            chip.innerHTML = `\uD83D\uDCCB ${t.name || t.eventName || 'Untitled'} <span class="del-tmpl" onclick="deleteTemplate('${t.id}',event)" title="Delete">\u2715</span>`;
+            chip.addEventListener('click', () => loadTemplate(t));
+            list.appendChild(chip);
+        });
+    }
+
+    function saveAsTemplate() {
+        ensureOrgCode(code => {
+            const name = prompt('Template name:', document.getElementById('creatorEventName').value || 'My Template');
+            if (!name || !name.trim()) return;
+            const id = 'tmpl-' + Date.now();
+            const payload = {
+                name: name.trim(),
+                eventName: document.getElementById('creatorEventName').value,
+                eventDate: document.getElementById('creatorEventDate').value,
+                startTime: document.getElementById('creatorStartTime').value,
+                rows: serializeRows(), savedAt: Date.now()
+            };
+            db.ref(TEMPLATES_FB_PATH + code + '/' + id).set(payload)
+                .then(() => {
+                    loadTemplates();
+                    const badge = document.getElementById('orgCodeBadge');
+                    if (badge) { const o = badge.textContent; badge.textContent = '\u2705 Saved!'; setTimeout(() => badge.textContent = o, 1500); }
+                })
+                .catch(err => alert('Could not save template: ' + err.message));
+        });
+    }
+
+    function loadTemplate(t) {
+        if (!confirm('Load "' + (t.name || t.eventName) + '"?\nThis replaces the current rows.')) return;
+        document.getElementById('creatorEventName').value = t.eventName || '';
+        document.getElementById('creatorEventDate').value = t.eventDate || '';
+        document.getElementById('creatorStartTime').value = t.startTime || '18:30';
+        deserializeRows(t.rows || []);
+        creatorRefreshPreview();
+        draftFieldChanged();
+    }
+
+    function deleteTemplate(id, event) {
+        event.stopPropagation();
+        if (!confirm('Delete this template? This removes it for everyone in your workspace.')) return;
+        const code = getOrgCode();
+        if (!code) return;
+        db.ref(TEMPLATES_FB_PATH + code + '/' + id).remove()
+            .then(() => loadTemplates())
+            .catch(err => alert('Could not delete: ' + err.message));
+    }
+
+    // ── Patch initCreator to load templates + check draft URL ─
+    const _origInitCreator = initCreator;
+    function initCreator() {
+        _origInitCreator();
+        loadTemplates();
+        // Check if joining a draft from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const draftCode = urlParams.get('draft');
+        if (draftCode) joinDraftFromUrl(draftCode);
+    }
+
+    // ── Patch creatorAddRow to attach presence + draft sync listeners ──
+    const _origAddRow = creatorAddRow;
+    function creatorAddRow(topic='', minister='', duration=10, isBreak=false) {
+        _origAddRow(topic, minister, duration, isBreak);
+        // After adding, attach draft sync to all inputs
+        document.querySelectorAll('.creator-row').forEach((rowEl, idx) => {
+            rowEl.querySelectorAll('input').forEach(input => {
+                // Presence tracking
+                input.onfocus = () => updateMyPresenceRow(idx);
+                input.onblur  = () => updateMyPresenceRow(-1);
+                // Draft sync (debounced)
+                const origInput = input.oninput;
+                input.oninput = function(e) {
+                    if (origInput) origInput.call(this, e);
+                    draftFieldChanged();
+                };
+            });
+        });
+    }
+
+    // ── Patch creatorRemoveRow to also sync ──────────────────
+    const _origRemoveRow = creatorRemoveRow;
+    function creatorRemoveRow(id) {
+        _origRemoveRow(id);
+        draftFieldChanged();
+    }
+
+    // ── Firebase rules reminder: add drafts + templates rules ─
+    // (shown in console, not to user)
+    console.info('Firebase rules needed for drafts/templates:' +
+        '"drafts":    { "$draftId": { ".read": true, ".write": true } },' +
+        '"templates": { "$orgCode": { ".read": true, ".write": true } }');
 
     // ═══════════════════════════════════════════════════════
 
