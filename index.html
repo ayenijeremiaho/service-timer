@@ -4239,6 +4239,12 @@
             creatorAddRow('Announcements & Benediction', '', 5);
         }
         creatorRefreshPreview();
+        // Load org templates
+        loadTemplates();
+        // Check if joining a collaborative draft from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const draftCode = urlParams.get('draft');
+        if (draftCode) joinDraftFromUrl(draftCode);
     }
 
     function creatorAddRow(topic='', minister='', duration=10, isBreak=false) {
@@ -4249,17 +4255,23 @@
         div.className = 'creator-row' + (isBreak ? ' break-row' : '');
         div.id = 'creator-row-' + id;
         div.innerHTML = isBreak ? `
-                <input type="text" placeholder="Break description" value="${topic}" style="grid-column:1/3;" oninput="creatorRefreshPreview()">
-                <input type="number" min="1" max="120" value="${duration}" oninput="creatorRefreshPreview()" style="text-align:center;">
+                <input type="text" placeholder="Break description" value="${topic}" style="grid-column:1/3;" oninput="creatorRefreshPreview();draftFieldChanged();">
+                <input type="number" min="1" max="120" value="${duration}" oninput="creatorRefreshPreview();draftFieldChanged();" style="text-align:center;">
                 <button class="remove-btn" onclick="creatorRemoveRow(${id})">✕</button>
             ` : `
-                <input type="text" placeholder="Event / Topic *" value="${topic}" oninput="creatorRefreshPreview()">
-                <input type="text" placeholder="Minister / Person" value="${minister}" oninput="creatorRefreshPreview()">
-                <input type="number" min="1" max="120" value="${duration}" oninput="creatorRefreshPreview()" style="text-align:center;">
+                <input type="text" placeholder="Event / Topic *" value="${topic}" oninput="creatorRefreshPreview();draftFieldChanged();">
+                <input type="text" placeholder="Minister / Person" value="${minister}" oninput="creatorRefreshPreview();draftFieldChanged();">
+                <input type="number" min="1" max="120" value="${duration}" oninput="creatorRefreshPreview();draftFieldChanged();" style="text-align:center;">
                 <button class="remove-btn" onclick="creatorRemoveRow(${id})">✕</button>
             `;
         div.dataset.isBreak = isBreak ? '1' : '0';
         container.appendChild(div);
+        // Attach presence tracking listeners to inputs in this row
+        const rowIndex = container.children.length - 1;
+        div.querySelectorAll('input').forEach(input => {
+            input.addEventListener('focus', () => updateMyPresenceRow(rowIndex));
+            input.addEventListener('blur',  () => updateMyPresenceRow(-1));
+        });
         creatorRefreshPreview();
     }
 
@@ -4269,7 +4281,7 @@
 
     function creatorRemoveRow(id) {
         const el = document.getElementById('creator-row-' + id);
-        if (el) { el.remove(); creatorRefreshPreview(); }
+        if (el) { el.remove(); creatorRefreshPreview(); draftFieldChanged(); }
     }
 
     function creatorGetRows() {
@@ -4763,11 +4775,6 @@
         setDraftStatus('synced','Saved');
     }
 
-    // ── Override creatorRefreshPreview to also sync + attach listeners ──
-    const _origRefreshPreview = creatorRefreshPreview;
-    // (We'll patch draftFieldChanged into the existing oninput handlers via
-    //  attachRowPresenceListeners after each render — see patched creatorAddRow below)
-
     // ── Templates ─────────────────────────────────────────────
     const TEMPLATES_FB_PATH = 'templates/';
 
@@ -4899,49 +4906,8 @@
             .catch(err => alert('Could not delete: ' + err.message));
     }
 
-    // ── Patch initCreator to load templates + check draft URL ─
-    const _origInitCreator = initCreator;
-    function initCreator() {
-        _origInitCreator();
-        loadTemplates();
-        // Check if joining a draft from URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const draftCode = urlParams.get('draft');
-        if (draftCode) joinDraftFromUrl(draftCode);
-    }
-
-    // ── Patch creatorAddRow to attach presence + draft sync listeners ──
-    const _origAddRow = creatorAddRow;
-    function creatorAddRow(topic='', minister='', duration=10, isBreak=false) {
-        _origAddRow(topic, minister, duration, isBreak);
-        // After adding, attach draft sync to all inputs
-        document.querySelectorAll('.creator-row').forEach((rowEl, idx) => {
-            rowEl.querySelectorAll('input').forEach(input => {
-                // Presence tracking
-                input.onfocus = () => updateMyPresenceRow(idx);
-                input.onblur  = () => updateMyPresenceRow(-1);
-                // Draft sync (debounced)
-                const origInput = input.oninput;
-                input.oninput = function(e) {
-                    if (origInput) origInput.call(this, e);
-                    draftFieldChanged();
-                };
-            });
-        });
-    }
-
-    // ── Patch creatorRemoveRow to also sync ──────────────────
-    const _origRemoveRow = creatorRemoveRow;
-    function creatorRemoveRow(id) {
-        _origRemoveRow(id);
-        draftFieldChanged();
-    }
-
-    // ── Firebase rules reminder: add drafts + templates rules ─
-    // (shown in console, not to user)
-    console.info('Firebase rules needed for drafts/templates:' +
-        '"drafts":    { "$draftId": { ".read": true, ".write": true } },' +
-        '"templates": { "$orgCode": { ".read": true, ".write": true } }');
+    // ── Firebase rules reminder ───────────────────────────────
+    console.info('Firebase rules: drafts/$draftId and templates/$orgCode need .read+.write true');
 
     // ═══════════════════════════════════════════════════════
 
