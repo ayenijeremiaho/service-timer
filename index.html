@@ -2025,12 +2025,16 @@
     }
 
     function cleanupOldSessions() {
+        // We only have permission to read/delete our own session.
+        // Delete it if it exists and is older than 24 hours.
+        const sessionCode = appState.sessionCode;
+        if (!sessionCode) return;
         const cutoff = Date.now() - 24*60*60*1000;
-        db.ref('sessions').once('value', snap => {
-            snap.forEach(child => {
-                const d = child.val();
-                if (d && d.updatedAt && d.updatedAt < cutoff) db.ref('sessions/'+child.key).remove();
-            });
+        db.ref('sessions/' + sessionCode).once('value', snap => {
+            const d = snap.val();
+            if (d && d.updatedAt && d.updatedAt < cutoff) {
+                db.ref('sessions/' + sessionCode).remove().catch(console.error);
+            }
         }).catch(console.error);
     }
 
