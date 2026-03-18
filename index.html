@@ -967,44 +967,101 @@
             pointer-events: auto;
         }
 
-        /* Creator row drag handle + row styling */
+        /* Creator row — card-style with labels, mobile-first */
         .creator-row {
-            display: grid;
-            grid-template-columns: 2fr 2fr 80px 40px;
-            gap: 10px;
-            align-items: center;
             background: #f8f9fa;
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 8px;
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
             border-left: 4px solid #667eea;
+            position: relative;
         }
         .creator-row.break-row {
             border-left-color: #f39c12;
             background: #fff8ee;
         }
-        .creator-row input, .creator-row select {
+        /* Row header: row number + remove button */
+        .cr-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .cr-row-num {
+            font-size: 0.75em;
+            font-weight: 700;
+            color: #667eea;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        .creator-row.break-row .cr-row-num { color: #f39c12; }
+        /* Field group with label above input — stacks on mobile */
+        .cr-fields {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .cr-fields.break-fields {
+            flex-direction: row;
+            align-items: flex-end;
+        }
+        .cr-fields.break-fields .cr-field:first-child { flex: 1; }
+        .cr-fields.break-fields .cr-field:last-child  { width: 90px; flex-shrink: 0; }
+        @media (min-width: 600px) {
+            .cr-fields {
+                display: grid;
+                grid-template-columns: 2fr 2fr 1fr;
+            }
+            .cr-fields.break-fields {
+                display: grid;
+                grid-template-columns: 1fr 100px;
+            }
+        }
+        .cr-field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .cr-field label {
+            font-size: 0.72em;
+            font-weight: 700;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .cr-field input {
             width: 100%;
             padding: 9px 10px;
             border: 1.5px solid #ddd;
             border-radius: 6px;
             font-size: 0.95em;
+            box-sizing: border-box;
         }
-        .creator-row input:focus, .creator-row select:focus {
+        .cr-field input:focus {
             outline: none;
             border-color: #667eea;
         }
         .creator-row .remove-btn {
             background: none;
-            border: none;
+            border: 1.5px solid #eee;
             color: #ccc;
-            font-size: 1.3em;
+            font-size: 0.85em;
             cursor: pointer;
-            padding: 4px;
-            border-radius: 4px;
-            transition: color 0.2s;
+            padding: 4px 10px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            font-weight: 600;
         }
-        .creator-row .remove-btn:hover { color: #ff4757; }
+        .creator-row .remove-btn:hover { color: #ff4757; border-color: #ff4757; background: #fff0f0; }
+        /* Add item bar — always visible below the list */
+        .creator-add-bar {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+            padding: 12px 0 4px;
+            border-top: 1px dashed #ddd;
+        }
 
         /* Preview table */
         #creatorPreview table {
@@ -1498,6 +1555,10 @@
         }
         .pin-input:focus { outline:none; border-color:#667eea; }
         .pin-error { color:#ff4757; font-size:0.85em; margin-bottom:10px; min-height:18px; }
+        #joinNameInput:focus, #draftOwnerName:focus {
+            outline:none; border-color:#667eea !important;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.15);
+        }
 
         /* ══════════════════════════════════════════════
            MOBILE RESPONSIVE — all screens
@@ -1580,20 +1641,11 @@
                 gap: 8px;
             }
 
-            /* ── Creator screen ── */
-            .creator-row {
-                grid-template-columns: 1fr 40px !important;
-                grid-template-rows: auto auto auto;
-            }
-            .creator-row input:first-child {
-                grid-column: 1 / 2;
-            }
-            /* Break row: topic spans full width */
-            .creator-row.break-row input:first-child {
-                grid-column: 1 / 2;
-            }
-            /* Column header labels — hide on mobile, too cramped */
+            /* ── Creator screen — single column on mobile ── */
+            .cr-fields { grid-template-columns: 1fr !important; }
+            .cr-fields.break-fields { grid-template-columns: 1fr 90px !important; }
             .creator-col-headers { display: none !important; }
+            .creator-add-bar .btn { flex: 1 1 auto; }
 
             /* Template panel */
             .template-panel { padding: 12px 14px; }
@@ -2032,16 +2084,16 @@
     </div>
 
     <!-- Event Details -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:10px;">
-        <div class="form-group" style="margin-bottom:0;">
+    <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:10px;">
+        <div class="form-group" style="margin-bottom:0;flex:2;min-width:200px;">
             <label>Event Theme / Name *</label>
             <input type="text" id="creatorEventName" placeholder="e.g., Sunday Service" oninput="draftFieldChanged()">
         </div>
-        <div class="form-group" style="margin-bottom:0;">
+        <div class="form-group" style="margin-bottom:0;flex:1;min-width:140px;">
             <label>Event Date *</label>
             <input type="date" id="creatorEventDate" onchange="draftFieldChanged()">
         </div>
-        <div class="form-group" style="margin-bottom:0;">
+        <div class="form-group" style="margin-bottom:0;flex:1;min-width:120px;">
             <label>Service Start Time *</label>
             <input type="time" id="creatorStartTime" value="18:30" onchange="draftFieldChanged()">
         </div>
@@ -2049,20 +2101,13 @@
 
     <!-- Rows -->
     <div style="margin-top:30px;padding-top:24px;border-top:2px solid #e0e0e0;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-            <h3 style="color:#333;font-size:1.2em;">Programme Items</h3>
-            <div style="display:flex;gap:10px;">
-                <button class="btn btn-secondary" onclick="creatorAddBreak()">☕ Add Break</button>
-                <button class="btn btn-primary" onclick="creatorAddRow()">+ Add Item</button>
-            </div>
-        </div>
-        <div class="creator-col-headers">
-            <span style="font-weight:600;color:#555;font-size:0.85em;">EVENT / TOPIC</span>
-            <span style="font-weight:600;color:#555;font-size:0.85em;">MINISTER / PERSON</span>
-            <span style="font-weight:600;color:#555;font-size:0.85em;text-align:center;">DURATION (min)</span>
-            <span></span>
-        </div>
+        <h3 style="color:#333;font-size:1.2em;margin-bottom:16px;">Programme Items</h3>
         <div id="creatorRows"></div>
+        <!-- Add buttons — always visible below the list -->
+        <div class="creator-add-bar" id="creatorAddBarFixed">
+            <button class="btn btn-primary" onclick="creatorAddRow()" style="flex:1;">+ Add Item</button>
+            <button class="btn btn-secondary" onclick="creatorAddBreak()">☕ Add Break</button>
+        </div>
     </div>
 
     <!-- Preview & Actions -->
@@ -2079,16 +2124,51 @@
     </div>
 </div>
 
-<!-- PIN modal (for joining a draft) -->
+<!-- Draft join modal — PIN + name -->
 <div class="pin-modal-overlay hidden" id="pinModal" onclick="handlePinBackdrop(event)">
     <div class="pin-modal-card">
-        <h3 id="pinModalTitle">🔐 Enter PIN</h3>
-        <p id="pinModalDesc">Enter the 4-digit PIN to join this draft session</p>
+        <h3 id="pinModalTitle">🔐 Join Draft Session</h3>
+        <p id="pinModalDesc">Enter the PIN and your name to join</p>
+
+        <label style="display:block;font-size:0.75em;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px;">Your Name *</label>
+        <input type="text" id="joinNameInput" placeholder="e.g. Pastor Abraham"
+               style="width:100%;padding:11px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:1em;margin-bottom:14px;box-sizing:border-box;"
+               oninput="document.getElementById('pinError').textContent=''"
+               onkeydown="if(event.key==='Enter')document.getElementById('pinInput').focus()">
+
+        <label style="display:block;font-size:0.75em;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px;">4-Digit PIN *</label>
         <input type="password" class="pin-input" id="pinInput" maxlength="4"
-               placeholder="••••" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+               placeholder="••••"
+               oninput="this.value=this.value.replace(/[^0-9]/g,'');document.getElementById('pinError').textContent=''"
+               onkeydown="if(event.key==='Enter')submitPin()">
+
         <div class="pin-error" id="pinError"></div>
         <button class="btn btn-primary" style="width:100%;margin-bottom:10px;" onclick="submitPin()">Join Draft</button>
         <button class="btn btn-secondary" style="width:100%;" onclick="closePinModal()">Cancel</button>
+    </div>
+</div>
+
+<!-- Start draft modal — PIN setup + owner name -->
+<div class="pin-modal-overlay hidden" id="startDraftModal" onclick="handleStartDraftBackdrop(event)">
+    <div class="pin-modal-card">
+        <h3>🤝 Start Collaborative Draft</h3>
+        <p style="color:#666;font-size:0.95em;margin-bottom:16px;">Set a PIN and your name. Share the PIN with collaborators.</p>
+
+        <label style="display:block;font-size:0.75em;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px;">Your Name *</label>
+        <input type="text" id="draftOwnerName" placeholder="e.g. Secretary / Pastor"
+               style="width:100%;padding:11px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:1em;margin-bottom:14px;box-sizing:border-box;"
+               oninput="document.getElementById('startDraftError').textContent=''"
+               onkeydown="if(event.key==='Enter')document.getElementById('draftPinInput').focus()">
+
+        <label style="display:block;font-size:0.75em;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px;">Set a 4-Digit PIN *</label>
+        <input type="password" class="pin-input" id="draftPinInput" maxlength="4"
+               placeholder="••••"
+               oninput="this.value=this.value.replace(/[^0-9]/g,'');document.getElementById('startDraftError').textContent=''"
+               onkeydown="if(event.key==='Enter')confirmStartDraft()">
+
+        <div class="pin-error" id="startDraftError"></div>
+        <button class="btn btn-primary" style="width:100%;margin-bottom:10px;" onclick="confirmStartDraft()">Start Draft</button>
+        <button class="btn btn-secondary" style="width:100%;" onclick="closeStartDraftModal()">Cancel</button>
     </div>
 </div>
 
@@ -4254,24 +4334,61 @@
         const div = document.createElement('div');
         div.className = 'creator-row' + (isBreak ? ' break-row' : '');
         div.id = 'creator-row-' + id;
-        div.innerHTML = isBreak ? `
-                <input type="text" placeholder="Break description" value="${topic}" style="grid-column:1/3;" oninput="creatorRefreshPreview();draftFieldChanged();">
-                <input type="number" min="1" max="120" value="${duration}" oninput="creatorRefreshPreview();draftFieldChanged();" style="text-align:center;">
-                <button class="remove-btn" onclick="creatorRemoveRow(${id})">✕</button>
-            ` : `
-                <input type="text" placeholder="Event / Topic *" value="${topic}" oninput="creatorRefreshPreview();draftFieldChanged();">
-                <input type="text" placeholder="Minister / Person" value="${minister}" oninput="creatorRefreshPreview();draftFieldChanged();">
-                <input type="number" min="1" max="120" value="${duration}" oninput="creatorRefreshPreview();draftFieldChanged();" style="text-align:center;">
-                <button class="remove-btn" onclick="creatorRemoveRow(${id})">✕</button>
-            `;
+        const rowNum = container.children.length + 1;
+
+        if (isBreak) {
+            div.innerHTML = `
+                    <div class="cr-header">
+                        <span class="cr-row-num">☕ Break</span>
+                        <button class="remove-btn" onclick="creatorRemoveRow(${id})">✕ Remove</button>
+                    </div>
+                    <div class="cr-fields break-fields">
+                        <div class="cr-field">
+                            <label>Description</label>
+                            <input type="text" placeholder="e.g. Interval" value="${topic}"
+                                oninput="creatorRefreshPreview();draftFieldChanged();">
+                        </div>
+                        <div class="cr-field">
+                            <label>Duration (min)</label>
+                            <input type="number" min="1" max="120" value="${duration}"
+                                oninput="creatorRefreshPreview();draftFieldChanged();" style="text-align:center;">
+                        </div>
+                    </div>`;
+        } else {
+            div.innerHTML = `
+                    <div class="cr-header">
+                        <span class="cr-row-num">Item ${rowNum}</span>
+                        <button class="remove-btn" onclick="creatorRemoveRow(${id})">✕ Remove</button>
+                    </div>
+                    <div class="cr-fields">
+                        <div class="cr-field">
+                            <label>Event / Topic *</label>
+                            <input type="text" placeholder="e.g. Opening Prayer" value="${topic}"
+                                oninput="creatorRefreshPreview();draftFieldChanged();">
+                        </div>
+                        <div class="cr-field">
+                            <label>Minister / Person</label>
+                            <input type="text" placeholder="e.g. Sis Tofunmi" value="${minister}"
+                                oninput="creatorRefreshPreview();draftFieldChanged();">
+                        </div>
+                        <div class="cr-field">
+                            <label>Duration (min)</label>
+                            <input type="number" min="1" max="120" value="${duration}"
+                                oninput="creatorRefreshPreview();draftFieldChanged();" style="text-align:center;">
+                        </div>
+                    </div>`;
+        }
+
         div.dataset.isBreak = isBreak ? '1' : '0';
         container.appendChild(div);
-        // Attach presence tracking listeners to inputs in this row
+
+        // Attach presence tracking
         const rowIndex = container.children.length - 1;
         div.querySelectorAll('input').forEach(input => {
             input.addEventListener('focus', () => updateMyPresenceRow(rowIndex));
             input.addEventListener('blur',  () => updateMyPresenceRow(-1));
         });
+
         creatorRefreshPreview();
     }
 
@@ -4281,7 +4398,17 @@
 
     function creatorRemoveRow(id) {
         const el = document.getElementById('creator-row-' + id);
-        if (el) { el.remove(); creatorRefreshPreview(); draftFieldChanged(); }
+        if (el) {
+            el.remove();
+            // Renumber remaining item labels
+            let itemNum = 1;
+            document.querySelectorAll('.creator-row:not(.break-row)').forEach(row => {
+                const lbl = row.querySelector('.cr-row-num');
+                if (lbl) lbl.textContent = 'Item ' + itemNum++;
+            });
+            creatorRefreshPreview();
+            draftFieldChanged();
+        }
     }
 
     function creatorGetRows() {
@@ -4443,9 +4570,10 @@
     function creatorUseDirectly() {
         const eventName = document.getElementById('creatorEventName').value.trim();
         const rawDate   = document.getElementById('creatorEventDate').value;
-        if (!eventName || !rawDate) { alert('Please fill in the event name and date first.'); return; }
-        const rows = creatorGetRows().filter(r => !r.isBreak);
-        if (rows.length === 0) { alert('Please add at least one programme item (non-break).'); return; }
+        if (!eventName) { alert('Please enter an event name.'); document.getElementById('creatorEventName').focus(); return; }
+        if (!rawDate)   { alert('Please select an event date.'); document.getElementById('creatorEventDate').focus(); return; }
+        const rows = creatorGetRows().filter(r => !r.isBreak && r.topic);
+        if (rows.length === 0) { alert('Please add at least one programme item with a topic.'); return; }
 
         const speakers = rows.map(r => ({
             name: r.minister || 'TBD',
@@ -4496,11 +4624,11 @@
         return PRESENCE_COLORS[Math.abs(hash) % PRESENCE_COLORS.length];
     }
 
-    // Simple PIN hash (not cryptographic — just obfuscation for convenience)
+    // Deterministic PIN hash — consistent across all browsers and devices
     function hashPin(pin) {
-        let h = 0;
-        for (let c of String(pin)) h = (h * 7 + c.charCodeAt(0)) & 0xffffffff;
-        return String(Math.abs(h));
+        const s = String(pin || '').replace(/[^0-9]/g,'').padStart(4,'0').substring(0,4);
+        const salt = [7, 3, 5, 9];
+        return 'H' + s.split('').map((c,i) => ((parseInt(c) + salt[i]) % 10)).join('') + 'X';
     }
 
     function generateDraftCode() {
@@ -4519,7 +4647,8 @@
     }
 
     function deserializeRows(rows) {
-        document.getElementById('creatorRows').innerHTML = '';
+        const container = document.getElementById('creatorRows');
+        container.innerHTML = '';
         creatorRowCount = 0;
         (rows || []).forEach(r => creatorAddRow(r.topic, r.minister || '', r.duration, r.isBreak === 1));
     }
@@ -4559,7 +4688,7 @@
     function pushDraftToFirebase() {
         if (!draftState.code) return;
         const payload = draftPayload();
-        payload.pinHash = draftState.pinHash;
+        if (draftState.isOwner && draftState.pinHash) payload.pinHash = String(draftState.pinHash);
         db.ref('drafts/' + draftState.code).update(payload)
             .then(() => setDraftStatus('synced','Saved'))
             .catch(err => { console.error(err); setDraftStatus('offline','Sync failed'); });
@@ -4643,30 +4772,64 @@
 
     // ── Start draft session ───────────────────────────────────
     function startDraftSession() {
-        const pin = prompt('Set a 4-digit PIN for this draft session.\n(Collaborators will need this to join)');
-        if (pin === null) return;
-        if (!/^\d{4}$/.test(pin)) { alert('PIN must be exactly 4 digits.'); return; }
+        // Open the start draft modal instead of using prompts
+        document.getElementById('draftOwnerName').value = '';
+        document.getElementById('draftPinInput').value  = '';
+        document.getElementById('startDraftError').textContent = '';
+        document.getElementById('startDraftModal').classList.remove('hidden');
+        setTimeout(() => document.getElementById('draftOwnerName').focus(), 100);
+    }
 
-        const name = prompt('Your name (shown to collaborators):');
-        if (!name || !name.trim()) return;
+    function handleStartDraftBackdrop(e) {
+        if (e.target === e.currentTarget) closeStartDraftModal();
+    }
+
+    function closeStartDraftModal() {
+        document.getElementById('startDraftModal').classList.add('hidden');
+    }
+
+    function confirmStartDraft() {
+        const name = document.getElementById('draftOwnerName').value.trim();
+        const pin  = document.getElementById('draftPinInput').value.replace(/[^0-9]/g, '');
+        const errEl = document.getElementById('startDraftError');
+
+        if (!name) {
+            errEl.textContent = 'Please enter your name';
+            document.getElementById('draftOwnerName').focus();
+            return;
+        }
+        if (name.length < 2) {
+            errEl.textContent = 'Name must be at least 2 characters';
+            document.getElementById('draftOwnerName').focus();
+            return;
+        }
+        if (pin.length !== 4) {
+            errEl.textContent = 'PIN must be exactly 4 digits';
+            document.getElementById('draftPinInput').focus();
+            return;
+        }
+
+        closeStartDraftModal();
 
         draftState.code     = generateDraftCode();
         draftState.isOwner  = true;
-        draftState.userName = name.trim();
+        draftState.userName = name;
         draftState.pinHash  = hashPin(pin);
 
-        // Write initial draft to Firebase
         const payload = draftPayload();
-        payload.pinHash   = draftState.pinHash;
+        payload.pinHash   = String(draftState.pinHash);
         payload.createdAt = Date.now();
         db.ref('drafts/' + draftState.code).set(payload)
             .then(() => {
                 activateDraftUI();
                 startPresence();
                 subscribeDraft();
-                setDraftStatus('synced','Saved');
+                setDraftStatus('synced', 'Saved');
             })
-            .catch(err => { console.error(err); alert('Could not create draft: ' + err.message); });
+            .catch(err => {
+                console.error(err);
+                alert('Could not create draft: ' + err.message);
+            });
     }
 
     function activateDraftUI() {
@@ -4702,8 +4865,9 @@
             draftState.code    = draftCode;
             draftState.isOwner = false;
             draftState._pendingData = data;
-            showPinModal('🔐 Join Collaborative Draft',
-                'Enter the 4-digit PIN shared by the draft creator', data.pinHash);
+            showPinModal('Join Draft',
+                'Enter the 4-digit PIN shared by the draft creator',
+                String(data.pinHash || ''));
         }).catch(err => { alert('Could not load draft: ' + err.message); });
     }
 
@@ -4715,14 +4879,18 @@
         _pinModalExpectedHash = expectedHash;
         document.getElementById('pinModalTitle').textContent = title;
         document.getElementById('pinModalDesc').textContent  = desc;
+        document.getElementById('joinNameInput').value = '';
         document.getElementById('pinInput').value  = '';
         document.getElementById('pinError').textContent = '';
         document.getElementById('pinModal').classList.remove('hidden');
-        setTimeout(() => document.getElementById('pinInput').focus(), 100);
+        setTimeout(() => document.getElementById('joinNameInput').focus(), 100);
     }
 
     function closePinModal() {
         document.getElementById('pinModal').classList.add('hidden');
+        document.getElementById('joinNameInput').value = '';
+        document.getElementById('pinInput').value = '';
+        document.getElementById('pinError').textContent = '';
         draftState.code = null;
     }
 
@@ -4731,18 +4899,39 @@
     }
 
     function submitPin() {
-        const pin = document.getElementById('pinInput').value.trim();
+        const name  = document.getElementById('joinNameInput').value.trim();
+        const pin   = document.getElementById('pinInput').value.replace(/[^0-9]/g, '');
         const errEl = document.getElementById('pinError');
-        if (!/^\d{4}$/.test(pin)) { errEl.textContent = 'Enter a 4-digit PIN'; return; }
-        if (hashPin(pin) !== _pinModalExpectedHash) { errEl.textContent = 'Incorrect PIN. Try again.'; return; }
 
-        // PIN correct — ask for name then join
+        // Validate name first
+        if (!name) {
+            errEl.textContent = 'Please enter your name';
+            document.getElementById('joinNameInput').focus();
+            return;
+        }
+        if (name.length < 2) {
+            errEl.textContent = 'Name must be at least 2 characters';
+            document.getElementById('joinNameInput').focus();
+            return;
+        }
+        // Validate PIN
+        if (pin.length !== 4) {
+            errEl.textContent = 'Enter a 4-digit PIN';
+            document.getElementById('pinInput').focus();
+            return;
+        }
+        const computed = hashPin(pin);
+        const expected = String(_pinModalExpectedHash || '').trim();
+        if (computed !== expected) {
+            errEl.textContent = 'Incorrect PIN — try again';
+            document.getElementById('pinInput').value = '';
+            document.getElementById('pinInput').focus();
+            return;
+        }
+
+        // All valid — join the draft
         document.getElementById('pinModal').classList.add('hidden');
-        const name = prompt('Your name (shown to collaborators):');
-        if (!name || !name.trim()) return;
-        draftState.userName = name.trim();
-
-        // Apply the pending data
+        draftState.userName = name;
         applyDraftData(draftState._pendingData);
         activateDraftUI();
         startPresence();
@@ -4824,7 +5013,7 @@
             return;
         }
         const code = sanitiseOrgCode(raw);
-        if (code.length < 3) { alert('Code must be at least 3 characters.'); return; }
+        if (code.length < 3) { alert('Workspace code must be at least 3 characters (letters and numbers only).'); return; }
         setOrgCode(code);
         updateOrgBadge(code);
         loadTemplates();
