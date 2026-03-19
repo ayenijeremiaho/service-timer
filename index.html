@@ -1697,6 +1697,122 @@
             padding: 0 6px;
             margin-bottom: 6px;
         }
+
+        /* ══════════════════════════════════════
+           HELP / USER GUIDE STYLES
+           ══════════════════════════════════════ */
+        .help-tab {
+            background: none; border: none; border-bottom: 3px solid transparent;
+            padding: 10px 16px; font-size: 0.88em; font-weight: 700; color: #888;
+            cursor: pointer; transition: all .2s; white-space: nowrap;
+        }
+        .help-tab:hover { color: #667eea; }
+        .help-tab.active { color: #667eea; border-bottom-color: #667eea; }
+
+        .help-panel { animation: fadeInHelp .2s ease; }
+        @keyframes fadeInHelp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+
+        /* Hero block */
+        .help-hero { text-align:center; padding:20px 0 28px; }
+        .help-hero-icon { font-size:3em; margin-bottom:10px; }
+        .help-hero h3 { font-size:1.6em; color:#333; margin-bottom:8px; }
+        .help-hero p  { color:#666; font-size:1em; max-width:520px; margin:0 auto; line-height:1.6; }
+
+        /* Overview cards */
+        .help-cards {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr));
+            gap:14px; margin:20px 0;
+        }
+        .help-card {
+            background:#f8f9ff; border:1.5px solid #e0e4ff; border-radius:12px;
+            padding:18px 14px; text-align:center; cursor:pointer; transition:all .2s;
+        }
+        .help-card:hover { background:#667eea; color:white; border-color:#667eea; transform:translateY(-2px); }
+        .help-card:hover .hc-label, .help-card:hover .hc-desc { color:white; }
+        .hc-icon  { font-size:1.8em; margin-bottom:8px; }
+        .hc-label { font-weight:700; font-size:0.9em; color:#333; margin-bottom:4px; }
+        .hc-desc  { font-size:0.78em; color:#888; line-height:1.4; }
+
+        /* Flow steps */
+        .help-flow {
+            display:flex; align-items:center; justify-content:center;
+            flex-wrap:wrap; gap:8px; margin-top:24px; padding:16px;
+            background:#f8f9ff; border-radius:10px;
+        }
+        .help-step { display:flex; align-items:center; gap:8px; }
+        .hs-num {
+            background:#667eea; color:white; width:24px; height:24px;
+            border-radius:50%; display:flex; align-items:center; justify-content:center;
+            font-size:0.8em; font-weight:700; flex-shrink:0;
+        }
+        .hs-txt   { font-size:0.85em; font-weight:600; color:#444; }
+        .hs-arrow { color:#ccc; font-size:1.2em; }
+
+        /* Section headings */
+        .help-section-title { font-size:1.2em; color:#333; margin-bottom:16px; font-weight:700; }
+        .help-section-sub {
+            font-size:0.8em; font-weight:700; color:#667eea;
+            text-transform:uppercase; letter-spacing:.1em;
+            margin:20px 0 8px; padding-bottom:4px; border-bottom:2px solid #e8eaff;
+        }
+
+        /* Two-column option rows */
+        .help-option-row { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:4px; }
+        .help-option { flex:1; min-width:220px; background:#f8f9fa; border-radius:10px; padding:16px; }
+        .ho-head { font-weight:700; color:#333; font-size:1em; margin-bottom:8px; }
+        .help-option p { color:#555; font-size:0.9em; line-height:1.6; margin:0; }
+
+        /* Tip boxes */
+        .help-tip {
+            background:#fff8e1; border-left:3px solid #f39c12; border-radius:0 8px 8px 0;
+            padding:10px 14px; font-size:0.85em; color:#6d4c00; margin:14px 0;
+            line-height:1.5;
+        }
+
+        /* Control grid */
+        .help-control-grid { display:flex; flex-direction:column; gap:10px; margin:12px 0; }
+        .hcg-item { display:flex; align-items:center; gap:14px; }
+        .hcg-btn {
+            padding:5px 14px; border-radius:20px; font-size:0.82em; font-weight:700;
+            white-space:nowrap; flex-shrink:0; min-width:110px; text-align:center;
+        }
+        .btn-green  { background:#2ecc7120; color:#27ae60; border:1px solid #2ecc71; }
+        .btn-amber  { background:#f39c1220; color:#d68910; border:1px solid #f39c12; }
+        .btn-blue   { background:#3498db20; color:#2980b9; border:1px solid #3498db; }
+        .btn-purple { background:#667eea20; color:#5a6fd6; border:1px solid #667eea; }
+        .btn-grey   { background:#9495a020; color:#666;    border:1px solid #bbb; }
+        .hcg-desc   { font-size:0.88em; color:#555; line-height:1.4; }
+
+        /* View cards */
+        .help-view-cards { display:flex; flex-direction:column; gap:14px; margin:12px 0; }
+        .help-view-card { background:#f8f9fa; border-radius:10px; padding:16px 18px; }
+        .hvc-head { font-size:1em; font-weight:700; color:#333; margin-bottom:2px; }
+        .hvc-sub  { font-size:0.78em; color:#999; font-weight:600; text-transform:uppercase; letter-spacing:.08em; margin-bottom:8px; }
+        .help-view-card p { color:#555; font-size:0.9em; line-height:1.6; margin-bottom:8px; }
+        .hvc-link { font-size:0.82em; color:#667eea; font-weight:600; }
+
+        /* Numbered steps */
+        .help-steps-list { display:flex; flex-direction:column; gap:14px; margin:12px 0; }
+        .hsl-item { display:flex; gap:14px; align-items:flex-start; }
+        .hsl-num {
+            background:linear-gradient(135deg,#667eea,#764ba2); color:white;
+            width:28px; height:28px; border-radius:50%; display:flex; align-items:center;
+            justify-content:center; font-size:0.85em; font-weight:700; flex-shrink:0; margin-top:2px;
+        }
+        .hsl-body { font-size:0.9em; color:#555; line-height:1.6; }
+        .hsl-body strong { color:#333; }
+
+        code {
+            background:#f0f0f8; border:1px solid #ddd; border-radius:4px;
+            padding:1px 6px; font-size:0.88em; color:#333; font-family:'Courier New',monospace;
+        }
+
+        @media (max-width:600px) {
+            .help-tab { padding:8px 10px; font-size:0.8em; }
+            .help-option-row { flex-direction:column; }
+            .help-flow { flex-direction:column; align-items:flex-start; }
+            .hs-arrow { transform:rotate(90deg); }
+        }
         #fullscreenBtn:hover {
             background: rgba(0,0,0,0.75);
         }
@@ -1719,6 +1835,12 @@
                 <h2>✍️ Create Program</h2>
                 <p>Build your order of service and download a ready-to-upload PDF</p>
             </div>
+        </div>
+
+        <div style="margin-top:24px;">
+            <button class="btn btn-secondary" onclick="showHelp()" style="font-size:0.9em;opacity:0.8;">
+                ❓ How to use this app
+            </button>
         </div>
     </div>
 
@@ -2046,6 +2168,219 @@
             </div>
         </div>
     </div>
+</div>
+
+<!-- Help / User Guide Screen -->
+<div id="helpScreen" class="manual-entry-form hidden" style="max-width:860px;margin:0 auto;">
+
+    <div class="form-header">
+        <h2>❓ How to Use Service Timer</h2>
+        <button class="btn btn-secondary" onclick="backToStartup()">← Back</button>
+    </div>
+
+    <!-- Tab nav -->
+    <div id="helpTabs" style="display:flex;gap:0;border-bottom:2px solid #e0e0e0;margin-bottom:24px;flex-wrap:wrap;">
+        <button class="help-tab active" onclick="switchHelpTab('overview')"    data-tab="overview">🏠 Overview</button>
+        <button class="help-tab"        onclick="switchHelpTab('create')"      data-tab="create">📋 Create Program</button>
+        <button class="help-tab"        onclick="switchHelpTab('timer')"       data-tab="timer">⏱️ Timer Controls</button>
+        <button class="help-tab"        onclick="switchHelpTab('views')"       data-tab="views">📺 Live Views</button>
+        <button class="help-tab"        onclick="switchHelpTab('collab')"      data-tab="collab">🤝 Collaborate</button>
+        <button class="help-tab"        onclick="switchHelpTab('reports')"     data-tab="reports">📊 Reports</button>
+    </div>
+
+    <!-- ── Overview ── -->
+    <div id="help-overview" class="help-panel">
+        <div class="help-hero">
+            <div class="help-hero-icon">⏱️</div>
+            <h3>Service Timer</h3>
+            <p>A real-time event timer for churches, conferences, and live events. Manage your programme from one screen while speakers and presentation screens stay in sync — on any device, anywhere.</p>
+        </div>
+        <div class="help-cards">
+            <div class="help-card" onclick="switchHelpTab('create')">
+                <div class="hc-icon">📋</div>
+                <div class="hc-label">Create Program</div>
+                <div class="hc-desc">Build your order of service with topics, ministers and durations</div>
+            </div>
+            <div class="help-card" onclick="switchHelpTab('timer')">
+                <div class="hc-icon">⏱️</div>
+                <div class="hc-label">Run the Timer</div>
+                <div class="hc-desc">Start, pause, advance through speakers and track overtime</div>
+            </div>
+            <div class="help-card" onclick="switchHelpTab('views')">
+                <div class="hc-icon">📺</div>
+                <div class="hc-label">Live Views</div>
+                <div class="hc-desc">TV presentation, per-speaker phones, stage manager tablet</div>
+            </div>
+            <div class="help-card" onclick="switchHelpTab('collab')">
+                <div class="hc-icon">🤝</div>
+                <div class="hc-label">Collaborate</div>
+                <div class="hc-desc">Co-edit the programme with your team in real time</div>
+            </div>
+        </div>
+
+        <div class="help-flow">
+            <div class="help-step"><span class="hs-num">1</span><span class="hs-txt">Create or upload your programme</span></div>
+            <div class="hs-arrow">→</div>
+            <div class="help-step"><span class="hs-num">2</span><span class="hs-txt">Share links with speakers &amp; screens</span></div>
+            <div class="hs-arrow">→</div>
+            <div class="help-step"><span class="hs-num">3</span><span class="hs-txt">Start the timer and go live</span></div>
+            <div class="hs-arrow">→</div>
+            <div class="help-step"><span class="hs-num">4</span><span class="hs-txt">Download the event report</span></div>
+        </div>
+    </div>
+
+    <!-- ── Create Program ── -->
+    <div id="help-create" class="help-panel hidden">
+        <h3 class="help-section-title">📋 Creating Your Programme</h3>
+
+        <div class="help-option-row">
+            <div class="help-option">
+                <div class="ho-head">📄 Upload a PDF</div>
+                <p>If your order of service is already a PDF in the standard table format, upload it and the app will extract all speakers, topics and durations automatically.</p>
+                <div class="help-tip">💡 The PDF must have columns: S/N, EVENTS, START TIME, DURATION, END TIME, MINISTER</div>
+            </div>
+            <div class="help-option">
+                <div class="ho-head">✍️ Create Manually</div>
+                <p>Use the <strong>Create Program</strong> builder to add items one by one. Fill in the event name, date, start time, then add each programme slot with its topic, minister and duration in minutes.</p>
+                <div class="help-tip">💡 Click <strong>+ Add Item</strong> for a speaker slot or <strong>☕ Add Break</strong> for an interval</div>
+            </div>
+        </div>
+
+        <div class="help-section-sub">Templates &amp; Workspaces</div>
+        <p>Save any programme as a <strong>template</strong> for future reuse. Templates are shared across your whole organisation — just set a workspace code (e.g. <code>RCCG-IKEJA</code>) once and every device in your team sees the same templates.</p>
+        <div class="help-tip">💡 Click the workspace badge in the Templates panel to switch between organisations</div>
+
+        <div class="help-section-sub">Exporting</div>
+        <div class="help-option-row">
+            <div class="help-option">
+                <div class="ho-head">⬇️ Download PDF</div>
+                <p>Generates a formatted order-of-service PDF you can print or reshare. The PDF uses the exact column format the timer can re-import.</p>
+            </div>
+            <div class="help-option">
+                <div class="ho-head">▶ Use in Timer</div>
+                <p>Loads the programme directly into the timer without downloading. A session code is auto-generated and all live views connect instantly.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Timer Controls ── -->
+    <div id="help-timer" class="help-panel hidden">
+        <h3 class="help-section-title">⏱️ Running the Timer</h3>
+
+        <div class="help-control-grid">
+            <div class="hcg-item"><span class="hcg-btn btn-green">▶ Start</span><span class="hcg-desc">Activates the first speaker and starts the countdown</span></div>
+            <div class="hcg-item"><span class="hcg-btn btn-amber">⏸ Pause</span><span class="hcg-desc">Pauses the timer — you can log a reason (technical issue, announcement, etc.)</span></div>
+            <div class="hcg-item"><span class="hcg-btn btn-blue">⏭ Next Speaker</span><span class="hcg-desc">Marks the current slot as done and starts the next one</span></div>
+            <div class="hcg-item"><span class="hcg-btn btn-grey">⏮ Previous</span><span class="hcg-desc">Returns to the previous speaker with their original time</span></div>
+            <div class="hcg-item"><span class="hcg-btn btn-purple">⏱️ Adjust Time</span><span class="hcg-desc">Adds or subtracts minutes from the current speaker's allocated time</span></div>
+            <div class="hcg-item"><span class="hcg-btn btn-grey">▲ ▼</span><span class="hcg-desc">Reorder upcoming speakers before the service starts</span></div>
+        </div>
+
+        <div class="help-section-sub">Overtime</div>
+        <p>When a speaker exceeds their allocated time, the presentation screen background turns <strong style="color:#c0392b;">deep red</strong> and displays <strong>TIME'S UP!</strong> with an overtime counter ticking up. The organiser panel shows the overtime label in red.</p>
+
+        <div class="help-section-sub">Estimated End Time Bar</div>
+        <p>The bar above the timer shows four live stats: <strong>Estimated End Time</strong> (recalculates every second), <strong>Time Remaining</strong> in the service, <strong>Running</strong> status (on time / ± minutes), and <strong>Slots Done</strong>.</p>
+
+        <div class="help-tip">💡 Use <strong>⛶ Fullscreen</strong> to expand the organiser panel on a tablet in a dark tech booth</div>
+    </div>
+
+    <!-- ── Live Views ── -->
+    <div id="help-views" class="help-panel hidden">
+        <h3 class="help-section-title">📺 Live Views</h3>
+        <p>All views connect to Firebase in real time. Share the links before the service starts — they update automatically as the timer runs.</p>
+
+        <div class="help-view-cards">
+            <div class="help-view-card" style="border-top:4px solid #2a5298;">
+                <div class="hvc-head">📺 Presentation View</div>
+                <div class="hvc-sub">TV / projector screen</div>
+                <p>Full-screen dark blue display showing the current speaker name, topic, and a large countdown timer. Turns red on overtime.</p>
+                <div class="hvc-link">Copy link from the <strong>Session bar</strong> in the organiser panel</div>
+            </div>
+            <div class="help-view-card" style="border-top:4px solid #27ae60;">
+                <div class="hvc-head">👤 Speaker View</div>
+                <div class="hvc-sub">Each speaker's phone</div>
+                <p>Personal view showing their slot name, position in queue, estimated wait time, and their own countdown when active. Shows a done screen with performance stats after.</p>
+                <div class="hvc-link">Click <strong>🔗 Share</strong> next to each speaker row, copy link or scan QR code</div>
+            </div>
+            <div class="help-view-card" style="border-top:4px solid #1a1a1a;">
+                <div class="hvc-head">🎬 Stage Manager View</div>
+                <div class="hvc-sub">Backstage tablet / laptop</div>
+                <p>Dark read-only view showing the current speaker timer on the left and the full programme list on the right. Mobile-responsive. Labelled <em>Read Only</em> so there is no confusion with the organiser panel.</p>
+                <div class="hvc-link">Copy link from <strong>🎬 Stage Manager Link</strong> in the session bar</div>
+            </div>
+        </div>
+
+        <div class="help-section-sub">Session Code</div>
+        <p>Every event gets an auto-generated session code (e.g. <code>EVT-A3F9</code>) shown in the session bar. All live view links include this code so multiple organisations can run simultaneously on the same app without interference.</p>
+    </div>
+
+    <!-- ── Collaborate ── -->
+    <div id="help-collab" class="help-panel hidden">
+        <h3 class="help-section-title">🤝 Collaborative Draft Editing</h3>
+        <p>Let your team co-edit the programme in real time before going live — the worship leader adds music slots, the secretary fills in times, the pastor reviews from their phone.</p>
+
+        <div class="help-steps-list">
+            <div class="hsl-item">
+                <div class="hsl-num">1</div>
+                <div class="hsl-body">
+                    <strong>Start a Draft</strong> — click <em>🤝 Start Collaborative Draft</em> in the template panel. Enter your name and set a 4-digit PIN.
+                </div>
+            </div>
+            <div class="hsl-item">
+                <div class="hsl-num">2</div>
+                <div class="hsl-body">
+                    <strong>Share the link</strong> — click <em>🔗 Copy Edit Link</em> in the draft bar and send it via WhatsApp or email. Collaborators enter the PIN and their name to join.
+                </div>
+            </div>
+            <div class="hsl-item">
+                <div class="hsl-num">3</div>
+                <div class="hsl-body">
+                    <strong>Edit together</strong> — changes sync within 1 second. Coloured name tags show who is online; the row being edited glows with that person's colour.
+                </div>
+            </div>
+            <div class="hsl-item">
+                <div class="hsl-num">4</div>
+                <div class="hsl-body">
+                    <strong>Track changes</strong> — click <em>📋 Changes</em> (visible to the draft creator) to see a timestamped log of every edit: who added what, renamed what, changed which duration.
+                </div>
+            </div>
+            <div class="hsl-item">
+                <div class="hsl-num">5</div>
+                <div class="hsl-body">
+                    <strong>Go live</strong> — click <em>▶ Use in Timer</em> to load the draft straight into the timer, or <em>⬇️ Download PDF</em> to save it first. Click <em>✕ Close Draft</em> when done — this deletes the draft from Firebase immediately.
+                </div>
+            </div>
+        </div>
+
+        <div class="help-tip">💡 Drafts auto-expire after 7 days of inactivity. Only the draft creator can see the change log.</div>
+    </div>
+
+    <!-- ── Reports ── -->
+    <div id="help-reports" class="help-panel hidden">
+        <h3 class="help-section-title">📊 Reports</h3>
+        <p>After the service, click <strong>📊 View Report</strong> from the organiser panel to see a full summary.</p>
+
+        <div class="help-option-row">
+            <div class="help-option">
+                <div class="ho-head">💾 CSV Report</div>
+                <p>Downloads a spreadsheet with each speaker's allocated time, actual time, variance, and on-time status. Import into Excel or Google Sheets for further analysis.</p>
+            </div>
+            <div class="help-option">
+                <div class="ho-head">📄 PDF Report</div>
+                <p>Generates a formatted PDF with a colour-coded header, four summary stat cards, a pause log (if pauses were recorded with reasons), and a full speaker detail table with variance highlighted in red/blue/green.</p>
+            </div>
+        </div>
+
+        <div class="help-section-sub">Status Codes</div>
+        <div class="help-control-grid">
+            <div class="hcg-item"><span class="hcg-btn" style="background:#2ecc7120;color:#27ae60;border:1px solid #2ecc71;">On Time</span><span class="hcg-desc">Actual time within ±1 minute of allocated</span></div>
+            <div class="hcg-item"><span class="hcg-btn" style="background:#ff475720;color:#c0392b;border:1px solid #ff4757;">Over Time</span><span class="hcg-desc">Speaker went over their allocated time</span></div>
+            <div class="hcg-item"><span class="hcg-btn" style="background:#3498db20;color:#2980b9;border:1px solid #3498db;">Under Time</span><span class="hcg-desc">Speaker finished more than 1 minute early</span></div>
+            <div class="hcg-item"><span class="hcg-btn" style="background:#95a5a620;color:#7f8c8d;border:1px solid #95a5a6;">Not Used</span><span class="hcg-desc">Slot was skipped (moved past without starting)</span></div>
+        </div>
+    </div>
+
 </div>
 
 <!-- Program Creator Screen -->
@@ -2527,7 +2862,7 @@
 
     // Navigation Functions
     function showView(viewId) {
-        const views = ['startupScreen', 'pdfUploadScreen', 'manualEntryScreen', 'organizerPanel', 'presentationView', 'speakerPortal', 'reportView', 'creatorScreen', 'stageView'];
+        const views = ['startupScreen', 'pdfUploadScreen', 'manualEntryScreen', 'organizerPanel', 'presentationView', 'speakerPortal', 'reportView', 'creatorScreen', 'stageView', 'helpScreen'];
         views.forEach(id => {
             document.getElementById(id).classList.add('hidden');
         });
@@ -2556,6 +2891,24 @@
         // Strip all query params from the URL cleanly
         window.history.replaceState({}, '', window.location.pathname);
         showView('startupScreen');
+    }
+
+    function showHelp() {
+        showView('helpScreen');
+        switchHelpTab('overview');
+    }
+
+    function switchHelpTab(tab) {
+        // Update tab buttons
+        document.querySelectorAll('.help-tab').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === tab);
+        });
+        // Show/hide panels
+        document.querySelectorAll('.help-panel').forEach(panel => {
+            panel.classList.add('hidden');
+        });
+        const target = document.getElementById('help-' + tab);
+        if (target) target.classList.remove('hidden');
     }
 
     // File Upload Setup
