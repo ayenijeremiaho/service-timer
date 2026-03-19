@@ -4679,14 +4679,20 @@
     }
 
     function applyDraftData(data) {
-        // Full apply on join — sets baseline hash so subscribe
-        // won't redundantly rebuild immediately after
+        // Full apply on join — sets baselines so subscribe & diff work correctly
         _draftSyncPaused = true;
         document.getElementById('creatorEventName').value = data.eventName || '';
         document.getElementById('creatorEventDate').value = data.eventDate || '';
         document.getElementById('creatorStartTime').value = data.startTime || '18:30';
         deserializeRows(data.rows || []);
         _lastAppliedRowHash = rowsHash(data.rows);
+        // Seed the diff baseline so first edit generates correct changelog
+        _lastPushedState = {
+            eventName: data.eventName || '',
+            eventDate: data.eventDate || '',
+            startTime: data.startTime || '18:30',
+            rows: data.rows || []
+        };
         creatorRefreshPreview();
         _draftSyncPaused = false;
     }
@@ -4701,32 +4707,101 @@
         _draftSyncTimeout = setTimeout(pushDraftToFirebase, 1000);
     }
 
+    // ── Snapshot of last pushed state for diffing ────────────
+    let _lastPushedState = null;
+
     function pushDraftToFirebase() {
         if (!draftState.code) return;
         const payload = draftPayload();
         if (draftState.isOwner && draftState.pinHash) payload.pinHash = String(draftState.pinHash);
-        // Mark the exact timestamp we are writing so the subscriber
-        // can skip echoing our own write back into the DOM
         _lastLocalDraftSave = payload.updatedAt;
+
+        // Diff against last pushed state before overwriting it
+        const changes = diffDraftState(_lastPushedState, payload);
+        _lastPushedState = { ...payload };
+
         db.ref('drafts/' + draftState.code).update(payload)
             .then(() => {
                 setDraftStatus('synced', 'Saved');
-                logDraftChange('update');
+                if (changes.length) logDraftChange(changes);
             })
             .catch(err => { console.error(err); setDraftStatus('offline','Sync failed'); });
     }
 
-    function logDraftChange(changeType) {
+    // ── Diff two draft states, return array of human-readable change strings ──
+    function diffDraftState(prev, next) {
+        if (!prev) return ['Created draft programme'];
+        const changes = [];
+
+        // Header field changes
+        if (prev.eventName !== next.eventName) {
+            changes.push(next.eventName
+                ? 'Renamed event to "' + next.eventName + '"'
+                : 'Cleared event name');
+        }
+        if (prev.eventDate !== next.eventDate && next.eventDate) {
+            const d = new Date(next.eventDate + 'T00:00:00');
+            changes.push('Changed date to ' + d.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}));
+        }
+        if (prev.startTime !== next.startTime && next.startTime) {
+            changes.push('Changed start time to ' + next.startTime);
+        }
+
+        // Row-level diff
+        const prevRows = prev.rows  || [];
+        const nextRows = next.rows  || [];
+
+        // Added rows
+        if (nextRows.length > prevRows.length) {
+            const added = nextRows.slice(prevRows.length);
+            added.forEach(r => {
+                if (r.isBreak) {
+                    changes.push('Added break: "' + (r.topic || 'Interval') + '"');
+                } else {
+                    changes.push('Added item: "' + (r.topic || 'Untitled') + '"'
+                        + (r.minister ? ' (' + r.minister + ')' : ''));
+                }
+            });
+        }
+
+        // Removed rows
+        if (nextRows.length < prevRows.length) {
+            const removed = prevRows.slice(nextRows.length);
+            removed.forEach(r => {
+                changes.push('Removed "' + (r.topic || 'item') + '"');
+            });
+        }
+
+        // Modified rows (same index, different content)
+        const minLen = Math.min(prevRows.length, nextRows.length);
+        for (let i = 0; i < minLen; i++) {
+            const p = prevRows[i], n = nextRows[i];
+            const rowLabel = '"' + (p.topic || 'row ' + (i+1)) + '"';
+            if (p.topic !== n.topic && n.topic) {
+                changes.push('Renamed ' + rowLabel + ' to "' + n.topic + '"');
+            }
+            if (p.minister !== n.minister) {
+                changes.push(n.minister
+                    ? 'Assigned "' + (n.topic || 'row ' + (i+1)) + '" to ' + n.minister
+                    : 'Cleared minister for "' + (n.topic || 'row ' + (i+1)) + '"');
+            }
+            if (String(p.duration) !== String(n.duration) && n.duration) {
+                changes.push('Changed "' + (n.topic || 'row ' + (i+1)) + '" duration to ' + n.duration + ' min');
+            }
+        }
+
+        return changes;
+    }
+
+    function logDraftChange(changes) {
         if (!draftState.code || !draftState.userName) return;
+        if (!changes || !changes.length) return;
         const entry = {
-            user:      draftState.userName,
-            userId:    draftState.userId,
-            type:      changeType,
-            at:        Date.now(),
-            eventName: document.getElementById('creatorEventName').value || '',
-            rowCount:  document.querySelectorAll('.creator-row').length
+            user:    draftState.userName,
+            userId:  draftState.userId,
+            changes: changes,          // array of strings
+            at:      Date.now()
         };
-        // Push to changelog node (auto-keyed by Firebase push)
         db.ref('drafts/' + draftState.code + '/changelog').push(entry).catch(console.error);
     }
 
@@ -4857,6 +4932,7 @@
         payload.createdAt = Date.now();
         db.ref('drafts/' + draftState.code).set(payload)
             .then(() => {
+                _lastPushedState = { ...payload };
                 activateDraftUI();
                 startPresence();
                 subscribeDraft();
@@ -4900,17 +4976,26 @@
         const list = document.getElementById('changeLogList');
         if (!list) return;
         if (!entries.length) {
-            list.innerHTML = '<span style="color:#aaa;">No changes yet</span>';
+            list.innerHTML = '<span style="color:#aaa;font-size:0.9em;">No changes recorded yet</span>';
             return;
         }
         list.innerHTML = entries.map(e => {
-            const time = new Date(e.at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-            const color = getColor(e.userId || e.user);
-            return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #e0e8ff;">
-                    <span style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block;"></span>
-                    <span style="font-weight:700;color:#333;">${e.user || 'Someone'}</span>
-                    <span style="color:#aaa;flex:1;">updated programme</span>
-                    <span style="color:#aaa;white-space:nowrap;">${time}</span>
+            const time  = new Date(e.at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+            const color = getColor(e.userId || e.user || '');
+            const changesList = Array.isArray(e.changes) ? e.changes : ['Updated programme'];
+            const changesHtml = changesList.map(c =>
+                `<div style="display:flex;align-items:flex-start;gap:5px;margin-top:3px;">
+                        <span style="color:#999;flex-shrink:0;margin-top:1px;">›</span>
+                        <span style="color:#555;">${c}</span>
+                    </div>`
+            ).join('');
+            return `<div style="padding:8px 0;border-bottom:1px solid #e0e8ff;">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+                        <span style="width:9px;height:9px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block;"></span>
+                        <span style="font-weight:700;color:#333;font-size:0.9em;">${e.user || 'Someone'}</span>
+                        <span style="color:#bbb;font-size:0.8em;margin-left:auto;white-space:nowrap;">${time}</span>
+                    </div>
+                    ${changesHtml}
                 </div>`;
         }).join('');
     }
