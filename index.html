@@ -2061,7 +2061,17 @@
         <span class="draft-code-badge" id="draftCodeDisplay">—</span>
         <button class="session-link-btn" onclick="copyDraftLink()" id="copyDraftBtn">🔗 Copy Edit Link</button>
         <span class="draft-status synced" id="draftSyncStatus"><span class="status-dot"></span> Saved</span>
+        <button class="session-link-btn" onclick="toggleChangeLog()" id="changeLogBtn" style="display:none;">📋 Changes</button>
         <button class="session-link-btn" style="margin-left:auto;background:#fff0f0;color:#c0392b;border-color:#e0b0b0;" onclick="closeDraft()">✕ Close Draft</button>
+    </div>
+
+    <!-- Change log panel -->
+    <div id="changeLogPanel" class="hidden" style="background:#f0f4ff;border:1.5px solid #c5d0f0;border-radius:10px;padding:14px 16px;margin-bottom:12px;max-height:180px;overflow-y:auto;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="font-size:0.8em;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.08em;">Recent Changes</span>
+            <button onclick="toggleChangeLog()" style="background:none;border:none;cursor:pointer;color:#999;font-size:1.1em;">✕</button>
+        </div>
+        <div id="changeLogList" style="font-size:0.82em;color:#555;"></div>
     </div>
 
     <!-- Presence row -->
@@ -4669,12 +4679,14 @@
     }
 
     function applyDraftData(data) {
-        // Apply without triggering another sync write
+        // Full apply on join — sets baseline hash so subscribe
+        // won't redundantly rebuild immediately after
         _draftSyncPaused = true;
         document.getElementById('creatorEventName').value = data.eventName || '';
         document.getElementById('creatorEventDate').value = data.eventDate || '';
         document.getElementById('creatorStartTime').value = data.startTime || '18:30';
         deserializeRows(data.rows || []);
+        _lastAppliedRowHash = rowsHash(data.rows);
         creatorRefreshPreview();
         _draftSyncPaused = false;
     }
@@ -4693,9 +4705,29 @@
         if (!draftState.code) return;
         const payload = draftPayload();
         if (draftState.isOwner && draftState.pinHash) payload.pinHash = String(draftState.pinHash);
+        // Mark the exact timestamp we are writing so the subscriber
+        // can skip echoing our own write back into the DOM
+        _lastLocalDraftSave = payload.updatedAt;
         db.ref('drafts/' + draftState.code).update(payload)
-            .then(() => setDraftStatus('synced','Saved'))
+            .then(() => {
+                setDraftStatus('synced', 'Saved');
+                logDraftChange('update');
+            })
             .catch(err => { console.error(err); setDraftStatus('offline','Sync failed'); });
+    }
+
+    function logDraftChange(changeType) {
+        if (!draftState.code || !draftState.userName) return;
+        const entry = {
+            user:      draftState.userName,
+            userId:    draftState.userId,
+            type:      changeType,
+            at:        Date.now(),
+            eventName: document.getElementById('creatorEventName').value || '',
+            rowCount:  document.querySelectorAll('.creator-row').length
+        };
+        // Push to changelog node (auto-keyed by Firebase push)
+        db.ref('drafts/' + draftState.code + '/changelog').push(entry).catch(console.error);
     }
 
     function setDraftStatus(state, label) {
@@ -4841,22 +4873,87 @@
         document.getElementById('draftCodeDisplay').textContent = draftState.code;
         document.getElementById('startDraftBtn').textContent = '✅ Draft Active';
         document.getElementById('startDraftBtn').disabled = true;
+        // Show changelog button only for the owner
+        const clBtn = document.getElementById('changeLogBtn');
+        if (clBtn && draftState.isOwner) clBtn.style.display = 'flex';
+        // Start listening to changelog
+        listenChangeLog();
+    }
+
+    function toggleChangeLog() {
+        const panel = document.getElementById('changeLogPanel');
+        if (panel) panel.classList.toggle('hidden');
+    }
+
+    function listenChangeLog() {
+        if (!draftState.code) return;
+        db.ref('drafts/' + draftState.code + '/changelog')
+            .orderByChild('at').limitToLast(20)
+            .on('value', snap => {
+                const entries = [];
+                snap.forEach(child => entries.unshift(child.val())); // newest first
+                renderChangeLog(entries);
+            });
+    }
+
+    function renderChangeLog(entries) {
+        const list = document.getElementById('changeLogList');
+        if (!list) return;
+        if (!entries.length) {
+            list.innerHTML = '<span style="color:#aaa;">No changes yet</span>';
+            return;
+        }
+        list.innerHTML = entries.map(e => {
+            const time = new Date(e.at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+            const color = getColor(e.userId || e.user);
+            return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #e0e8ff;">
+                    <span style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block;"></span>
+                    <span style="font-weight:700;color:#333;">${e.user || 'Someone'}</span>
+                    <span style="color:#aaa;flex:1;">updated programme</span>
+                    <span style="color:#aaa;white-space:nowrap;">${time}</span>
+                </div>`;
+        }).join('');
     }
 
     // ── Subscribe to draft changes ────────────────────────────
+    let _lastLocalDraftSave = 0;
+    let _lastAppliedRowHash = '';
+
+    function rowsHash(rows) {
+        // Cheap fingerprint of the rows array to detect real changes
+        return JSON.stringify((rows || []).map(r => [r.topic, r.minister, r.duration, r.isBreak]));
+    }
+
     function subscribeDraft() {
         if (draftState.listener) { draftState.listener.off(); }
         draftState.listener = db.ref('drafts/' + draftState.code);
         draftState.listener.on('value', snap => {
             const data = snap.val();
             if (!data) return;
-            // Only apply if data is newer than local (avoid own echo)
-            if (data.updatedAt && data.updatedAt > (_lastLocalDraftSave || 0) + 500) {
-                applyDraftData(data);
+
+            // Skip if this is our own echo (written within last 2s)
+            const isOwnEcho = data.updatedAt && data.updatedAt <= _lastLocalDraftSave + 2000;
+            if (isOwnEcho) return;
+
+            // Always apply header fields (name/date/time) — safe, no DOM rebuild
+            _draftSyncPaused = true;
+            if (data.eventName !== undefined) document.getElementById('creatorEventName').value = data.eventName;
+            if (data.eventDate !== undefined) document.getElementById('creatorEventDate').value = data.eventDate;
+            if (data.startTime !== undefined) document.getElementById('creatorStartTime').value = data.startTime;
+            _draftSyncPaused = false;
+
+            // Only rebuild rows if their content actually changed
+            const incomingHash = rowsHash(data.rows);
+            if (incomingHash !== _lastAppliedRowHash) {
+                _lastAppliedRowHash = incomingHash;
+                _draftSyncPaused = true;
+                deserializeRows(data.rows || []);
+                _draftSyncPaused = false;
             }
+
+            creatorRefreshPreview();
         });
     }
-    let _lastLocalDraftSave = 0;
 
     // ── Join draft via URL (?view=create&draft=DFT-XXXX) ─────
     function joinDraftFromUrl(draftCode) {
@@ -4961,7 +5058,13 @@
         if (draftState.code) db.ref('drafts/' + draftState.code).remove().catch(console.error);
         draftState.code    = null;
         draftState.isOwner = false;
+        _lastAppliedRowHash = '';
+        _lastLocalDraftSave = 0;
         document.getElementById('draftBar').classList.add('hidden');
+        const clPanel = document.getElementById('changeLogPanel');
+        if (clPanel) clPanel.classList.add('hidden');
+        const clBtn = document.getElementById('changeLogBtn');
+        if (clBtn) clBtn.style.display = 'none';
         document.getElementById('presenceRow').innerHTML = '';
         document.getElementById('startDraftBtn').textContent = '🤝 Start Collaborative Draft';
         document.getElementById('startDraftBtn').disabled = false;
