@@ -2318,42 +2318,125 @@
     <!-- ── Collaborate ── -->
     <div id="help-collab" class="help-panel hidden">
         <h3 class="help-section-title">🤝 Collaborative Draft Editing</h3>
-        <p>Let your team co-edit the programme in real time before going live — the worship leader adds music slots, the secretary fills in times, the pastor reviews from their phone.</p>
+        <p>The draft system lets your whole team co-edit the programme in real time — the worship leader adds music slots, the secretary fills in durations, the pastor reviews on their phone — all before going live.</p>
 
+        <!-- ── Starting a draft ── -->
+        <div class="help-section-sub">Starting a Draft Session</div>
         <div class="help-steps-list">
             <div class="hsl-item">
                 <div class="hsl-num">1</div>
                 <div class="hsl-body">
-                    <strong>Start a Draft</strong> — click <em>🤝 Start Collaborative Draft</em> in the template panel. Enter your name and set a 4-digit PIN.
+                    Open <strong>✍️ Create Program</strong> from the home screen. In the <em>Templates</em> panel, click <strong>🤝 Start Collaborative Draft</strong>.
                 </div>
             </div>
             <div class="hsl-item">
                 <div class="hsl-num">2</div>
                 <div class="hsl-body">
-                    <strong>Share the link</strong> — click <em>🔗 Copy Edit Link</em> in the draft bar and send it via WhatsApp or email. Collaborators enter the PIN and their name to join.
+                    Enter <strong>your name</strong> (required — shown to collaborators) and set a <strong>4-digit PIN</strong>. The PIN is what protects your draft from uninvited editors. Share it only with your team.
                 </div>
             </div>
             <div class="hsl-item">
                 <div class="hsl-num">3</div>
                 <div class="hsl-body">
-                    <strong>Edit together</strong> — changes sync within 1 second. Coloured name tags show who is online; the row being edited glows with that person's colour.
-                </div>
-            </div>
-            <div class="hsl-item">
-                <div class="hsl-num">4</div>
-                <div class="hsl-body">
-                    <strong>Track changes</strong> — click <em>📋 Changes</em> (visible to the draft creator) to see a timestamped log of every edit: who added what, renamed what, changed which duration.
-                </div>
-            </div>
-            <div class="hsl-item">
-                <div class="hsl-num">5</div>
-                <div class="hsl-body">
-                    <strong>Go live</strong> — click <em>▶ Use in Timer</em> to load the draft straight into the timer, or <em>⬇️ Download PDF</em> to save it first. Click <em>✕ Close Draft</em> when done — this deletes the draft from Firebase immediately.
+                    A <strong>draft bar</strong> appears at the top of the creator with your draft code (e.g. <code>DFT-A3F9</code>), a sync status badge, and a <strong>🔗 Copy Edit Link</strong> button.
                 </div>
             </div>
         </div>
 
-        <div class="help-tip">💡 Drafts auto-expire after 7 days of inactivity. Only the draft creator can see the change log.</div>
+        <!-- ── Sharing ── -->
+        <div class="help-section-sub">Sharing the Edit Link</div>
+        <p>Click <strong>🔗 Copy Edit Link</strong> and send the URL via WhatsApp, email, or any messaging app. The link looks like:</p>
+        <p><code>https://ayenijeremiaho.github.io/service-timer/?view=create&amp;draft=DFT-A3F9</code></p>
+        <div class="help-tip">💡 Share the PIN separately from the link — send the link in the group chat and the PIN privately to trusted team members only.</div>
+
+        <!-- ── Joining ── -->
+        <div class="help-section-sub">Joining a Draft (Collaborator)</div>
+        <div class="help-steps-list">
+            <div class="hsl-item">
+                <div class="hsl-num">1</div>
+                <div class="hsl-body">Open the edit link. A modal appears asking for <strong>your name</strong> and the <strong>4-digit PIN</strong>. Both are required — you cannot skip the name field.
+                </div>
+            </div>
+            <div class="hsl-item">
+                <div class="hsl-num">2</div>
+                <div class="hsl-body">Once joined, the current programme loads instantly. A coloured <strong>name tag</strong> appears above the rows for every active collaborator. The row someone is typing in <strong>glows with their colour</strong>.
+                </div>
+            </div>
+            <div class="hsl-item">
+                <div class="hsl-num">3</div>
+                <div class="hsl-body">Every change you make — adding items, editing topics, changing durations — syncs to all editors within <strong>1 second</strong> automatically.
+                </div>
+            </div>
+        </div>
+
+        <!-- ── What you can edit ── -->
+        <div class="help-section-sub">What Can Be Edited</div>
+        <div class="help-option-row">
+            <div class="help-option">
+                <div class="ho-head">✅ Editable by anyone</div>
+                <ul style="margin:8px 0 0 16px;color:#555;font-size:0.9em;line-height:1.8;">
+                    <li>Event name / theme</li>
+                    <li>Event date</li>
+                    <li>Service start time</li>
+                    <li>Programme item topics</li>
+                    <li>Minister / person names</li>
+                    <li>Durations (in minutes)</li>
+                    <li>Adding new items or breaks</li>
+                    <li>Removing items</li>
+                </ul>
+            </div>
+            <div class="help-option">
+                <div class="ho-head">🔒 Owner only</div>
+                <ul style="margin:8px 0 0 16px;color:#555;font-size:0.9em;line-height:1.8;">
+                    <li>Viewing the change log (📋 Changes button)</li>
+                    <li>Closing and deleting the draft (✕ Close Draft)</li>
+                    <li>The PIN — collaborators cannot change it</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ── Change log ── -->
+        <div class="help-section-sub">📋 Change Log (Owner Only)</div>
+        <p>Click <strong>📋 Changes</strong> in the draft bar to open a live panel showing the last 20 edits. Each entry shows:</p>
+        <div class="help-control-grid" style="margin:10px 0;">
+            <div class="hcg-item"><span class="hcg-btn btn-purple" style="min-width:90px;">Who</span><span class="hcg-desc">The collaborator's name with their colour dot</span></div>
+            <div class="hcg-item"><span class="hcg-btn btn-blue"   style="min-width:90px;">What</span><span class="hcg-desc">Specific change e.g. "Added item: Word (PST Abraham)", "Changed duration to 25 min", "Renamed event to EAT THE WORD"</span></div>
+            <div class="hcg-item"><span class="hcg-btn btn-grey"   style="min-width:90px;">When</span><span class="hcg-desc">Timestamp of each change (hours:minutes)</span></div>
+        </div>
+        <div class="help-tip">💡 The change log updates in real time — you can watch edits appear as your team makes them.</div>
+
+        <!-- ── Expiration ── -->
+        <div class="help-section-sub">Draft Expiration &amp; Deletion</div>
+        <div class="help-option-row">
+            <div class="help-option">
+                <div class="ho-head">✕ Manual deletion (immediate)</div>
+                <p>Click <strong>✕ Close Draft</strong> in the draft bar. The draft is deleted from Firebase immediately. Anyone still on the edit link will see "Session not found". Use this when the programme is finalised.</p>
+            </div>
+            <div class="help-option">
+                <div class="ho-head">⏰ Auto-expiry (7 days)</div>
+                <p>If a draft is not updated for <strong>7 days</strong>, it is automatically cleaned up the next time anyone opens the app. This prevents abandoned drafts accumulating in Firebase.</p>
+            </div>
+        </div>
+        <div class="help-tip">⚠️ Once a draft is closed or expired, the edit link no longer works. Save your work using <strong>▶ Use in Timer</strong> or <strong>⬇️ Download PDF</strong> before closing.</div>
+
+        <!-- ── Finishing ── -->
+        <div class="help-section-sub">Finishing a Draft</div>
+        <div class="help-steps-list">
+            <div class="hsl-item">
+                <div class="hsl-num">A</div>
+                <div class="hsl-body"><strong>Use in Timer directly</strong> — click <em>▶ Use in Timer</em>. The programme loads into the organiser panel, a live session code is generated, and all timer views go live. The draft remains open until you close it.</div>
+            </div>
+            <div class="hsl-item">
+                <div class="hsl-num">B</div>
+                <div class="hsl-body"><strong>Download as PDF first</strong> — click <em>⬇️ Download PDF</em> to get a formatted order-of-service PDF. You can then upload it later from the home screen using <em>📄 Upload PDF</em>.</div>
+            </div>
+            <div class="hsl-item">
+                <div class="hsl-num">C</div>
+                <div class="hsl-body"><strong>Save as template</strong> — click <em>💾 Save as Template</em> to save the programme to your organisation's workspace. It will be available on any device using the same workspace code, for future services.</div>
+            </div>
+        </div>
+
+        <div class="help-tip">💡 You can run <em>Use in Timer</em> and keep the draft open at the same time — useful if you want to make last-minute changes while the timer is running.</div>
     </div>
 
     <!-- ── Reports ── -->
