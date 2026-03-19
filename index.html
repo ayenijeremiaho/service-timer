@@ -2819,6 +2819,22 @@
         }).catch(console.error);
     }
 
+    function cleanupStaleDrafts() {
+        // Only clean drafts we created (stored in localStorage).
+        // Remove any draft not updated in 7 days.
+        const ownDraftCode = localStorage.getItem('stLastDraftCode');
+        if (!ownDraftCode) return;
+        const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+        db.ref('drafts/' + ownDraftCode).once('value').then(snap => {
+            const d = snap.val();
+            if (d && d.updatedAt && d.updatedAt < cutoff) {
+                db.ref('drafts/' + ownDraftCode).remove()
+                    .then(() => localStorage.removeItem('stLastDraftCode'))
+                    .catch(console.error);
+            }
+        }).catch(console.error);
+    }
+
     function copySessionLink(viewType) {
         if (!appState.sessionCode) return;
         const url = BASE_URL+'?view='+viewType+'&session='+appState.sessionCode;
@@ -2928,6 +2944,7 @@
             setupFileUpload();
             setupStorageListener();
             cleanupOldSessions();
+            cleanupStaleDrafts();
 
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('eventDate').value = today;
@@ -5025,6 +5042,41 @@
         const rows = creatorGetRows().filter(r => !r.isBreak && r.topic);
         if (rows.length === 0) { alert('Please add at least one programme item with a topic.'); return; }
 
+        // If a collaborative draft is active, ask what to do with it
+        if (draftState.code) {
+            const deleteDraft = window.confirm(
+                'A collaborative draft is active (' + draftState.code + ').\n\n' +
+                'OK     \u2192 Close and delete the draft (collaborators lose access)\n' +
+                'Cancel \u2192 Leave draft open and continue to timer'
+            );
+            if (deleteDraft) {
+                // Fully close and delete the draft
+                if (_presenceHeartbeat) { clearInterval(_presenceHeartbeat); _presenceHeartbeat = null; }
+                if (draftState.listener)    { draftState.listener.off(); draftState.listener = null; }
+                if (draftState.presListener){ draftState.presListener.off(); draftState.presListener = null; }
+                db.ref('drafts/' + draftState.code).remove().catch(console.error);
+                localStorage.removeItem('stLastDraftCode');
+                document.getElementById('draftBar').classList.add('hidden');
+                const clPanel = document.getElementById('changeLogPanel');
+                if (clPanel) clPanel.classList.add('hidden');
+            } else {
+                // Leave draft open — detach our listeners and presence only
+                if (_presenceHeartbeat) { clearInterval(_presenceHeartbeat); _presenceHeartbeat = null; }
+                if (draftState.listener)    { draftState.listener.off(); draftState.listener = null; }
+                if (draftState.presListener){ draftState.presListener.off(); draftState.presListener = null; }
+                // Remove our own presence node so we don't show as online
+                if (draftState.userId && draftState.code) {
+                    db.ref('drafts/' + draftState.code + '/presence/' + draftState.userId)
+                        .remove().catch(console.error);
+                }
+                // Keep stLastDraftCode so 7-day cleanup can find and delete it later
+            }
+            draftState.code    = null;
+            draftState.isOwner = false;
+            _lastAppliedRowHash = '';
+            _lastLocalDraftSave = 0;
+        }
+
         const speakers = rows.map(r => ({
             name: r.minister || 'TBD',
             topic: `General Session: ${r.topic}`,
@@ -5249,19 +5301,49 @@
     }
 
     // ── Presence ─────────────────────────────────────────────
+    // Heartbeat interval — kept so it can be cleared on draft close/exit
+    let _presenceHeartbeat = null;
+
     function startPresence() {
         if (!draftState.code || !draftState.userName) return;
-        const ref = db.ref('drafts/' + draftState.code + '/presence/' + draftState.userId);
-        ref.set({ name: draftState.userName, row: -1, color: getColor(draftState.userId), at: Date.now() });
-        ref.onDisconnect().remove();
+        const myRef = db.ref('drafts/' + draftState.code + '/presence/' + draftState.userId);
+
+        function writeMyPresence() {
+            myRef.set({
+                name:  draftState.userName,
+                row:   -1,
+                color: getColor(draftState.userId),
+                at:    Date.now()
+            }).catch(console.error);
+        }
+
+        writeMyPresence();
+        myRef.onDisconnect().remove();
+
+        // Heartbeat — refresh every 60s so our node stays fresh
+        // and stale-sweep can distinguish live vs crashed tabs
+        if (_presenceHeartbeat) clearInterval(_presenceHeartbeat);
+        _presenceHeartbeat = setInterval(writeMyPresence, 60000);
 
         // Listen to all presence
         if (draftState.presListener) draftState.presListener.off();
         draftState.presListener = db.ref('drafts/' + draftState.code + '/presence');
         draftState.presListener.on('value', snap => {
-            const data = snap.val() || {};
-            renderPresence(data);
-            renderRowHighlights(data);
+            const raw = snap.val() || {};
+            // Sweep stale presence nodes — anyone not updated in 2 minutes
+            const staleThreshold = Date.now() - 2 * 60 * 1000;
+            const live = {};
+            Object.entries(raw).forEach(([uid, p]) => {
+                if ((p.at || 0) >= staleThreshold) {
+                    live[uid] = p;
+                } else if (uid !== draftState.userId) {
+                    // Passively remove their stale node from Firebase
+                    db.ref('drafts/' + draftState.code + '/presence/' + uid)
+                        .remove().catch(() => {});
+                }
+            });
+            renderPresence(live);
+            renderRowHighlights(live);
         });
     }
 
@@ -5369,6 +5451,7 @@
         db.ref('drafts/' + draftState.code).set(payload)
             .then(() => {
                 _lastPushedState = { ...payload };
+                localStorage.setItem('stLastDraftCode', draftState.code);
                 activateDraftUI();
                 startPresence();
                 subscribeDraft();
@@ -5574,9 +5657,11 @@
     // ── Close / delete draft ──────────────────────────────────
     function closeDraft() {
         if (!confirm('Close and delete this draft session? Collaborators will lose access.')) return;
+        if (_presenceHeartbeat) { clearInterval(_presenceHeartbeat); _presenceHeartbeat = null; }
         if (draftState.listener)    { draftState.listener.off(); draftState.listener = null; }
         if (draftState.presListener){ draftState.presListener.off(); draftState.presListener = null; }
         if (draftState.code) db.ref('drafts/' + draftState.code).remove().catch(console.error);
+        localStorage.removeItem('stLastDraftCode');
         draftState.code    = null;
         draftState.isOwner = false;
         _lastAppliedRowHash = '';
@@ -5675,7 +5760,9 @@
         templates.forEach(t => {
             const chip = document.createElement('span');
             chip.className = 'template-chip';
-            chip.innerHTML = `\uD83D\uDCCB ${t.name || t.eventName || 'Untitled'} <span class="del-tmpl" onclick="deleteTemplate('${t.id}',event)" title="Delete">\u2715</span>`;
+            const safeId = String(t.id).replace(/[^a-zA-Z0-9_-]/g, '');
+            const safeName = (t.name || t.eventName || 'Untitled').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            chip.innerHTML = `📋 ${safeName} <span class="del-tmpl" onclick="deleteTemplate('${safeId}',event)" title="Delete">✕</span>`;
             chip.addEventListener('click', () => loadTemplate(t));
             list.appendChild(chip);
         });
