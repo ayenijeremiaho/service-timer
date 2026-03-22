@@ -1858,6 +1858,8 @@
         }
         .pm-current-timer.warning { color: #f39c12; }
         .pm-current-timer.danger  { color: #ff4757; }
+        /* PM overtime — card background turns red like presentation view */
+        .pm-current.overtime { background: linear-gradient(135deg, #7b0000, #c0392b); }
         .pm-current-info { flex: 1; min-width: 0; }
         .pm-current-name  { font-size: 1em; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .pm-current-topic { font-size: 0.82em; opacity: 0.75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -2855,7 +2857,11 @@
 
     <!-- Current speaker -->
     <div class="pm-current" id="pmCurrentCard">
-        <div class="pm-current-timer" id="pmTimer">--:--</div>
+        <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
+            <div class="pm-current-timer" id="pmTimer">--:--</div>
+            <div id="pmOvertimeCounter" style="display:none;font-size:0.65em;font-weight:800;color:#ff4757;font-family:'Courier New',monospace;letter-spacing:0.05em;margin-top:2px;"></div>
+            <div id="pmTimesUp" style="display:none;font-size:0.5em;font-weight:900;color:#ff4757;letter-spacing:0.12em;text-transform:uppercase;margin-top:1px;">TIME'S UP!</div>
+        </div>
         <div class="pm-current-info">
             <div class="pm-current-name"  id="pmCurrentName">Waiting to start</div>
             <div class="pm-current-topic" id="pmCurrentTopic"></div>
@@ -4162,8 +4168,72 @@
         if (!appState.isPaused && appState.isRunning) {
             appState.timerSeconds++;
             updateTimerDisplay();
-            // localStorage written by the 3-second interval — not here
-            // This keeps the event loop free even if Firebase is slow
+        }
+        // Poll for PM commands once per second
+        pollPendingAction();
+    }
+
+    let _lastPollTime = 0;
+    function pollPendingAction() {
+        if (!appState.sessionCode) return;
+        const now = Date.now();
+        if (now - _lastPollTime < 900) return;
+        _lastPollTime = now;
+        db.ref('sessions/' + appState.sessionCode + '/pendingAction').once('value').then(snap => {
+            const cmd = snap.val();
+            if (!cmd || !cmd.action) return;
+            // Ignore stale commands (older than 5 seconds)
+            if (now - (cmd.requestedAt || 0) > 5000) {
+                db.ref('sessions/' + appState.sessionCode + '/pendingAction').remove();
+                return;
+            }
+            // Clear immediately to prevent double-execution
+            db.ref('sessions/' + appState.sessionCode + '/pendingAction').remove();
+            executePmCommand(cmd);
+        }).catch(() => {});
+    }
+
+    function executePmCommand(cmd) {
+        switch (cmd.action) {
+            case 'start':
+                if (!appState.isRunning) startTimer();
+                break;
+            case 'pause':
+                if (appState.isRunning && !appState.isPaused) pauseTimer();
+                break;
+            case 'resume':
+                if (appState.isPaused) resumeTimer();
+                break;
+            case 'next':
+                if (appState.isRunning) nextSpeaker();
+                break;
+            case 'prev':
+                previousSpeaker();
+                break;
+            case 'reorder': {
+                const sp = appState.speakers;
+                const { fromIdx, toIdx } = cmd;
+                if (fromIdx >= 0 && toIdx >= 0 && fromIdx < sp.length && toIdx < sp.length) {
+                    if (sp[fromIdx].status === 'upcoming' && sp[toIdx].status === 'upcoming') {
+                        [sp[fromIdx], sp[toIdx]] = [sp[toIdx], sp[fromIdx]];
+                        saveStateToStorage();
+                        syncToFirebaseNow();
+                        renderOrganizerPanel();
+                    }
+                }
+                break;
+            }
+            case 'adjust': {
+                const i = appState.currentSpeakerIndex;
+                if (i >= 0 && appState.speakers[i]) {
+                    const cur = Math.floor((appState.speakers[i].allocatedMinutes || 0) * 60);
+                    appState.speakers[i].allocatedMinutes = Math.max(60, cur + (cmd.deltaSecs || 0)) / 60;
+                    saveStateToStorage();
+                    syncToFirebaseNow();
+                    renderOrganizerPanel();
+                }
+                break;
+            }
         }
     }
 
@@ -6277,23 +6347,52 @@
         if (pmSlots)  pmSlots.textContent  = done + '/' + sp.length;
 
         // Current speaker card + timer display
-        const t = appState.timerSeconds;
+        const t        = appState.timerSeconds;
         const allocSecs = cur ? Math.floor((cur.allocatedMinutes || 0) * 60) : 0;
+        const isOvertime = !!(cur && appState.isRunning && t > allocSecs);
+        const pct        = allocSecs > 0 ? (t / allocSecs) * 100 : 0;
+
+        // Timer: shows time remaining (counts down), freezes at 00:00 on overtime
         const timerEl = document.getElementById('pmTimer');
         if (timerEl) {
-            timerEl.textContent = pmFmtSec(t);
+            const displaySecs = isOvertime ? 0 : allocSecs - t;
+            timerEl.textContent = pmFmtSec(displaySecs);
             timerEl.className   = 'pm-current-timer';
-            if (t > allocSecs && cur) timerEl.classList.add('danger');
-            else if (allocSecs > 0 && t > allocSecs * 0.8) timerEl.classList.add('warning');
+            if (isOvertime || pct >= 90) timerEl.classList.add('danger');
+            else if (pct >= 80)          timerEl.classList.add('warning');
         }
+
+        // Overtime counter (+MM:SS) and TIME'S UP badge
+        const otCounter = document.getElementById('pmOvertimeCounter');
+        const timesUpEl = document.getElementById('pmTimesUp');
+        const pmCard    = document.getElementById('pmCurrentCard');
+        if (isOvertime) {
+            const overSecs = t - allocSecs;
+            if (otCounter) { otCounter.textContent = '+' + pmFmtSec(overSecs); otCounter.style.display = 'block'; }
+            if (timesUpEl) timesUpEl.style.display = 'block';
+            if (pmCard)    pmCard.classList.add('overtime');
+        } else {
+            if (otCounter) otCounter.style.display = 'none';
+            if (timesUpEl) timesUpEl.style.display = 'none';
+            if (pmCard)    pmCard.classList.remove('overtime');
+        }
+
         const nameEl  = document.getElementById('pmCurrentName');
         const topicEl = document.getElementById('pmCurrentTopic');
         const statEl  = document.getElementById('pmCurrentStatus');
         if (nameEl)  nameEl.textContent  = cur ? (cur.name  || 'TBD') : 'No active speaker';
         if (topicEl) topicEl.textContent = cur ? (cur.topic || '')    : '';
-        if (statEl)  statEl.textContent  = appState.isRunning
-            ? (appState.isPaused ? '⏸ Paused' : '▶ Running')
-            : 'Waiting to start';
+        if (statEl) {
+            if (isOvertime) {
+                statEl.textContent = 'OVERTIME';
+                statEl.style.color = '#ffaaaa';
+            } else {
+                statEl.textContent = appState.isRunning
+                    ? (appState.isPaused ? 'Paused' : 'Running')
+                    : 'Waiting to start';
+                statEl.style.color = '';
+            }
+        }
 
         // Control buttons
         const startBtn  = document.getElementById('pmStartBtn');
@@ -6348,98 +6447,33 @@
         });
     }
 
-    // ── PM write actions ─────────────────────────────────────
+    // ── PM write actions — write a command; organiser executes it ────
+    // PM never writes full session state (would race with organiser's timer writes).
+    // Instead it writes a pendingAction command that the organiser executes locally.
     function pmAction(action) {
         if (!_pmSessionCode) return;
-        db.ref('sessions/' + _pmSessionCode).once('value').then(snap => {
-            const data = snap.val();
-            if (!data) return;
-            applyFirebaseSnapshot(data);
-
-            if (action === 'start' && !appState.isRunning) {
-                appState.isRunning       = true;
-                appState.isPaused        = false;
-                appState.slotStartedAt   = Date.now();
-                appState.slotBaseSeconds = 0;
-                if (appState.currentSpeakerIndex < 0) {
-                    appState.currentSpeakerIndex = 0;
-                    if (appState.speakers[0]) appState.speakers[0].status = 'active';
-                }
-                appState.timerSeconds = 0;
-            } else if (action === 'pause' && appState.isRunning) {
-                appState.isPaused = true;
-            } else if (action === 'resume') {
-                appState.isPaused = false;
-            } else if (action === 'next') {
-                const i = appState.currentSpeakerIndex;
-                if (i >= 0 && appState.speakers[i]) {
-                    appState.speakers[i].status        = 'completed';
-                    appState.speakers[i].actualSeconds = appState.timerSeconds;
-                    appState.speakers[i].actualMinutes = appState.timerSeconds / 60;
-                }
-                const next = i + 1;
-                if (next < appState.speakers.length) {
-                    appState.currentSpeakerIndex = next;
-                    appState.speakers[next].status = 'active';
-                    appState.timerSeconds    = 0;
-                    appState.slotStartedAt   = Date.now();
-                    appState.slotBaseSeconds = 0;
-                }
-            } else if (action === 'prev') {
-                const i = appState.currentSpeakerIndex;
-                if (i > 0) {
-                    if (appState.speakers[i]) appState.speakers[i].status = 'upcoming';
-                    appState.currentSpeakerIndex = i - 1;
-                    appState.speakers[i - 1].status = 'active';
-                    appState.timerSeconds = 0;
-                }
-            }
-            pmWriteBack();
-        }).catch(err => console.error('PM action error:', err));
+        const cmd = { action, requestedAt: Date.now(), requestedBy: 'pm' };
+        db.ref('sessions/' + _pmSessionCode + '/pendingAction').set(cmd)
+            .catch(err => console.error('PM action error:', err));
+        const map = { start:'Starting…', pause:'Pausing…', resume:'Resuming…', next:'Advancing to next…', prev:'Going back…' };
+        if (map[action]) toast(map[action], 'info', 1500);
     }
 
     function pmMoveSlot(idx, dir) {
         if (!_pmSessionCode) return;
-        db.ref('sessions/' + _pmSessionCode).once('value').then(snap => {
-            const data = snap.val();
-            if (!data) return;
-            applyFirebaseSnapshot(data);
-            const sp   = appState.speakers;
-            const swap = dir === 'up' ? idx - 1 : idx + 1;
-            if (swap < 0 || swap >= sp.length) return;
-            if (sp[idx].status !== 'upcoming' || sp[swap].status !== 'upcoming') return;
-            [sp[idx], sp[swap]] = [sp[swap], sp[idx]];
-            pmWriteBack();
-        }).catch(console.error);
+        const swap = dir === 'up' ? idx - 1 : idx + 1;
+        db.ref('sessions/' + _pmSessionCode + '/pendingAction')
+            .set({ action: 'reorder', fromIdx: idx, toIdx: swap, requestedAt: Date.now(), requestedBy: 'pm' })
+            .catch(console.error);
     }
 
-    function pmWriteBack() {
-        if (!_pmSessionCode || !appState.event) return;
-        const safeSpeakers = (appState.speakers || []).map(s => ({
-            name:             String(s.name             || ''),
-            topic:            String(s.topic            || ''),
-            allocatedMinutes: Number(s.allocatedMinutes) || 0,
-            actualSeconds:    Number(s.actualSeconds)    || 0,
-            actualMinutes:    Number(s.actualMinutes)    || 0,
-            status:           String(s.status           || 'upcoming')
-        }));
-        db.ref('sessions/' + _pmSessionCode).set({
-            event:               { name: String(appState.event.name||''), date: String(appState.event.date||'') },
-            currentSpeakerIndex: Number(appState.currentSpeakerIndex),
-            timerSeconds:        Number(appState.timerSeconds),
-            isRunning:           appState.isRunning === true,
-            isPaused:            appState.isPaused  === true,
-            slotStartedAt:       appState.slotStartedAt  || null,
-            slotBaseSeconds:     Number(appState.slotBaseSeconds || 0),
-            speakers:            safeSpeakers,
-            updatedAt:           Date.now()
-        }).catch(err => console.error('PM write error:', err));
-    }
+    // pmWriteBack retired — PM commands go via pendingAction
+    function pmWriteBack() {}
 
     // ── PM adjust time ───────────────────────────────────────
     function pmShowAdjust() {
         if (!appState.isRunning || appState.currentSpeakerIndex < 0) {
-            alert('Start the timer and select an active speaker first.');
+            toast('Start the timer first', 'info');
             return;
         }
         _pmAdjType = null;
@@ -6462,23 +6496,11 @@
         const mins  = parseInt(document.getElementById('pmAdjMinutes').value) || 0;
         const secs  = parseInt(document.getElementById('pmAdjSeconds').value) || 0;
         const delta = (mins * 60 + secs) * (_pmAdjType === 'add' ? 1 : -1);
-        db.ref('sessions/' + _pmSessionCode).once('value').then(snap => {
-            const data = snap.val();
-            if (!data) return;
-            applyFirebaseSnapshot(data);
-            const i = appState.currentSpeakerIndex;
-            if (i >= 0 && appState.speakers[i]) {
-                const curSecs = Math.floor((appState.speakers[i].allocatedMinutes || 0) * 60);
-                appState.speakers[i].allocatedMinutes = Math.max(60, curSecs + delta) / 60;
-            }
-            // Re-anchor so remote views see correct adjusted time
-            if (appState.isRunning && !appState.isPaused) {
-                appState.slotStartedAt   = Date.now() - (appState.timerSeconds * 1000);
-                appState.slotBaseSeconds = 0;
-            }
-            pmWriteBack();
-            closePmAdjust();
-        }).catch(console.error);
+        db.ref('sessions/' + _pmSessionCode + '/pendingAction')
+            .set({ action: 'adjust', deltaSecs: delta, requestedAt: Date.now(), requestedBy: 'pm' })
+            .catch(console.error);
+        closePmAdjust();
+        toast((_pmAdjType === 'add' ? 'Adding ' : 'Subtracting ') + mins + 'm ' + secs + 's', 'info', 2000);
     }
 
     // ── PM share links ───────────────────────────────────────
