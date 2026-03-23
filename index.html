@@ -2617,6 +2617,9 @@
             <button id="rejoinAsPMBtn" class="btn btn-primary" style="text-align:left;padding:14px 18px;background:linear-gradient(135deg,#11998e,#38ef7d);">
                 🎛️ <strong>Programme Manager</strong><br><span style="font-size:0.82em;opacity:0.8;font-weight:400;">Adjust time, reorder, share speaker links</span>
             </button>
+            <button id="rejoinAsOrgBtn" class="btn btn-danger" style="text-align:left;padding:14px 18px;">
+                🔑 <strong>Take Over as Organiser</strong><br><span style="font-size:0.82em;opacity:0.8;font-weight:400;">Resume timer control on this device</span>
+            </button>
             <button id="rejoinAsStageBtn" class="btn btn-secondary" style="text-align:left;padding:14px 18px;">
                 🎬 <strong>Stage Manager View</strong><br><span style="font-size:0.82em;opacity:0.8;font-weight:400;">Read-only backstage view</span>
             </button>
@@ -3030,6 +3033,7 @@
             slotStartedAt:       appState.slotStartedAt  || null,
             slotBaseSeconds:     Number(appState.slotBaseSeconds || 0),
             speakers:            safeSpeakers,
+            pauseLog:            Array.isArray(appState.pauseLog) ? appState.pauseLog : [],
             updatedAt:           Date.now()
         };
 
@@ -3327,6 +3331,7 @@
         document.getElementById('rejoinAsPresBtn').onclick    = () => { closeRejoinPicker(); window.location.href = BASE_URL + '?view=presentation&session=' + sessionCode; };
         document.getElementById('rejoinAsStageBtn').onclick   = () => { closeRejoinPicker(); window.location.href = BASE_URL + '?view=stage&session=' + sessionCode; };
         document.getElementById('rejoinAsPMBtn').onclick      = () => { closeRejoinPicker(); window.location.href = BASE_URL + '?view=pm&session=' + sessionCode; };
+        document.getElementById('rejoinAsOrgBtn').onclick     = () => { closeRejoinPicker(); takeOverAsOrganiser(sessionCode); };
         // Speaker join handled by rejoinAsSpeaker() — stores sessionCode for it
         document.getElementById('rejoinAsSpeakerBtn')._sessionCode = sessionCode;
         modal.classList.remove('hidden');
@@ -3334,6 +3339,74 @@
 
     function closeRejoinPicker() {
         document.getElementById('rejoinPickerModal').classList.add('hidden');
+    }
+
+    function takeOverAsOrganiser(sessionCode) {
+        const errEl = document.getElementById('rejoinError');
+        if (errEl) errEl.textContent = 'Loading session…';
+
+        db.ref('sessions/' + sessionCode).once('value').then(snap => {
+            const data = snap.val();
+            if (!data || !data.event) {
+                if (errEl) errEl.textContent = 'Session data missing — cannot take over.';
+                return;
+            }
+            if (errEl) errEl.textContent = '';
+
+            // Recompute timerSeconds from slotStartedAt so we resume at the
+            // correct second even if Firebase is a few seconds stale
+            let timerSeconds = data.timerSeconds || 0;
+            if (data.isRunning && !data.isPaused && data.slotStartedAt) {
+                const elapsed = Math.floor((Date.now() - data.slotStartedAt) / 1000);
+                timerSeconds = (data.slotBaseSeconds || 0) + elapsed;
+            }
+
+            // Stop any existing intervals on this device before taking over
+            if (appState.timerInterval)  clearInterval(appState.timerInterval);
+            if (appState.timeUpInterval) clearInterval(appState.timeUpInterval);
+            stopFbSyncInterval();
+            if (_orgFbListener)      { _orgFbListener.off(); _orgFbListener = null; }
+            stopPendingActionListener();
+            _orgSubscribedSession = null;
+
+            // Load Firebase state into appState
+            appState.event               = data.event;
+            appState.speakers            = Array.isArray(data.speakers) ? data.speakers : [];
+            appState.currentSpeakerIndex = data.currentSpeakerIndex != null ? data.currentSpeakerIndex : -1;
+            appState.timerSeconds        = timerSeconds;
+            appState.isRunning           = !!data.isRunning;
+            appState.isPaused            = !!data.isPaused;
+            appState.sessionCode         = sessionCode;
+            appState.speakerHistory      = [];
+            appState.pauseLog            = data.pauseLog || [];
+            appState.slotStartedAt       = data.slotStartedAt  || null;
+            appState.slotBaseSeconds     = data.slotBaseSeconds || 0;
+            appState.timerInterval       = null;
+            appState.timeUpInterval      = null;
+
+            // Save to localStorage so this device owns the session
+            saveStateToStorage();
+
+            // Restart timer interval if it was running when we took over
+            if (appState.isRunning && !appState.isPaused) {
+                appState.timerInterval = setInterval(updateTimer, 1000);
+                startFbSyncInterval();
+            }
+
+            // Show organiser panel — this also starts the Firebase listeners
+            showView('organizerPanel');
+            renderOrganizerPanel();
+
+            const mins = Math.floor(timerSeconds / 60);
+            const secs = String(timerSeconds % 60).padStart(2, '0');
+            const status = appState.isRunning
+                ? (appState.isPaused ? '⏸ paused at ' : '▶ running at ')
+                : 'not started — ';
+            toast('Organiser resumed — ' + status + mins + ':' + secs, 'success', 4000);
+
+        }).catch(err => {
+            if (errEl) errEl.textContent = 'Could not load session: ' + err.message;
+        });
     }
     function rejoinAsSpeaker() {
         const btn = document.getElementById('rejoinAsSpeakerBtn');
