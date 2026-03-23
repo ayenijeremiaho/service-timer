@@ -257,6 +257,27 @@
             font-size: 1.2em;
             opacity: 0.9;
             margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .edit-speaker-btn {
+            background: none;
+            border: none;
+            font-size: 0.8em;
+            cursor: pointer;
+            padding: 4px 6px;
+            border-radius: 4px;
+            opacity: 0.6;
+            transition: all 0.2s ease;
+        }
+
+        .edit-speaker-btn:hover {
+            opacity: 1;
+            background: rgba(255,255,255,0.1);
+            transform: scale(1.1);
         }
 
         .current-topic {
@@ -4788,7 +4809,9 @@
             appState.timerSeconds - allocatedSeconds :
             allocatedSeconds - appState.timerSeconds;
 
-        document.getElementById('currentSpeaker').textContent = speaker.name;
+        document.getElementById('currentSpeaker').innerHTML =
+            `<span id="currentSpeakerName">${speaker.name}</span>
+             <button class="edit-speaker-btn" onclick="editCurrentSpeakerName()" title="Edit speaker name">✏️</button>`;
         document.getElementById('currentTopic').textContent = speaker.topic;
         document.getElementById('timerValue').textContent = formatTime(displaySeconds);
         updateEndTimeBar();
