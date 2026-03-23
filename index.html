@@ -4844,6 +4844,87 @@
         }
     }
 
+    function editCurrentSpeakerName() {
+        if (appState.currentSpeakerIndex < 0 || appState.currentSpeakerIndex >= appState.speakers.length) {
+            toast('No active speaker to edit', 'warning');
+            return;
+        }
+
+        const speaker = appState.speakers[appState.currentSpeakerIndex];
+        const currentName = speaker.name;
+        const nameSpan = document.getElementById('currentSpeakerName');
+
+        if (!nameSpan) {
+            console.error('Speaker name element not found');
+            return;
+        }
+
+        // Create inline input field
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = currentName;
+        input.maxLength = 100;
+        input.className = 'speaker-name-edit-input';
+        input.style.cssText = `
+            font-size: inherit;
+            background: rgba(255,255,255,0.9);
+            border: 2px solid #4CAF50;
+            border-radius: 4px;
+            padding: 2px 6px;
+            margin: 0;
+            outline: none;
+            min-width: 200px;
+            color: #333;
+        `;
+
+        // Save function
+        const saveName = () => {
+            const newName = input.value.trim();
+            if (newName && newName !== currentName) {
+                if (newName.length > 100) {
+                    toast('Speaker name too long (max 100 characters)', 'error');
+                    return;
+                }
+
+                speaker.name = newName;
+                logAction('organiser', 'edit', `Speaker name changed from "${currentName}" to "${newName}"`);
+                saveStateToStorage();
+                syncToFirebaseNow();
+                updateTimerDisplay();
+                renderOrganizerPanel();
+                toast(`Speaker name updated to "${newName}"`, 'success', 2000);
+            } else {
+                // Revert to original name display
+                nameSpan.textContent = currentName;
+            }
+        };
+
+        // Cancel function
+        const cancelEdit = () => {
+            nameSpan.textContent = currentName;
+        };
+
+        // Replace span content with input
+        nameSpan.innerHTML = '';
+        nameSpan.appendChild(input);
+        input.focus();
+        input.select();
+
+        // Handle keyboard events
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                saveName();
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                cancelEdit();
+            }
+        });
+
+        // Handle focus loss
+        input.addEventListener('blur', saveName);
+    }
+
     function updateEndTimeBar() {
         if (!appState.event || !appState.speakers.length) return;
 
