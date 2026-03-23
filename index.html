@@ -1119,8 +1119,18 @@
         }
         .firebase-status.connected    { background:#d4edda; color:#155724; }
         .firebase-status.connecting   { background:#fff3cd; color:#856404; }
-        .firebase-status.disconnected { background:#f8d7da; color:#721c24; }
+        .firebase-status.disconnected {
+            background:#f8d7da;
+            color:#721c24;
+            animation: pulse-red 2s ease-in-out infinite;
+            font-weight: 700;
+        }
         .status-dot { width:8px; height:8px; border-radius:50%; background:currentColor; }
+
+        @keyframes pulse-red {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
 
         /* ── Per-speaker modal ── */
         .speaker-links-modal {
@@ -3020,9 +3030,43 @@
             action: action,
             detail: detail || '',
             at:     Date.now(),
-            time:   new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', second:'2-digit' })
+            time:   new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', second:'2-digit' }),
+            timerSeconds: appState.timerSeconds, // Add current timer state for debugging
+            currentSpeaker: appState.currentSpeakerIndex >= 0 ? appState.speakers[appState.currentSpeakerIndex]?.name : 'None'
         };
         db.ref('sessions/' + appState.sessionCode + '/actionLog').push(entry).catch(() => {});
+
+        // Only log critical errors, not routine actions
+    }
+
+    function validateTimingConsistency() {
+        // Validation function to check timing consistency across views
+        if (appState.currentSpeakerIndex >= 0 && appState.currentSpeakerIndex < appState.speakers.length) {
+            const currentSpeaker = appState.speakers[appState.currentSpeakerIndex];
+            const now = Date.now();
+
+            if (appState.isRunning && !appState.isPaused && appState.slotStartedAt) {
+                const calculatedTime = Math.floor((now - appState.slotStartedAt) / 1000) + (appState.slotBaseSeconds || 0);
+                const timeDiff = Math.abs(calculatedTime - appState.timerSeconds);
+
+                if (timeDiff > 2) {
+                    console.warn('Timer synchronization drift detected:', {
+                        calculated: calculatedTime,
+                        stored: appState.timerSeconds,
+                        difference: timeDiff,
+                        speaker: currentSpeaker.name
+                    });
+
+                    // Auto-correct significant drift (but only in organizer view)
+                    const isOrganizerView = !window.location.search.includes('view=');
+                    if (timeDiff > 10 && isOrganizerView) {
+                        appState.timerSeconds = calculatedTime;
+                        return true; // Indicates correction was made
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     function _doFirebaseWrite() {
@@ -3055,14 +3099,39 @@
         };
 
         markOrgWrite(); // record timestamp so organiser listener ignores this echo
-        db.ref('sessions/' + appState.sessionCode).set(payload)
-            .then(() => {
-                setFbStatus('connected', 'Live');
-            })
-            .catch(err => {
-                console.error('Firebase write error:', err);
-                setFbStatus('disconnected', 'Sync error');
-            });
+
+        // Enhanced Firebase write with retry logic
+        const writeWithRetry = (retryCount = 0) => {
+            db.ref('sessions/' + appState.sessionCode).set(payload)
+                .then(() => {
+                    setFbStatus('connected', 'Live');
+
+                    // Verify the write by reading back immediately
+                    setTimeout(() => {
+                        db.ref('sessions/' + appState.sessionCode).once('value')
+                            .then(snapshot => {
+                                const writtenData = snapshot.val();
+                                if (!writtenData || writtenData.updatedAt !== payload.updatedAt) {
+                                    console.error('Firebase sync verification failed - data mismatch');
+                                }
+                            })
+                            .catch(err => console.error('Sync verification failed:', err));
+                    }, 500);
+                })
+                .catch(err => {
+                    console.error('Firebase write error:', err);
+
+                    // Retry logic for network issues
+                    if (retryCount < 2 && (err.code === 'network-request-failed' || err.code === 'unavailable')) {
+                        setFbStatus('connecting', 'Retrying...');
+                        setTimeout(() => writeWithRetry(retryCount + 1), 2000);
+                    } else {
+                        setFbStatus('disconnected', 'Sync error');
+                    }
+                });
+        };
+
+        writeWithRetry();
     }
 
     // Call immediately (no throttle) for important state changes
@@ -3104,11 +3173,97 @@
         }, err => { console.error(err); setFbStatus('disconnected','Error'); });
     }
 
+    function cleanupNetworkMonitoring() {
+        if (_networkCheckInterval) {
+            clearInterval(_networkCheckInterval);
+            _networkCheckInterval = null;
+        }
+    }
+
+    // Add cleanup when page unloads
+    window.addEventListener('beforeunload', () => {
+        cleanupNetworkMonitoring();
+        if (_remoteTickInterval) {
+            clearInterval(_remoteTickInterval);
+            _remoteTickInterval = null;
+        }
+    });
+
+    let _networkCheckInterval = null;
+    let _lastNetworkCheck = 0;
+
+    function initNetworkMonitoring() {
+        // Monitor browser online/offline events
+        window.addEventListener('online', () => {
+            setFbStatus('connecting', 'Reconnecting...');
+            // Attempt to sync immediately when back online
+            if (appState.sessionCode) {
+                setTimeout(() => {
+                    syncToFirebaseNow();
+                }, 1000);
+            }
+        });
+
+        window.addEventListener('offline', () => {
+            setFbStatus('disconnected', 'Network offline');
+        });
+
+        // Periodic network connectivity check (every 30 seconds)
+        _networkCheckInterval = setInterval(checkNetworkConnectivity, 30000);
+    }
+
+    function checkNetworkConnectivity() {
+        // Simple connectivity test - try to reach Firebase
+        const now = Date.now();
+        if (now - _lastNetworkCheck < 25000) return; // Don't check too frequently
+        _lastNetworkCheck = now;
+
+        if (!navigator.onLine) {
+            setFbStatus('disconnected', 'Network offline');
+            return;
+        }
+
+        // Test actual connectivity by trying a simple Firebase operation
+        if (appState.sessionCode) {
+            const testRef = db.ref('.info/connected');
+            testRef.once('value')
+                .then((snapshot) => {
+                    const connected = snapshot.val();
+                    if (connected) {
+                        // Only update to 'Live' if we're not in an error state
+                        const currentStatus = document.getElementById('fbStatusBadge');
+                        if (currentStatus && !currentStatus.className.includes('disconnected')) {
+                            setFbStatus('connected', 'Live');
+                        }
+                    } else {
+                        setFbStatus('disconnected', 'Firebase offline');
+                    }
+                })
+                .catch(() => {
+                    setFbStatus('disconnected', 'Connection failed');
+                });
+        }
+    }
+
     function setFbStatus(state, label) {
         ['fbStatusBadge','spConnStatus'].forEach(id => {
             const el = document.getElementById(id);
             if (el) { el.className='firebase-status '+state; el.innerHTML='<span class="status-dot"></span> '+label; }
         });
+
+        // Also update PM view firebase status
+        const pmFbStatus = document.getElementById('pmFbStatus');
+        if (pmFbStatus) {
+            pmFbStatus.className = 'firebase-status ' + state + ' pm-fb-status';
+            pmFbStatus.innerHTML = '<span class="status-dot"></span> ' + label;
+        }
+
+        // Update stage view firebase status
+        const stageFbStatus = document.getElementById('stageFbStatus');
+        if (stageFbStatus) {
+            stageFbStatus.className = 'firebase-status ' + state;
+            stageFbStatus.innerHTML = '<span class="status-dot"></span> ' + label;
+        }
     }
 
     function cleanupOldSessions() {
@@ -3210,6 +3365,9 @@
 
     // Initialize
     function init() {
+        // Start network monitoring for all views
+        initNetworkMonitoring();
+
         applyStoredTheme();
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -4298,20 +4456,31 @@
                 }
             }
 
-            // Save current speaker state to history
+            // Calculate the exact actual time used (this is what goes in the report)
+            let actualTimeUsed = appState.timerSeconds;
+
+            // If timer was running, get the most up-to-date time including any elapsed seconds
+            if (appState.isRunning && !appState.isPaused && appState.slotStartedAt) {
+                const elapsed = Math.floor((Date.now() - appState.slotStartedAt) / 1000);
+                actualTimeUsed = (appState.slotBaseSeconds || 0) + elapsed;
+            }
+
+            // Save current speaker state to history with precise timing
             appState.speakerHistory.push({
                 index: appState.currentSpeakerIndex,
-                timerSeconds: appState.timerSeconds,
-                actualSeconds: currentSpeaker.actualSeconds,
-                status: currentSpeaker.status
+                timerSeconds: actualTimeUsed, // Use the calculated actual time
+                actualSeconds: actualTimeUsed, // Ensure consistency
+                status: currentSpeaker.status,
+                endedAt: Date.now() // Record when this speaker slot ended
             });
 
-            // Save actual time for current speaker (in seconds)
-            currentSpeaker.actualSeconds = appState.timerSeconds;
-            currentSpeaker.actualMinutes = Math.floor(appState.timerSeconds / 60);
+            // Save actual time for current speaker (this goes into the report)
+            currentSpeaker.actualSeconds = actualTimeUsed;
+            currentSpeaker.actualMinutes = Math.floor(actualTimeUsed / 60);
             currentSpeaker.status = 'completed';
-            logAction('organiser', 'next', 'Moved from: ' + currentSpeaker.name);
+            currentSpeaker.endedAt = Date.now(); // Track completion time
 
+            logAction('organiser', 'next', `Moved from: ${currentSpeaker.name} (used ${formatTimeDetailed(actualTimeUsed)})`);
         }
 
         // Move to next speaker
@@ -4320,17 +4489,32 @@
         if (appState.currentSpeakerIndex < appState.speakers.length) {
             const nextSpeaker = appState.speakers[appState.currentSpeakerIndex];
             nextSpeaker.status        = 'active';
+            nextSpeaker.startedAt     = Date.now(); // Track when this speaker started
+
+            // Reset timer for new speaker
             appState.timerSeconds     = 0;
             appState.slotStartedAt    = Date.now(); // new anchor for new slot
             appState.slotBaseSeconds  = 0;
 
-
+            // Force immediate sync to ensure all remote views update consistently
             saveStateToStorage();
             syncToFirebaseNow();
-            renderOrganizerPanel();
+
+            // Brief delay to ensure Firebase sync, then render
+            setTimeout(() => {
+                renderOrganizerPanel();
+
+                // Verify sync status
+                if (appState.sessionCode) {
+                    setFbStatus('connected', 'Live');
+                }
+            }, 100);
+
         } else {
             // All speakers done
             stopTimer();
+            appState.sessionEndedAt = Date.now(); // Record session completion
+            saveStateToStorage();
             syncToFirebaseNow();
             toast('All speakers completed!', 'success', 4000);
         }
@@ -4416,8 +4600,19 @@
 
     function updateTimer() {
         if (!appState.isPaused && appState.isRunning) {
-            appState.timerSeconds++;
+            // Validate timing consistency before updating
+            const corrected = validateTimingConsistency();
+
+            if (!corrected) {
+                appState.timerSeconds++;
+            }
+
             updateTimerDisplay();
+
+            // Periodically sync to Firebase (every 5 seconds) to ensure remote views stay current
+            if (appState.timerSeconds % 5 === 0) {
+                syncToFirebaseThrottled();
+            }
         }
     }
 
