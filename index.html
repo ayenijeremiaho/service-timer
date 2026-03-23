@@ -2893,6 +2893,7 @@
         <button class="btn btn-secondary" onclick="pmCopyLink('presentation')" style="font-size:0.78em;">📺 Presentation</button>
         <button class="btn btn-secondary" onclick="pmCopyLink('stage')"        style="font-size:0.78em;">🎬 Stage View</button>
         <button class="btn btn-secondary" onclick="pmCopyLink('pm')"           style="font-size:0.78em;">🎛️ Share PM</button>
+        <button class="btn btn-primary"   onclick="pmDownloadReport()"         style="font-size:0.78em;">📊 Report</button>
     </div>
 
     <!-- Inline adjust time modal for PM (rendered inside this view) -->
@@ -2969,7 +2970,9 @@
         speakerHistory: [],
         showTimeUp: false,
         timeUpInterval: null,
-        sessionCode: null
+        sessionCode: null,
+        pauseLog:    [],
+        actionLog:   []
     };
 
     // ── Firebase ────────────────────────────────────────────────
@@ -3009,6 +3012,19 @@
 
 
 
+    // ── Action log ───────────────────────────────────────────────────
+    function logAction(role, action, detail) {
+        if (!appState.sessionCode) return;
+        const entry = {
+            role:   role,
+            action: action,
+            detail: detail || '',
+            at:     Date.now(),
+            time:   new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', second:'2-digit' })
+        };
+        db.ref('sessions/' + appState.sessionCode + '/actionLog').push(entry).catch(() => {});
+    }
+
     function _doFirebaseWrite() {
         if (!appState.sessionCode || !appState.event || !appState.event.name) return;
 
@@ -3033,7 +3049,8 @@
             slotStartedAt:       appState.slotStartedAt  || null,
             slotBaseSeconds:     Number(appState.slotBaseSeconds || 0),
             speakers:            safeSpeakers,
-            pauseLog:            Array.isArray(appState.pauseLog) ? appState.pauseLog : [],
+            pauseLog:            Array.isArray(appState.pauseLog)  ? appState.pauseLog  : [],
+            actionLog:           Array.isArray(appState.actionLog) ? appState.actionLog : [],
             updatedAt:           Date.now()
         };
 
@@ -3178,6 +3195,8 @@
         appState.speakers            = Array.isArray(data.speakers) ? data.speakers : [];
         appState.slotStartedAt       = data.slotStartedAt   || null;
         appState.slotBaseSeconds     = data.slotBaseSeconds  || 0;
+        if (Array.isArray(data.pauseLog))  appState.pauseLog  = data.pauseLog;
+        if (Array.isArray(data.actionLog)) appState.actionLog = data.actionLog;
 
         // Recompute live timerSeconds from the wall-clock anchor
         // This makes remote views accurate even if Firebase was briefly offline
@@ -4187,6 +4206,7 @@
         appState.isPaused       = false;
         appState.slotStartedAt  = Date.now();   // wall-clock anchor
         appState.slotBaseSeconds = 0;           // seconds already elapsed when slot started
+        logAction('organiser', 'start', 'Timer started');
 
         document.getElementById('startBtn').classList.add('hidden');
         document.getElementById('pauseBtn').classList.remove('hidden');
@@ -4205,7 +4225,8 @@
 
     function pauseTimer() {
         appState.isPaused    = true;
-        appState.slotStartedAt = null; // no longer running
+        appState.slotStartedAt = null;
+        logAction('organiser', 'pause', 'Timer paused');
         stopFbSyncInterval();
         document.getElementById('pauseBtn').classList.add('hidden');
         document.getElementById('resumeBtn').classList.remove('hidden');
@@ -4228,8 +4249,9 @@
 
     function resumeTimer() {
         appState.isPaused        = false;
-        appState.slotStartedAt   = Date.now();          // new anchor from resume point
-        appState.slotBaseSeconds = appState.timerSeconds; // carry forward elapsed seconds
+        appState.slotStartedAt   = Date.now();
+        appState.slotBaseSeconds = appState.timerSeconds;
+        logAction('organiser', 'resume', 'Timer resumed');
         document.getElementById('resumeBtn').classList.add('hidden');
         document.getElementById('pauseBtn').classList.remove('hidden');
         if (!appState.timerInterval) {
@@ -4259,19 +4281,21 @@
         if (progBar){ progBar.classList.remove('warning','danger'); progBar.style.width = '0%'; }
     }
 
-    function nextSpeaker() {
+    function nextSpeaker(force) {
         clearOvertimeState();
 
         if (appState.currentSpeakerIndex >= 0 && appState.currentSpeakerIndex < appState.speakers.length) {
             const currentSpeaker = appState.speakers[appState.currentSpeakerIndex];
 
-            // Confirm if speaker hasn't used much time
-            const allocatedSeconds = Math.floor(currentSpeaker.allocatedMinutes * 60);
-            if (appState.timerSeconds < allocatedSeconds * 0.5) {
-                const confirmNext = window.confirm(
-                    `${currentSpeaker.name} has only used ${formatTimeDetailed(appState.timerSeconds)} of their ${formatTimeDetailed(allocatedSeconds)} allocated time.\n\nAre you sure you want to move to the next speaker?`
-                );
-                if (!confirmNext) return;
+            // Confirm if speaker hasn't used much time — skip if called with force=true (from PM)
+            if (!force) {
+                const allocatedSeconds = Math.floor(currentSpeaker.allocatedMinutes * 60);
+                if (appState.timerSeconds < allocatedSeconds * 0.5) {
+                    const confirmNext = window.confirm(
+                        `${currentSpeaker.name} has only used ${formatTimeDetailed(appState.timerSeconds)} of their ${formatTimeDetailed(allocatedSeconds)} allocated time.\n\nAre you sure you want to move to the next speaker?`
+                    );
+                    if (!confirmNext) return;
+                }
             }
 
             // Save current speaker state to history
@@ -4286,6 +4310,7 @@
             currentSpeaker.actualSeconds = appState.timerSeconds;
             currentSpeaker.actualMinutes = Math.floor(appState.timerSeconds / 60);
             currentSpeaker.status = 'completed';
+            logAction('organiser', 'next', 'Moved from: ' + currentSpeaker.name);
 
         }
 
@@ -4474,6 +4499,8 @@
             appState.isRunning           = remoteRunning;
             appState.isPaused            = remotePaused;
             appState.speakers            = remoteSpeakers;
+            if (Array.isArray(data.pauseLog))  appState.pauseLog  = data.pauseLog;
+            if (Array.isArray(data.actionLog)) appState.actionLog = data.actionLog;
 
             // Restore live clock (never let Firebase overwrite the organiser's tick)
             appState.timerSeconds    = savedTimerSeconds;
@@ -4491,20 +4518,27 @@
     function executePmCommand(cmd) {
         switch (cmd.action) {
             case 'start':
-                if (!appState.isRunning) startTimer();
+                if (!appState.isRunning) { logAction('pm','start','Timer started by PM'); startTimer(); }
                 break;
             case 'pause':
-                if (appState.isRunning && !appState.isPaused) pauseTimer();
+                if (appState.isRunning && !appState.isPaused) { logAction('pm','pause','Timer paused by PM'); pauseTimer(); }
                 break;
             case 'resume':
-                if (appState.isPaused) resumeTimer();
+                if (appState.isPaused) { logAction('pm','resume','Timer resumed by PM'); resumeTimer(); }
                 break;
             case 'next':
-                if (appState.isRunning) nextSpeaker();
+                if (appState.isRunning) {
+                    const _cur = appState.speakers[appState.currentSpeakerIndex];
+                    if (_cur) logAction('pm', 'next', 'Moved from: ' + _cur.name);
+                    nextSpeaker(true);
+                }
                 break;
-            case 'prev':
+            case 'prev': {
+                const _curP = appState.speakers[appState.currentSpeakerIndex];
+                logAction('pm', 'prev', 'Went back from: ' + (_curP ? _curP.name : ''));
                 previousSpeaker();
                 break;
+            }
             case 'reorder': {
                 const sp = appState.speakers;
                 const { fromIdx, toIdx } = cmd;
@@ -4521,8 +4555,10 @@
             case 'adjust': {
                 const i = appState.currentSpeakerIndex;
                 if (i >= 0 && appState.speakers[i]) {
-                    const cur = Math.floor((appState.speakers[i].allocatedMinutes || 0) * 60);
-                    appState.speakers[i].allocatedMinutes = Math.max(60, cur + (cmd.deltaSecs || 0)) / 60;
+                    const delta = cmd.deltaSecs || 0;
+                    const curSecs = Math.floor((appState.speakers[i].allocatedMinutes || 0) * 60);
+                    appState.speakers[i].allocatedMinutes = Math.max(60, curSecs + delta) / 60;
+                    logAction('pm', 'adjust', (delta > 0 ? '+' : '') + Math.round(delta/60) + 'min for ' + appState.speakers[i].name);
                     saveStateToStorage();
                     syncToFirebaseNow();
                     renderOrganizerPanel();
@@ -4832,7 +4868,7 @@
                 event:null, currentSpeakerIndex:-1, timerSeconds:0, timerInterval:null,
                 isPaused:false, isRunning:false, speakers:[], speakerHistory:[],
                 showTimeUp:false, timeUpInterval:null, sessionCode:null,
-                pauseLog:[], lastPauseReason:null,
+                pauseLog:[], actionLog:[], lastPauseReason:null,
                 slotStartedAt: null, slotBaseSeconds: 0
             };
             localStorage.removeItem('serviceTimerState');
@@ -5173,6 +5209,31 @@
         doc.setFontSize(7); doc.setTextColor(160,160,160); doc.setFont('helvetica','normal');
         doc.text('Service Timer  •  ' + BASE_URL, pageW/2, pageH - 8, { align:'center' });
 
+        // ── Action log table ──────────────────────────────────
+        const actionLogEntries = Object.values(appState.actionLog || {});
+        if (actionLogEntries.length > 0) {
+            tableStartY = (doc.lastAutoTable ? doc.lastAutoTable.finalY : tableStartY) + 12;
+            if (tableStartY > pageH - 40) { doc.addPage(); tableStartY = 20; }
+            doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(80, 80, 80);
+            doc.text('Action Log', margin, tableStartY);
+            tableStartY += 5;
+            doc.autoTable({
+                startY: tableStartY,
+                head: [['Time', 'By', 'Action', 'Detail']],
+                body: actionLogEntries.map(e => [
+                    e.time  || '',
+                    (e.role || '').charAt(0).toUpperCase() + (e.role || '').slice(1),
+                    e.action || '',
+                    e.detail || ''
+                ]),
+                theme: 'striped',
+                headStyles: { fillColor: [80,80,80], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+                columnStyles: { 0:{cellWidth:30}, 1:{cellWidth:24}, 2:{cellWidth:22}, 3:{cellWidth:'auto'} },
+                bodyStyles: { fontSize: 8 },
+                margin: { left: margin, right: margin }
+            });
+        }
+
         const safeDate = appState.event.date || new Date().toISOString().split('T')[0];
         doc.save('Event_Report_' + eventName.replace(/[^a-z0-9]/gi,'_') + '_' + safeDate + '.pdf');
     }
@@ -5191,7 +5252,7 @@
             document.body.appendChild(modal);
         }
         if (appState.currentSpeakerIndex < 0 || appState.currentSpeakerIndex >= appState.speakers.length) {
-            alert('No active speaker to adjust time for');
+            toast('No active speaker to adjust time for', 'info'); return;
             return;
         }
 
@@ -5270,16 +5331,14 @@
 
     function confirmAdjustTime() {
         if (!adjustmentMode) {
-            alert('Please select Add or Subtract');
-            return;
+            toast('Please select Add or Subtract', 'info'); return;
         }
 
         const adjustMin = parseInt(document.getElementById('adjustMinutes').value) || 0;
         const adjustSec = parseInt(document.getElementById('adjustSeconds').value) || 0;
 
         if (adjustMin === 0 && adjustSec === 0) {
-            alert('Please enter time to adjust');
-            return;
+            toast('Please enter time to adjust', 'info'); return;
         }
 
         const speaker = appState.speakers[appState.currentSpeakerIndex];
@@ -5292,8 +5351,7 @@
         } else {
             newAllocatedSeconds = Math.max(60, currentAllocatedSeconds - adjustSeconds); // Minimum 1 minute
             if (newAllocatedSeconds < currentAllocatedSeconds - adjustSeconds) {
-                alert('Cannot reduce time below 1 minute');
-                return;
+                toast('Cannot reduce time below 1 minute', 'info'); return;
             }
         }
 
@@ -6495,11 +6553,15 @@
         const isOvertime = !!(cur && appState.isRunning && t > allocSecs);
         const pct        = allocSecs > 0 ? (t / allocSecs) * 100 : 0;
 
-        // Timer: shows time remaining (counts down), freezes at 00:00 on overtime
+        // Timer: counts down remaining; on overtime hides and shows TIME'S UP
         const timerEl = document.getElementById('pmTimer');
         if (timerEl) {
-            const displaySecs = isOvertime ? 0 : allocSecs - t;
-            timerEl.textContent = pmFmtSec(displaySecs);
+            if (isOvertime) {
+                timerEl.style.display = 'none';
+            } else {
+                timerEl.style.display = '';
+                timerEl.textContent = pmFmtSec(allocSecs - t);
+            }
             timerEl.className   = 'pm-current-timer';
             if (isOvertime || pct >= 90) timerEl.classList.add('danger');
             else if (pct >= 80)          timerEl.classList.add('warning');
@@ -6591,10 +6653,27 @@
     }
 
     // ── PM write actions — write a command; organiser executes it ────
-    // PM never writes full session state (would race with organiser's timer writes).
-    // Instead it writes a pendingAction command that the organiser executes locally.
     function pmAction(action) {
         if (!_pmSessionCode) return;
+
+        // For 'next', check if the current speaker is under 50% — show PM-side confirm
+        if (action === 'next') {
+            const idx = appState.currentSpeakerIndex;
+            const cur = (idx >= 0) ? appState.speakers[idx] : null;
+            if (cur) {
+                const allocSecs = Math.floor((cur.allocatedMinutes || 0) * 60);
+                if (allocSecs > 0 && appState.timerSeconds < allocSecs * 0.5) {
+                    const used = Math.floor(appState.timerSeconds / 60) + ':' +
+                        String(appState.timerSeconds % 60).padStart(2,'0');
+                    const alloc = Math.floor(allocSecs / 60) + ':' +
+                        String(allocSecs % 60).padStart(2,'0');
+                    if (!window.confirm(
+                        cur.name + ' has only used ' + used + ' of ' + alloc + '.\n\nAdvance to next speaker?'
+                    )) return;
+                }
+            }
+        }
+
         const cmd = { action, requestedAt: Date.now(), requestedBy: 'pm' };
         db.ref('sessions/' + _pmSessionCode + '/pendingAction').set(cmd)
             .catch(err => console.error('PM action error:', err));
@@ -6647,6 +6726,13 @@
     }
 
     // ── PM share links ───────────────────────────────────────
+    function pmDownloadReport() {
+        if (!appState.event || !appState.speakers.length) {
+            toast('No session data to report on', 'info'); return;
+        }
+        downloadReportPDF();
+    }
+
     function pmCopyLink(viewType) {
         if (!_pmSessionCode) return;
         const url = BASE_URL + '?view=' + viewType + '&session=' + _pmSessionCode;
