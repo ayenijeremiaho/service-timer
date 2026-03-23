@@ -3140,6 +3140,15 @@
         _doFirebaseWrite();
     }
 
+    // Throttled version - only sync if not already pending
+    function syncToFirebaseThrottled() {
+        if (_syncPending) return; // Already have a pending sync
+        _syncPending = true;
+        setTimeout(() => {
+            _doFirebaseWrite();
+        }, 100); // Small delay to batch multiple rapid changes
+    }
+
     let fbListener = null;
     // Self-tick interval for remote views — keeps display moving between Firebase updates
     let _remoteTickInterval = null;
