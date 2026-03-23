@@ -2603,6 +2603,8 @@
     </div>
 </div>
 
+</div>
+
 <!-- Rejoin session picker modal -->
 <div class="pin-modal-overlay hidden" id="rejoinPickerModal" onclick="if(event.target===this)closeRejoinPicker()">
     <div class="pin-modal-card" style="max-width:420px;">
@@ -3787,6 +3789,7 @@
         if (appState.sessionCode && appState.sessionCode !== _orgSubscribedSession) {
             _orgSubscribedSession = appState.sessionCode;
             subscribeToOrganizerSession(appState.sessionCode);
+            startPendingActionListener(appState.sessionCode);
         }
         document.getElementById('eventTitle').textContent = appState.event.name;
         document.getElementById('eventDateDisplay').textContent = new Date(appState.event.date).toLocaleDateString();
@@ -4318,28 +4321,34 @@
             appState.timerSeconds++;
             updateTimerDisplay();
         }
-        // Poll for PM commands once per second
-        pollPendingAction();
     }
 
-    let _lastPollTime = 0;
-    function pollPendingAction() {
-        if (!appState.sessionCode) return;
-        const now = Date.now();
-        if (now - _lastPollTime < 900) return;
-        _lastPollTime = now;
-        db.ref('sessions/' + appState.sessionCode + '/pendingAction').once('value').then(snap => {
+    // ── PM command listener (replaces polling) ───────────────────────────
+    // Uses a persistent on('value') listener instead of once() polling.
+    // Firebase pushes pendingAction writes to this listener in ~50ms —
+    // no 1-3 second delay.
+    let _pendingActionListener = null;
+
+    function startPendingActionListener(sessionCode) {
+        if (_pendingActionListener) { _pendingActionListener.off(); _pendingActionListener = null; }
+        if (!sessionCode) return;
+        _pendingActionListener = db.ref('sessions/' + sessionCode + '/pendingAction');
+        _pendingActionListener.on('value', snap => {
             const cmd = snap.val();
             if (!cmd || !cmd.action) return;
-            // Ignore stale commands (older than 5 seconds)
-            if (now - (cmd.requestedAt || 0) > 5000) {
-                db.ref('sessions/' + appState.sessionCode + '/pendingAction').remove();
+            // Ignore stale commands (older than 10 seconds)
+            if (Date.now() - (cmd.requestedAt || 0) > 10000) {
+                snap.ref.remove();
                 return;
             }
-            // Clear immediately to prevent double-execution
-            db.ref('sessions/' + appState.sessionCode + '/pendingAction').remove();
+            // Clear immediately to prevent double-execution on reconnect
+            snap.ref.remove();
             executePmCommand(cmd);
-        }).catch(() => {});
+        });
+    }
+
+    function stopPendingActionListener() {
+        if (_pendingActionListener) { _pendingActionListener.off(); _pendingActionListener = null; }
     }
 
     // ── Organiser Firebase listener ──────────────────────────────────────
@@ -4743,7 +4752,8 @@
             if (appState.timeUpInterval) clearInterval(appState.timeUpInterval);
             stopFbSyncInterval();
             if (_remoteTickInterval) { clearInterval(_remoteTickInterval); _remoteTickInterval = null; }
-            if (_orgFbListener)      { _orgFbListener.off(); _orgFbListener = null; _orgSubscribedSession = null; }
+            if (_orgFbListener)         { _orgFbListener.off(); _orgFbListener = null; _orgSubscribedSession = null; }
+            stopPendingActionListener();
             if (appState.sessionCode) db.ref('sessions/'+appState.sessionCode).remove().catch(console.error);
             appState = {
                 event:null, currentSpeakerIndex:-1, timerSeconds:0, timerInterval:null,
