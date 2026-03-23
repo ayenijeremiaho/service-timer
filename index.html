@@ -3002,21 +3002,9 @@
     }
 
     // Throttle Firebase writes — only write at most once per second
-    let _lastSyncTime = 0;
     let _syncPending  = false;
 
-    function syncToFirebase() {
-        if (!appState.sessionCode) return;
-        if (!appState.event || !appState.event.name) return;
 
-        // Throttle: batch rapid calls into one write per second
-        if (_syncPending) return;
-        _syncPending = true;
-        setTimeout(() => {
-            _syncPending = false;
-            _doFirebaseWrite();
-        }, 800);
-    }
 
     function _doFirebaseWrite() {
         if (!appState.sessionCode || !appState.event || !appState.event.name) return;
@@ -3512,10 +3500,11 @@
         let currentService = 'General Session';
 
         // Pattern for tabular format: S/N EVENTS START_TIME DURATION END_TIME MINISTER
-        const tableRowPattern = /^\d+\s+(.+?)\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+(\d{2}:\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s*(.*)$/i;
+        // Duration accepts: "05:00", "10:00", "25:00" or "10mins", "5mins" (Workers Meeting style)
+        const tableRowPattern = /^\d+\s+(.+?)\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+(\d{1,2}:\d{2}(?::\d{2})?|\d+\s*mins?)\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s*(.*)$/i;
 
-        // Alternative pattern without S/N
-        const altTablePattern = /^([A-Z][A-Za-z\s&\/]+?)\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+(\d{2}:\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s*(.*)$/i;
+        // Alternative pattern without S/N number — handles Workers Meeting rows
+        const altTablePattern = /^([A-Z][A-Za-z\s&\/'()\-]+?)\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+(\d{1,2}:\d{2}(?::\d{2})?|\d+\s*mins?)\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s*(.*)$/i;
 
         // Minister-only line: a line that looks like a name but has no times (orphaned from previous row)
         const ministerOnlyPattern = /^((?:SIS|BRO|PST|THE|MRS|REV|DR|EVANG?)\s+[A-Z][A-Z\s]+)$/i;
@@ -3571,11 +3560,10 @@
             let match = line.match(tableRowPattern) || line.match(altTablePattern);
 
             if (match) {
-                // Before storing this new row, flush any pending entry.
-                // If the pending entry had no minister yet, and this line's minister field
-                // starts with a known prefix, it may actually belong to the previous row —
-                // but the safer assumption is: if the pending row had an empty minister,
-                // peek at whether the current row's minister field looks like a continuation.
+                // Groups differ between tableRowPattern and altTablePattern:
+                // tableRow:  [0]=full, [1]=sn+topic(need trim), [2]=start, [3]=duration, [4]=end, [5]=minister
+                // altTable:  [0]=full, [1]=topic, [2]=start, [3]=duration, [4]=end, [5]=minister
+                // Both patterns now have 5 capture groups in same positions
                 const inlineMinister = match[5] ? match[5].trim() : '';
 
                 // If we have a pending entry with no minister, and the current row also
@@ -3587,12 +3575,16 @@
                     flushPending(null);
                 }
 
-                const topic = match[1].trim();
+                // For tableRowPattern, group[1] starts after S/N but may still have it if regex slips
+                const topic = match[1].trim().replace(/^\d+\s+/, '');
                 const durationStr = match[3].trim();
 
-                // Parse duration
+                // Parse duration — handles "05:00", "10:00", "25:00" and "10mins", "5 mins"
                 let minutes = 15;
-                if (durationStr.includes(':')) {
+                const minLiteral = durationStr.match(/^(\d+)\s*mins?/i);
+                if (minLiteral) {
+                    minutes = parseInt(minLiteral[1]) || 15;
+                } else if (durationStr.includes(':')) {
                     const parts = durationStr.split(':');
                     minutes = parseInt(parts[0]) || 15;
                 } else {
@@ -3870,6 +3862,140 @@
             btn.textContent = '⛶ Fullscreen';
         }
     });
+
+    // ── Per-speaker personal view ───────────────────────────────────────
+    function updatePersonalSpeakerView(mySpeakerIndex) {
+        if (!appState.event || !appState.speakers.length) return;
+
+        const evNameEl = document.getElementById('spEventName');
+        if (evNameEl) evNameEl.textContent = appState.event.name || 'Service';
+        const mySpEl = document.getElementById('spMyName');
+        if (mySpEl && mySpeakerIndex >= 0 && appState.speakers[mySpeakerIndex]) {
+            mySpEl.textContent = appState.speakers[mySpeakerIndex].name;
+        }
+
+        const myIdx     = mySpeakerIndex;
+        const currIdx   = appState.currentSpeakerIndex;
+        const mySpeaker = myIdx >= 0 ? appState.speakers[myIdx] : null;
+        const spView    = document.getElementById('speakerPortal');
+
+        function showPanel(id) {
+            ['spWaiting','spLive','spDone'].forEach(pid => {
+                const el = document.getElementById(pid);
+                if (el) el.classList.add('hidden');
+            });
+            const el = document.getElementById(id);
+            if (el) el.classList.remove('hidden');
+        }
+
+        // ── DONE ──────────────────────────────────────────────────────────
+        if (mySpeaker && mySpeaker.status === 'completed') {
+            showPanel('spDone');
+            if (spView) spView.style.background = 'linear-gradient(160deg,#0a3d0a,#1a6b1a)';
+            const alloc    = Math.floor(mySpeaker.allocatedMinutes * 60);
+            const actual   = mySpeaker.actualSeconds || 0;
+            const variance = actual - alloc;
+            const allocEl = document.getElementById('spAllocated');
+            const actEl   = document.getElementById('spActual');
+            const varEl   = document.getElementById('spVariance');
+            if (allocEl) allocEl.textContent = formatTimeDetailed(alloc);
+            if (actEl)   actEl.textContent   = actual > 0 ? formatTimeDetailed(actual) : '--';
+            if (varEl) {
+                varEl.textContent = actual > 0 ? (variance >= 0 ? '+' : '') + formatTimeDetailed(Math.abs(variance)) : '--';
+                varEl.style.color = variance > 30 ? '#ff8a8a' : variance < -30 ? '#90ee90' : 'white';
+            }
+            return;
+        }
+
+        // ── LIVE ──────────────────────────────────────────────────────────
+        if (myIdx >= 0 && currIdx === myIdx && appState.isRunning) {
+            showPanel('spLive');
+            const allocSec   = Math.floor((mySpeaker.allocatedMinutes || 0) * 60);
+            const isOvertime = appState.timerSeconds > allocSec;
+            const dispSec    = isOvertime ? appState.timerSeconds - allocSec : allocSec - appState.timerSeconds;
+            const percent    = Math.min((appState.timerSeconds / Math.max(allocSec,1)) * 100, 100);
+
+            const nameEl    = document.getElementById('spLiveName');
+            const topicEl   = document.getElementById('spLiveTopic');
+            const timerEl   = document.getElementById('spTimer');
+            const otDisp    = document.getElementById('spOvertimeDisplay');
+            const otCounter = document.getElementById('spOvertimeCounter');
+            const labelEl   = document.getElementById('spLabel');
+            const progBar   = document.getElementById('spProgressBar');
+
+            if (nameEl)  nameEl.textContent  = mySpeaker.name  || '';
+            if (topicEl) topicEl.textContent = mySpeaker.topic || '';
+
+            if (isOvertime) {
+                if (spView)  spView.style.background = 'linear-gradient(160deg,#5a0000,#a00000)';
+                if (timerEl) timerEl.classList.add('hidden');
+                if (otDisp)  { otDisp.classList.remove('hidden'); otDisp.style.display = 'flex'; }
+                if (otCounter) otCounter.textContent = '+' + formatTime(dispSec);
+                if (labelEl) labelEl.textContent = 'OVERTIME';
+                if (progBar) { progBar.style.width = '100%'; progBar.classList.add('danger'); }
+            } else {
+                if (spView)  spView.style.background = '';
+                if (timerEl) { timerEl.classList.remove('hidden','warning','danger'); timerEl.textContent = formatTime(dispSec); }
+                if (otDisp)  { otDisp.classList.add('hidden'); otDisp.style.display = 'none'; }
+                if (labelEl) labelEl.textContent = 'Remaining';
+                if (progBar) {
+                    progBar.style.width = percent + '%';
+                    progBar.classList.remove('danger','warning');
+                    if (percent >= 90)      { timerEl && timerEl.classList.add('danger');  progBar.classList.add('danger'); }
+                    else if (percent >= 80) { timerEl && timerEl.classList.add('warning'); progBar.classList.add('warning'); }
+                }
+            }
+            return;
+        }
+
+        // ── WAITING ───────────────────────────────────────────────────────
+        showPanel('spWaiting');
+        if (spView) spView.style.background = '';
+
+        if (myIdx < 0 || !mySpeaker) {
+            const qb = document.getElementById('spQueueBadge');
+            const eb = document.getElementById('spEtaBig');
+            const el = document.getElementById('spEtaLabel');
+            const nb = document.getElementById('spNextBadge');
+            if (qb) qb.textContent = 'Watching live';
+            if (eb) eb.textContent = '--';
+            if (el) el.textContent = 'You are not assigned a slot';
+            if (nb) nb.classList.add('hidden');
+            return;
+        }
+
+        const speakersAhead = Math.max(0, myIdx - Math.max(currIdx, 0));
+        const isNext = currIdx >= 0 && myIdx === currIdx + 1;
+
+        let etaSec = 0;
+        if (currIdx >= 0 && appState.isRunning) {
+            const currAlloc = Math.floor((appState.speakers[currIdx].allocatedMinutes || 0) * 60);
+            etaSec += Math.max(0, currAlloc - appState.timerSeconds);
+        }
+        for (let i = Math.max(currIdx + 1, 0); i < myIdx; i++) {
+            etaSec += Math.floor((appState.speakers[i].allocatedMinutes || 0) * 60);
+        }
+        const etaMins = Math.ceil(etaSec / 60);
+
+        const qbEl = document.getElementById('spQueueBadge');
+        const ebEl = document.getElementById('spEtaBig');
+        const elEl = document.getElementById('spEtaLabel');
+        const nbEl = document.getElementById('spNextBadge');
+
+        if (!appState.isRunning) {
+            if (qbEl) qbEl.textContent = 'Waiting for service to start';
+            if (ebEl) ebEl.textContent = etaMins > 0 ? String(etaMins) : '--';
+            if (elEl) elEl.textContent = etaMins > 0 ? 'estimated minutes before your slot' : 'Service has not started yet';
+        } else {
+            if (qbEl) qbEl.textContent = speakersAhead === 1 ? '1 speaker before you' : speakersAhead + ' speakers before you';
+            if (ebEl) ebEl.textContent = '~' + etaMins;
+            if (elEl) elEl.textContent = 'estimated minutes before your slot';
+        }
+        if (nbEl) {
+            if (isNext) nbEl.classList.remove('hidden');
+            else        nbEl.classList.add('hidden');
+        }
+    }
 
     // ── Stage Manager view ──────────────────────────────────────────────
     function updateStageView() {
@@ -4469,154 +4595,10 @@
     }
 
     // Speaker Portal Functions
-    function openSpeakerPortal() {
-        // No-op: speakers use individual links via the 🔗 Share button on each row
-    }
+
 
     // Legacy stub (no longer used for remote views)
-    function updateSpeakerView() {}
 
-    function updatePersonalSpeakerView(mySpeakerIndex) {
-        if (!appState.event || !appState.speakers.length) return;
-
-        const pv = document.getElementById('presentationView');
-        if (pv) pv.classList.remove('overtime-mode'); // ensure clean bg
-
-        // Set header names
-        const evNameEl = document.getElementById('spEventName');
-        if (evNameEl) evNameEl.textContent = appState.event ? appState.event.name : 'Service';
-        const mySpEl = document.getElementById('spMyName');
-        if (mySpEl && mySpeakerIndex >= 0 && appState.speakers[mySpeakerIndex]) {
-            mySpEl.textContent = appState.speakers[mySpeakerIndex].name;
-        }
-
-        const myIdx   = mySpeakerIndex;
-        const currIdx = appState.currentSpeakerIndex;
-        const mySpeaker = myIdx >= 0 ? appState.speakers[myIdx] : null;
-
-        const spWaiting = document.getElementById('spWaiting');
-        const spLive    = document.getElementById('spLive');
-        const spDone    = document.getElementById('spDone');
-        const spView    = document.getElementById('speakerPortal');
-
-        function showPanel(id) {
-            [spWaiting, spLive, spDone].forEach(el => { if(el) el.classList.add('hidden'); });
-            const el = document.getElementById(id);
-            if (el) el.classList.remove('hidden');
-        }
-
-        // ── DONE ──────────────────────────────────────────────────
-        if (mySpeaker && mySpeaker.status === 'completed') {
-            showPanel('spDone');
-            spView.style.background = 'linear-gradient(160deg,#0a3d0a,#1a6b1a)';
-            const alloc = Math.floor(mySpeaker.allocatedMinutes * 60);
-            const actual = mySpeaker.actualSeconds || 0;
-            const variance = actual - alloc;
-            document.getElementById('spAllocated').textContent = formatTimeDetailed(alloc);
-            document.getElementById('spActual').textContent    = actual > 0 ? formatTimeDetailed(actual) : '--';
-            const varEl = document.getElementById('spVariance');
-            varEl.textContent = actual > 0 ? (variance >= 0 ? '+' : '') + formatTimeDetailed(Math.abs(variance)) : '--';
-            varEl.style.color  = variance > 30 ? '#ff8a8a' : variance < -30 ? '#90ee90' : 'white';
-            return;
-        }
-
-        // ── LIVE ──────────────────────────────────────────────────
-        if (myIdx >= 0 && currIdx === myIdx && appState.isRunning) {
-            showPanel('spLive');
-            const allocSec   = Math.floor(mySpeaker.allocatedMinutes * 60);
-            const isOvertime = appState.timerSeconds > allocSec;
-            const dispSec    = isOvertime ? appState.timerSeconds - allocSec : allocSec - appState.timerSeconds;
-            const percent    = Math.min((appState.timerSeconds / allocSec) * 100, 100);
-
-            document.getElementById('spLiveName').textContent  = mySpeaker.name;
-            document.getElementById('spLiveTopic').textContent = mySpeaker.topic;
-
-            const timerEl   = document.getElementById('spTimer');
-            const otDisp    = document.getElementById('spOvertimeDisplay');
-            const otCounter = document.getElementById('spOvertimeCounter');
-            const labelEl   = document.getElementById('spLabel');
-            const progBar   = document.getElementById('spProgressBar');
-
-            if (isOvertime) {
-                spView.style.background = 'linear-gradient(160deg,#5a0000,#a00000)';
-                timerEl.classList.add('hidden');
-                otDisp.classList.remove('hidden'); otDisp.style.display='flex';
-                otCounter.textContent = '+' + formatTime(dispSec);
-                labelEl.textContent = 'OVERTIME';
-                progBar.style.width = '100%';
-                progBar.classList.add('danger');
-            } else {
-                spView.style.background = '';
-                timerEl.classList.remove('hidden','warning','danger');
-                otDisp.classList.add('hidden'); otDisp.style.display='none';
-                timerEl.textContent = formatTime(dispSec);
-                labelEl.textContent = 'Remaining';
-                progBar.style.width  = percent + '%';
-                progBar.classList.remove('danger');
-                if (percent >= 90) { timerEl.classList.add('danger'); progBar.classList.add('danger'); }
-                else if (percent >= 80) { timerEl.classList.add('warning'); progBar.classList.add('warning'); }
-            }
-            return;
-        }
-
-        // ── WAITING ───────────────────────────────────────────────
-        showPanel('spWaiting');
-        spView.style.background = '';
-
-        if (myIdx < 0 || !mySpeaker) {
-            document.getElementById('spQueueBadge').textContent = 'Watching live';
-            document.getElementById('spEtaBig').textContent     = '--';
-            document.getElementById('spEtaLabel').textContent   = 'You are not assigned a slot';
-            document.getElementById('spNextBadge').classList.add('hidden');
-            return;
-        }
-
-        // Populate slot identity block
-        const wTopicEl = document.getElementById('spWaitTopicName');
-        if (wTopicEl && mySpeaker) wTopicEl.textContent = mySpeaker.topic || mySpeaker.name;
-        else if (wTopicEl) wTopicEl.textContent = '—';
-
-        // How many speakers are ahead?
-        const speakersAhead = Math.max(0, myIdx - Math.max(currIdx, 0));
-        const isNext = currIdx >= 0 && myIdx === currIdx + 1;
-
-        // Estimate wait: sum remaining time of current + all upcoming before me
-        let etaSec = 0;
-        if (currIdx >= 0 && appState.isRunning) {
-            const currAlloc = Math.floor(appState.speakers[currIdx].allocatedMinutes * 60);
-            etaSec += Math.max(0, currAlloc - appState.timerSeconds);
-        }
-        for (let i = Math.max(currIdx+1, 0); i < myIdx; i++) {
-            etaSec += Math.floor(appState.speakers[i].allocatedMinutes * 60);
-        }
-        const etaMins = Math.ceil(etaSec / 60);
-
-        if (!appState.isRunning) {
-            document.getElementById('spQueueBadge').textContent = 'Waiting for service to start';
-            document.getElementById('spEtaBig').textContent     = etaMins > 0 ? etaMins : '--';
-            document.getElementById('spEtaLabel').textContent   = etaMins > 0 ? 'estimated minutes before your slot' : 'Service has not started yet';
-        } else if (speakersAhead === 0 && !isNext) {
-            // Current speaker is me but timer hasn't been activated yet for my slot
-            document.getElementById('spQueueBadge').textContent = 'Your turn is next';
-            document.getElementById('spEtaBig').textContent     = '~' + etaMins;
-            document.getElementById('spEtaLabel').textContent   = 'estimated minutes before your slot';
-        } else {
-            document.getElementById('spQueueBadge').textContent =
-                speakersAhead === 1 ? '1 speaker before you' : speakersAhead + ' speakers before you';
-            document.getElementById('spEtaBig').textContent     = '~' + etaMins;
-            document.getElementById('spEtaLabel').textContent   = 'estimated minutes before your slot';
-        }
-
-        const nextBadge  = document.getElementById('spNextBadge');
-        const waitingDiv = document.getElementById('spWaiting');
-        if (isNext) {
-            nextBadge.classList.remove('hidden');
-            if (waitingDiv) waitingDiv.classList.add('is-next');
-        } else {
-            nextBadge.classList.add('hidden');
-            if (waitingDiv) waitingDiv.classList.remove('is-next');
-        }
-    }
 
     // State Management
     function saveStateToStorage() {
@@ -5864,14 +5846,8 @@
         });
     }
 
-    // Track which row each input belongs to and report to presence
-    function attachRowPresenceListeners() {
-        document.querySelectorAll('.creator-row').forEach((rowEl, idx) => {
-            rowEl.querySelectorAll('input').forEach(input => {
-                input.addEventListener('focus', () => updateMyPresenceRow(idx));
-                input.addEventListener('blur',  () => updateMyPresenceRow(-1));
-            });
-        });
+    // Track which row each input belongs to and report to presence);
+    });
     }
 
     // ── Start draft session ───────────────────────────────────
