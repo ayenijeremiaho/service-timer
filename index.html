@@ -2603,8 +2603,6 @@
     </div>
 </div>
 
-</div>
-
 <!-- Rejoin session picker modal -->
 <div class="pin-modal-overlay hidden" id="rejoinPickerModal" onclick="if(event.target===this)closeRejoinPicker()">
     <div class="pin-modal-card" style="max-width:420px;">
@@ -3033,6 +3031,7 @@
             updatedAt:           Date.now()
         };
 
+        markOrgWrite(); // record timestamp so organiser listener ignores this echo
         db.ref('sessions/' + appState.sessionCode).set(payload)
             .then(() => {
                 setFbStatus('connected', 'Live');
@@ -3783,7 +3782,12 @@
     function renderOrganizerPanel() {
         if (!appState.event) return;
 
-
+        // Ensure organiser is subscribed to Firebase for remote changes (PM, etc.)
+        // Only subscribes once per session code — re-subscribes if session changes
+        if (appState.sessionCode && appState.sessionCode !== _orgSubscribedSession) {
+            _orgSubscribedSession = appState.sessionCode;
+            subscribeToOrganizerSession(appState.sessionCode);
+        }
         document.getElementById('eventTitle').textContent = appState.event.name;
         document.getElementById('eventDateDisplay').textContent = new Date(appState.event.date).toLocaleDateString();
         if (!appState.sessionCode) { appState.sessionCode = generateSessionCode(); }
@@ -4338,6 +4342,70 @@
         }).catch(() => {});
     }
 
+    // ── Organiser Firebase listener ──────────────────────────────────────
+    // Keeps the organiser display in sync when the PM view makes changes.
+    // Guards against overwriting the organiser's own live timerSeconds.
+    let _lastOrgWrite = 0;        // timestamp of our last Firebase write
+    let _orgSubscribedSession = null; // session code we are currently subscribed to
+    let _orgFbListener = null;    // Firebase listener ref for cleanup
+    function markOrgWrite() { _lastOrgWrite = Date.now(); }
+
+    function subscribeToOrganizerSession(sessionCode) {
+        // Detach any existing listener
+        if (_orgFbListener) { _orgFbListener.off(); _orgFbListener = null; }
+
+        _orgFbListener = db.ref('sessions/' + sessionCode);
+        _orgFbListener.on('value', snap => {
+            const data = snap.val();
+            if (!data) return;
+
+            // Ignore our own writes (within 2s window)
+            const remoteUpdatedAt = data.updatedAt || 0;
+            if (remoteUpdatedAt <= _lastOrgWrite + 2000) return;
+
+            // Check if anything structural changed
+            const remoteIdx      = data.currentSpeakerIndex;
+            const remoteRunning  = !!data.isRunning;
+            const remotePaused   = !!data.isPaused;
+            const remoteSpeakers = Array.isArray(data.speakers) ? data.speakers : [];
+
+            const speakersChanged = JSON.stringify(remoteSpeakers.map(s => ({
+                n: s.name, t: s.topic, a: s.allocatedMinutes, st: s.status
+            }))) !== JSON.stringify((appState.speakers || []).map(s => ({
+                n: s.name, t: s.topic, a: s.allocatedMinutes, st: s.status
+            })));
+
+            const stateChanged = remoteIdx     !== appState.currentSpeakerIndex ||
+                remoteRunning !== appState.isRunning ||
+                remotePaused  !== appState.isPaused  ||
+                speakersChanged;
+
+            if (!stateChanged) return;
+
+            // Apply structural changes but preserve the live timer clock
+            const savedTimerSeconds  = appState.timerSeconds;
+            const savedInterval      = appState.timerInterval;
+            const savedSlotStartedAt = appState.slotStartedAt;
+            const savedSlotBase      = appState.slotBaseSeconds;
+
+            appState.currentSpeakerIndex = remoteIdx;
+            appState.isRunning           = remoteRunning;
+            appState.isPaused            = remotePaused;
+            appState.speakers            = remoteSpeakers;
+
+            // Restore live clock (never let Firebase overwrite the organiser's tick)
+            appState.timerSeconds    = savedTimerSeconds;
+            appState.timerInterval   = savedInterval;
+            appState.slotStartedAt   = savedSlotStartedAt;
+            appState.slotBaseSeconds = savedSlotBase;
+
+            if (appState.event) {
+                renderOrganizerPanel();
+                updateTimerDisplay();
+            }
+        }, err => { console.error('Organiser FB listener error:', err); });
+    }
+
     function executePmCommand(cmd) {
         switch (cmd.action) {
             case 'start':
@@ -4675,6 +4743,7 @@
             if (appState.timeUpInterval) clearInterval(appState.timeUpInterval);
             stopFbSyncInterval();
             if (_remoteTickInterval) { clearInterval(_remoteTickInterval); _remoteTickInterval = null; }
+            if (_orgFbListener)      { _orgFbListener.off(); _orgFbListener = null; _orgSubscribedSession = null; }
             if (appState.sessionCode) db.ref('sessions/'+appState.sessionCode).remove().catch(console.error);
             appState = {
                 event:null, currentSpeakerIndex:-1, timerSeconds:0, timerInterval:null,
