@@ -3466,14 +3466,33 @@
             for (let i = 1; i <= pdf.numPages; i++) {
                 const page = await pdf.getPage(i);
                 const textContent = await page.getTextContent();
-                const pageText = textContent.items.map(item => item.str).join(' ');
-                fullText += pageText + '\n';
+
+                // Group text items by their Y coordinate (same Y = same visual row)
+                // item.transform[5] is the Y position on the page
+                const rowMap = {};
+                for (const item of textContent.items) {
+                    if (!item.str.trim()) continue;
+                    // Round Y to nearest 2px to group items on the same line
+                    const y = Math.round(item.transform[5] / 2) * 2;
+                    if (!rowMap[y]) rowMap[y] = [];
+                    rowMap[y].push({ x: item.transform[4], str: item.str });
+                }
+
+                // Sort rows top-to-bottom (higher Y = higher on page in PDF coords)
+                const sortedYs = Object.keys(rowMap)
+                    .map(Number)
+                    .sort((a, b) => b - a); // descending = top to bottom
+
+                for (const y of sortedYs) {
+                    // Sort items left-to-right within each row
+                    const rowItems = rowMap[y].sort((a, b) => a.x - b.x);
+                    const rowText = rowItems.map(it => it.str).join(' ').trim();
+                    if (rowText) fullText += rowText + '\n';
+                }
             }
 
-
-            // Apply regex patterns
+            // Section headers get their own lines (in case they share a line with a date)
             fullText = fullText.replace(/(WORKER'?S?\s*MEETING|FIRST SERVICE|SECOND SERVICE|THIRD SERVICE|FOURTH SERVICE|SUNDAY SERVICE)/gi, '\n$1');
-            fullText = fullText.replace(/(\s)(\d+\s+[A-Z])/g, '\n$2');
 
             return fullText;
         } catch (error) {
