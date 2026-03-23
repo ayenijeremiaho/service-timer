@@ -3049,19 +3049,29 @@
                 const calculatedTime = Math.floor((now - appState.slotStartedAt) / 1000) + (appState.slotBaseSeconds || 0);
                 const timeDiff = Math.abs(calculatedTime - appState.timerSeconds);
 
-                if (timeDiff > 2) {
-                    console.warn('Timer synchronization drift detected:', {
+                // Only warn for significant drift (>30 seconds) to avoid normal browser timing variations
+                if (timeDiff > 30) {
+                    console.warn('Significant timer synchronization drift detected:', {
                         calculated: calculatedTime,
                         stored: appState.timerSeconds,
                         difference: timeDiff,
-                        speaker: currentSpeaker.name
+                        speaker: currentSpeaker.name,
+                        note: 'This may indicate system sleep, tab switching, or performance issues'
                     });
 
-                    // Auto-correct significant drift (but only in organizer view)
+                    // Auto-correct major drift (but only in organizer view)
                     const isOrganizerView = !window.location.search.includes('view=');
-                    if (timeDiff > 10 && isOrganizerView) {
+                    if (timeDiff > 60 && isOrganizerView) {
                         appState.timerSeconds = calculatedTime;
+                        console.warn('Auto-corrected timer due to major drift (>60s)');
                         return true; // Indicates correction was made
+                    }
+                } else if (timeDiff > 10) {
+                    // For moderate drift (10-30s), just auto-correct without warning noise
+                    const isOrganizerView = !window.location.search.includes('view=');
+                    if (isOrganizerView) {
+                        appState.timerSeconds = calculatedTime;
+                        return true; // Silent correction
                     }
                 }
             }
@@ -3105,18 +3115,8 @@
             db.ref('sessions/' + appState.sessionCode).set(payload)
                 .then(() => {
                     setFbStatus('connected', 'Live');
-
-                    // Verify the write by reading back immediately
-                    setTimeout(() => {
-                        db.ref('sessions/' + appState.sessionCode).once('value')
-                            .then(snapshot => {
-                                const writtenData = snapshot.val();
-                                if (!writtenData || writtenData.updatedAt !== payload.updatedAt) {
-                                    console.error('Firebase sync verification failed - data mismatch');
-                                }
-                            })
-                            .catch(err => console.error('Sync verification failed:', err));
-                    }, 500);
+                    // Firebase write successful - no additional verification needed
+                    // Error handling for write failures is handled in the .catch() below
                 })
                 .catch(err => {
                     console.error('Firebase write error:', err);
