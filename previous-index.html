@@ -257,6 +257,27 @@
             font-size: 1.2em;
             opacity: 0.9;
             margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .edit-speaker-btn {
+            background: none;
+            border: none;
+            font-size: 0.8em;
+            cursor: pointer;
+            padding: 4px 6px;
+            border-radius: 4px;
+            opacity: 0.6;
+            transition: all 0.2s ease;
+        }
+
+        .edit-speaker-btn:hover {
+            opacity: 1;
+            background: rgba(255,255,255,0.1);
+            transform: scale(1.1);
         }
 
         .current-topic {
@@ -1119,8 +1140,18 @@
         }
         .firebase-status.connected    { background:#d4edda; color:#155724; }
         .firebase-status.connecting   { background:#fff3cd; color:#856404; }
-        .firebase-status.disconnected { background:#f8d7da; color:#721c24; }
+        .firebase-status.disconnected {
+            background:#f8d7da;
+            color:#721c24;
+            animation: pulse-red 2s ease-in-out infinite;
+            font-weight: 700;
+        }
         .status-dot { width:8px; height:8px; border-radius:50%; background:currentColor; }
+
+        @keyframes pulse-red {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
 
         /* ── Per-speaker modal ── */
         .speaker-links-modal {
@@ -1813,6 +1844,120 @@
             .help-flow { flex-direction:column; align-items:flex-start; }
             .hs-arrow { transform:rotate(90deg); }
         }
+
+        /* ══════════════════════════════════
+           PROGRAMME MANAGER VIEW
+           ══════════════════════════════════ */
+        .pm-view {
+            min-height: 100vh;
+            background: #f4f6fb;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .pm-header {
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            color: white; padding: 12px 16px;
+            position: sticky; top: 0; z-index: 20;
+            display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+        }
+        .pm-header-title { font-size: 1em; font-weight: 800; flex: 1; min-width: 120px; }
+        .pm-header-event { font-size: 0.8em; opacity: 0.85; }
+        .pm-fb-status { font-size: 0.75em; }
+
+        /* Stats bar */
+        .pm-stats {
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 8px; padding: 12px 14px; background: white;
+            border-bottom: 1px solid #e8eaff;
+        }
+        @media (max-width: 500px) {
+            .pm-stats { grid-template-columns: repeat(2, 1fr); }
+        }
+        .pm-stat { text-align: center; }
+        .pm-stat-val { font-size: 1.1em; font-weight: 800; color: #333; }
+        .pm-stat-lbl { font-size: 0.68em; color: #999; text-transform: uppercase; letter-spacing: 0.06em; }
+
+        /* Current speaker banner */
+        .pm-current {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white; padding: 14px 16px; margin: 10px 14px;
+            border-radius: 12px; display: flex; align-items: center; gap: 14px;
+        }
+        .pm-current-timer {
+            font-size: 2.4em; font-weight: 800;
+            font-family: 'Courier New', monospace; flex-shrink: 0;
+        }
+        .pm-current-timer.warning { color: #f39c12; }
+        .pm-current-timer.danger  { color: #ff4757; }
+        /* PM overtime — card background turns red like presentation view */
+        .pm-current.overtime { background: linear-gradient(135deg, #7b0000, #c0392b); }
+        .pm-current-info { flex: 1; min-width: 0; }
+        .pm-current-name  { font-size: 1em; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pm-current-topic { font-size: 0.82em; opacity: 0.75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pm-current-status { font-size: 0.75em; opacity: 0.65; margin-top: 2px; }
+
+        /* Controls row */
+        .pm-controls {
+            display: flex; gap: 8px; padding: 0 14px 10px; flex-wrap: wrap;
+        }
+        .pm-controls .btn { flex: 1; min-width: 80px; font-size: 0.82em; padding: 10px 8px; }
+
+        /* Programme list */
+        .pm-list { padding: 0 14px 80px; }
+        .pm-list-label {
+            font-size: 0.72em; font-weight: 800; color: #aaa;
+            text-transform: uppercase; letter-spacing: 0.1em;
+            padding: 12px 0 6px;
+        }
+        .pm-slot {
+            background: white; border-radius: 10px; padding: 12px 14px;
+            margin-bottom: 8px; border-left: 4px solid #e0e0e0;
+            display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.06);
+        }
+        .pm-slot.active    { border-left-color: #2a5298; background: #f0f4ff; }
+        .pm-slot.completed { border-left-color: #2ecc71; opacity: 0.6; }
+        .pm-slot-num { font-size: 0.72em; font-weight: 700; color: #bbb; width: 18px; flex-shrink: 0; text-align: center; }
+        .pm-slot-info { flex: 1; min-width: 0; }
+        .pm-slot-name  { font-size: 0.9em; font-weight: 700; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pm-slot-topic { font-size: 0.78em; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pm-slot-dur   { font-size: 0.75em; color: #aaa; white-space: nowrap; flex-shrink: 0; font-family: 'Courier New', monospace; }
+        .pm-slot-actions { display: flex; gap: 5px; flex-shrink: 0; }
+        .pm-slot-btn {
+            background: none; border: 1.5px solid #e0e0e0; color: #888;
+            font-size: 0.72em; padding: 3px 7px; border-radius: 6px; cursor: pointer;
+            white-space: nowrap; transition: all .15s;
+        }
+        .pm-slot-btn:hover { background: #667eea; color: white; border-color: #667eea; }
+        .pm-slot-btn.move  { font-size: 0.85em; padding: 3px 5px; }
+
+        /* Sticky bottom bar */
+        .pm-bottom {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: white; border-top: 1.5px solid #e8eaff;
+            padding: 10px 14px; display: flex; gap: 8px; flex-wrap: wrap;
+            box-shadow: 0 -4px 16px rgba(0,0,0,0.08); z-index: 15;
+        }
+        .pm-bottom .btn { flex: 1; min-width: 80px; font-size: 0.82em; padding: 10px 8px; }
+
+        /* ── Toast notifications ── */
+        #toastContainer {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            z-index: 99999; display: flex; flex-direction: column; align-items: center;
+            gap: 8px; pointer-events: none;
+        }
+        .toast {
+            background: #333; color: white; padding: 10px 20px;
+            border-radius: 24px; font-size: 0.88em; font-weight: 600;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+            animation: toastIn .25s ease, toastOut .3s ease 2.5s forwards;
+            pointer-events: none; max-width: 320px; text-align: center;
+        }
+        .toast.success { background: #2ecc71; }
+        .toast.error   { background: #e74c3c; }
+        .toast.info    { background: #2980b9; }
+        @keyframes toastIn  { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+        @keyframes toastOut { from { opacity:1; } to { opacity:0; transform:translateY(8px); } }
         #fullscreenBtn:hover {
             background: rgba(0,0,0,0.75);
         }
@@ -1837,7 +1982,20 @@
             </div>
         </div>
 
-        <div style="margin-top:24px;">
+        <!-- Session retrieval -->
+        <div style="margin-top:28px;padding-top:24px;border-top:1px solid #e0e0e0;">
+            <p style="font-size:0.85em;color:#888;margin-bottom:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Rejoin an existing session</p>
+            <div style="display:flex;gap:10px;max-width:420px;margin:0 auto;">
+                <input type="text" id="rejoinCodeInput" placeholder="e.g. EVT-A3F9"
+                       style="flex:1;padding:11px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:1em;font-family:'Courier New',monospace;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;"
+                       oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9-]/g,'')"
+                       onkeydown="if(event.key==='Enter')rejoinSession()">
+                <button class="btn btn-primary" onclick="rejoinSession()" style="white-space:nowrap;">→ Join</button>
+            </div>
+            <p id="rejoinError" style="color:#ff4757;font-size:0.82em;margin-top:8px;min-height:18px;"></p>
+        </div>
+
+        <div style="margin-top:16px;">
             <button class="btn btn-secondary" onclick="showHelp()" style="font-size:0.9em;opacity:0.8;">
                 ❓ How to use this app
             </button>
@@ -1915,6 +2073,7 @@
             <span class="session-code-badge" id="sessionCodeDisplay">—</span>
             <button class="session-link-btn" onclick="copySessionLink('presentation')" id="copyPrBtn">📺 Presentation Link</button>
             <button class="session-link-btn" onclick="copySessionLink('stage')" id="copyStageBtn">🎬 Stage Manager Link</button>
+            <button class="session-link-btn" onclick="copySessionLink('pm')" id="copyPmBtn">🎛️ Programme Manager Link</button>
             <span id="fbStatusBadge" class="firebase-status connecting"><span class="status-dot"></span> Connecting…</span>
         </div>
 
@@ -2311,159 +2470,203 @@
             </div>
         </div>
 
-        <div class="help-section-sub">Session Code</div>
-        <p>Every event gets an auto-generated session code (e.g. <code>EVT-A3F9</code>) shown in the session bar. All live view links include this code so multiple organisations can run simultaneously on the same app without interference.</p>
-    </div>
-
-    <!-- ── Collaborate ── -->
-    <div id="help-collab" class="help-panel hidden">
-        <h3 class="help-section-title">🤝 Collaborative Draft Editing</h3>
-        <p>The draft system lets your whole team co-edit the programme in real time — the worship leader adds music slots, the secretary fills in durations, the pastor reviews on their phone — all before going live.</p>
-
-        <!-- ── Starting a draft ── -->
-        <div class="help-section-sub">Starting a Draft Session</div>
-        <div class="help-steps-list">
-            <div class="hsl-item">
-                <div class="hsl-num">1</div>
-                <div class="hsl-body">
-                    Open <strong>✍️ Create Program</strong> from the home screen. In the <em>Templates</em> panel, click <strong>🤝 Start Collaborative Draft</strong>.
-                </div>
-            </div>
-            <div class="hsl-item">
-                <div class="hsl-num">2</div>
-                <div class="hsl-body">
-                    Enter <strong>your name</strong> (required — shown to collaborators) and set a <strong>4-digit PIN</strong>. The PIN is what protects your draft from uninvited editors. Share it only with your team.
-                </div>
-            </div>
-            <div class="hsl-item">
-                <div class="hsl-num">3</div>
-                <div class="hsl-body">
-                    A <strong>draft bar</strong> appears at the top of the creator with your draft code (e.g. <code>DFT-A3F9</code>), a sync status badge, and a <strong>🔗 Copy Edit Link</strong> button.
-                </div>
-            </div>
-        </div>
-
-        <!-- ── Sharing ── -->
-        <div class="help-section-sub">Sharing the Edit Link</div>
-        <p>Click <strong>🔗 Copy Edit Link</strong> and send the URL via WhatsApp, email, or any messaging app. The link looks like:</p>
-        <p><code>https://ayenijeremiaho.github.io/service-timer/?view=create&amp;draft=DFT-A3F9</code></p>
-        <div class="help-tip">💡 Share the PIN separately from the link — send the link in the group chat and the PIN privately to trusted team members only.</div>
-
-        <!-- ── Joining ── -->
-        <div class="help-section-sub">Joining a Draft (Collaborator)</div>
-        <div class="help-steps-list">
-            <div class="hsl-item">
-                <div class="hsl-num">1</div>
-                <div class="hsl-body">Open the edit link. A modal appears asking for <strong>your name</strong> and the <strong>4-digit PIN</strong>. Both are required — you cannot skip the name field.
-                </div>
-            </div>
-            <div class="hsl-item">
-                <div class="hsl-num">2</div>
-                <div class="hsl-body">Once joined, the current programme loads instantly. A coloured <strong>name tag</strong> appears above the rows for every active collaborator. The row someone is typing in <strong>glows with their colour</strong>.
-                </div>
-            </div>
-            <div class="hsl-item">
-                <div class="hsl-num">3</div>
-                <div class="hsl-body">Every change you make — adding items, editing topics, changing durations — syncs to all editors within <strong>1 second</strong> automatically.
-                </div>
-            </div>
-        </div>
-
-        <!-- ── What you can edit ── -->
-        <div class="help-section-sub">What Can Be Edited</div>
-        <div class="help-option-row">
-            <div class="help-option">
-                <div class="ho-head">✅ Editable by anyone</div>
-                <ul style="margin:8px 0 0 16px;color:#555;font-size:0.9em;line-height:1.8;">
-                    <li>Event name / theme</li>
-                    <li>Event date</li>
-                    <li>Service start time</li>
-                    <li>Programme item topics</li>
-                    <li>Minister / person names</li>
-                    <li>Durations (in minutes)</li>
-                    <li>Adding new items or breaks</li>
-                    <li>Removing items</li>
-                </ul>
-            </div>
-            <div class="help-option">
-                <div class="ho-head">🔒 Owner only</div>
-                <ul style="margin:8px 0 0 16px;color:#555;font-size:0.9em;line-height:1.8;">
-                    <li>Viewing the change log (📋 Changes button)</li>
-                    <li>Closing and deleting the draft (✕ Close Draft)</li>
-                    <li>The PIN — collaborators cannot change it</li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- ── Change log ── -->
-        <div class="help-section-sub">📋 Change Log (Owner Only)</div>
-        <p>Click <strong>📋 Changes</strong> in the draft bar to open a live panel showing the last 20 edits. Each entry shows:</p>
-        <div class="help-control-grid" style="margin:10px 0;">
-            <div class="hcg-item"><span class="hcg-btn btn-purple" style="min-width:90px;">Who</span><span class="hcg-desc">The collaborator's name with their colour dot</span></div>
-            <div class="hcg-item"><span class="hcg-btn btn-blue"   style="min-width:90px;">What</span><span class="hcg-desc">Specific change e.g. "Added item: Word (PST Abraham)", "Changed duration to 25 min", "Renamed event to EAT THE WORD"</span></div>
-            <div class="hcg-item"><span class="hcg-btn btn-grey"   style="min-width:90px;">When</span><span class="hcg-desc">Timestamp of each change (hours:minutes)</span></div>
-        </div>
-        <div class="help-tip">💡 The change log updates in real time — you can watch edits appear as your team makes them.</div>
-
-        <!-- ── Expiration ── -->
-        <div class="help-section-sub">Draft Expiration &amp; Deletion</div>
-        <div class="help-option-row">
-            <div class="help-option">
-                <div class="ho-head">✕ Manual deletion (immediate)</div>
-                <p>Click <strong>✕ Close Draft</strong> in the draft bar. The draft is deleted from Firebase immediately. Anyone still on the edit link will see "Session not found". Use this when the programme is finalised.</p>
-            </div>
-            <div class="help-option">
-                <div class="ho-head">⏰ Auto-expiry (7 days)</div>
-                <p>If a draft is not updated for <strong>7 days</strong>, it is automatically cleaned up the next time anyone opens the app. This prevents abandoned drafts accumulating in Firebase.</p>
-            </div>
-        </div>
-        <div class="help-tip">⚠️ Once a draft is closed or expired, the edit link no longer works. Save your work using <strong>▶ Use in Timer</strong> or <strong>⬇️ Download PDF</strong> before closing.</div>
-
-        <!-- ── Finishing ── -->
-        <div class="help-section-sub">Finishing a Draft</div>
-        <div class="help-steps-list">
-            <div class="hsl-item">
-                <div class="hsl-num">A</div>
-                <div class="hsl-body"><strong>Use in Timer directly</strong> — click <em>▶ Use in Timer</em>. The programme loads into the organiser panel, a live session code is generated, and all timer views go live. The draft remains open until you close it.</div>
-            </div>
-            <div class="hsl-item">
-                <div class="hsl-num">B</div>
-                <div class="hsl-body"><strong>Download as PDF first</strong> — click <em>⬇️ Download PDF</em> to get a formatted order-of-service PDF. You can then upload it later from the home screen using <em>📄 Upload PDF</em>.</div>
-            </div>
-            <div class="hsl-item">
-                <div class="hsl-num">C</div>
-                <div class="hsl-body"><strong>Save as template</strong> — click <em>💾 Save as Template</em> to save the programme to your organisation's workspace. It will be available on any device using the same workspace code, for future services.</div>
-            </div>
-        </div>
-
-        <div class="help-tip">💡 You can run <em>Use in Timer</em> and keep the draft open at the same time — useful if you want to make last-minute changes while the timer is running.</div>
-    </div>
-
-    <!-- ── Reports ── -->
-    <div id="help-reports" class="help-panel hidden">
-        <h3 class="help-section-title">📊 Reports</h3>
-        <p>After the service, click <strong>📊 View Report</strong> from the organiser panel to see a full summary.</p>
-
-        <div class="help-option-row">
-            <div class="help-option">
-                <div class="ho-head">💾 CSV Report</div>
-                <p>Downloads a spreadsheet with each speaker's allocated time, actual time, variance, and on-time status. Import into Excel or Google Sheets for further analysis.</p>
-            </div>
-            <div class="help-option">
-                <div class="ho-head">📄 PDF Report</div>
-                <p>Generates a formatted PDF with a colour-coded header, four summary stat cards, a pause log (if pauses were recorded with reasons), and a full speaker detail table with variance highlighted in red/blue/green.</p>
-            </div>
-        </div>
-
-        <div class="help-section-sub">Status Codes</div>
-        <div class="help-control-grid">
-            <div class="hcg-item"><span class="hcg-btn" style="background:#2ecc7120;color:#27ae60;border:1px solid #2ecc71;">On Time</span><span class="hcg-desc">Actual time within ±1 minute of allocated</span></div>
-            <div class="hcg-item"><span class="hcg-btn" style="background:#ff475720;color:#c0392b;border:1px solid #ff4757;">Over Time</span><span class="hcg-desc">Speaker went over their allocated time</span></div>
-            <div class="hcg-item"><span class="hcg-btn" style="background:#3498db20;color:#2980b9;border:1px solid #3498db;">Under Time</span><span class="hcg-desc">Speaker finished more than 1 minute early</span></div>
-            <div class="hcg-item"><span class="hcg-btn" style="background:#95a5a620;color:#7f8c8d;border:1px solid #95a5a6;">Not Used</span><span class="hcg-desc">Slot was skipped (moved past without starting)</span></div>
+        <div class="help-view-card" style="border-top:4px solid #11998e;">
+            <div class="hvc-head">🎛️ Programme Manager</div>
+            <div class="hvc-sub">Assistant / backup device — mobile-first</div>
+            <p>A full control view from any phone or tablet. Shows the live timer, all four stats (Est. End, Time Remaining, Running, Slots Done), the current speaker card, and Start / Pause / Next / Adjust Time controls. Also lets you reorder upcoming speakers and copy individual speaker links.</p>
+            <div class="hvc-link">Copy link from <strong>🎛️ Programme Manager Link</strong> in the session bar, or use <strong>Rejoin Session</strong> on the home screen</div>
         </div>
     </div>
 
+    <div class="help-section-sub">Rejoining a Session</div>
+    <p>If you need to open any view from a different device, use the <strong>Rejoin an existing session</strong> input on the home screen. Enter the session code (e.g. <code>EVT-A3F9</code>) and choose which view to open. The session code is shown in the organiser's session bar.</p>
+
+    <div class="help-section-sub">Session Code</div>
+    <p>Every event gets an auto-generated session code (e.g. <code>EVT-A3F9</code>) shown in the session bar. All live view links include this code so multiple organisations can run simultaneously on the same app without interference.</p>
+</div>
+
+<!-- ── Collaborate ── -->
+<div id="help-collab" class="help-panel hidden">
+    <h3 class="help-section-title">🤝 Collaborative Draft Editing</h3>
+    <p>The draft system lets your whole team co-edit the programme in real time — the worship leader adds music slots, the secretary fills in durations, the pastor reviews on their phone — all before going live.</p>
+
+    <!-- ── Starting a draft ── -->
+    <div class="help-section-sub">Starting a Draft Session</div>
+    <div class="help-steps-list">
+        <div class="hsl-item">
+            <div class="hsl-num">1</div>
+            <div class="hsl-body">
+                Open <strong>✍️ Create Program</strong> from the home screen. In the <em>Templates</em> panel, click <strong>🤝 Start Collaborative Draft</strong>.
+            </div>
+        </div>
+        <div class="hsl-item">
+            <div class="hsl-num">2</div>
+            <div class="hsl-body">
+                Enter <strong>your name</strong> (required — shown to collaborators) and set a <strong>4-digit PIN</strong>. The PIN is what protects your draft from uninvited editors. Share it only with your team.
+            </div>
+        </div>
+        <div class="hsl-item">
+            <div class="hsl-num">3</div>
+            <div class="hsl-body">
+                A <strong>draft bar</strong> appears at the top of the creator with your draft code (e.g. <code>DFT-A3F9</code>), a sync status badge, and a <strong>🔗 Copy Edit Link</strong> button.
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Sharing ── -->
+    <div class="help-section-sub">Sharing the Edit Link</div>
+    <p>Click <strong>🔗 Copy Edit Link</strong> and send the URL via WhatsApp, email, or any messaging app. The link looks like:</p>
+    <p><code>https://ayenijeremiaho.github.io/service-timer/?view=create&amp;draft=DFT-A3F9</code></p>
+    <div class="help-tip">💡 Share the PIN separately from the link — send the link in the group chat and the PIN privately to trusted team members only.</div>
+
+    <!-- ── Joining ── -->
+    <div class="help-section-sub">Joining a Draft (Collaborator)</div>
+    <div class="help-steps-list">
+        <div class="hsl-item">
+            <div class="hsl-num">1</div>
+            <div class="hsl-body">Open the edit link. A modal appears asking for <strong>your name</strong> and the <strong>4-digit PIN</strong>. Both are required — you cannot skip the name field.
+            </div>
+        </div>
+        <div class="hsl-item">
+            <div class="hsl-num">2</div>
+            <div class="hsl-body">Once joined, the current programme loads instantly. A coloured <strong>name tag</strong> appears above the rows for every active collaborator. The row someone is typing in <strong>glows with their colour</strong>.
+            </div>
+        </div>
+        <div class="hsl-item">
+            <div class="hsl-num">3</div>
+            <div class="hsl-body">Every change you make — adding items, editing topics, changing durations — syncs to all editors within <strong>1 second</strong> automatically.
+            </div>
+        </div>
+    </div>
+
+    <!-- ── What you can edit ── -->
+    <div class="help-section-sub">What Can Be Edited</div>
+    <div class="help-option-row">
+        <div class="help-option">
+            <div class="ho-head">✅ Editable by anyone</div>
+            <ul style="margin:8px 0 0 16px;color:#555;font-size:0.9em;line-height:1.8;">
+                <li>Event name / theme</li>
+                <li>Event date</li>
+                <li>Service start time</li>
+                <li>Programme item topics</li>
+                <li>Minister / person names</li>
+                <li>Durations (in minutes)</li>
+                <li>Adding new items or breaks</li>
+                <li>Removing items</li>
+            </ul>
+        </div>
+        <div class="help-option">
+            <div class="ho-head">🔒 Owner only</div>
+            <ul style="margin:8px 0 0 16px;color:#555;font-size:0.9em;line-height:1.8;">
+                <li>Viewing the change log (📋 Changes button)</li>
+                <li>Closing and deleting the draft (✕ Close Draft)</li>
+                <li>The PIN — collaborators cannot change it</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ── Change log ── -->
+    <div class="help-section-sub">📋 Change Log (Owner Only)</div>
+    <p>Click <strong>📋 Changes</strong> in the draft bar to open a live panel showing the last 20 edits. Each entry shows:</p>
+    <div class="help-control-grid" style="margin:10px 0;">
+        <div class="hcg-item"><span class="hcg-btn btn-purple" style="min-width:90px;">Who</span><span class="hcg-desc">The collaborator's name with their colour dot</span></div>
+        <div class="hcg-item"><span class="hcg-btn btn-blue"   style="min-width:90px;">What</span><span class="hcg-desc">Specific change e.g. "Added item: Word (PST Abraham)", "Changed duration to 25 min", "Renamed event to EAT THE WORD"</span></div>
+        <div class="hcg-item"><span class="hcg-btn btn-grey"   style="min-width:90px;">When</span><span class="hcg-desc">Timestamp of each change (hours:minutes)</span></div>
+    </div>
+    <div class="help-tip">💡 The change log updates in real time — you can watch edits appear as your team makes them.</div>
+
+    <!-- ── Expiration ── -->
+    <div class="help-section-sub">Draft Expiration &amp; Deletion</div>
+    <div class="help-option-row">
+        <div class="help-option">
+            <div class="ho-head">✕ Manual deletion (immediate)</div>
+            <p>Click <strong>✕ Close Draft</strong> in the draft bar. The draft is deleted from Firebase immediately. Anyone still on the edit link will see "Session not found". Use this when the programme is finalised.</p>
+        </div>
+        <div class="help-option">
+            <div class="ho-head">⏰ Auto-expiry (7 days)</div>
+            <p>If a draft is not updated for <strong>7 days</strong>, it is automatically cleaned up the next time anyone opens the app. This prevents abandoned drafts accumulating in Firebase.</p>
+        </div>
+    </div>
+    <div class="help-tip">⚠️ Once a draft is closed or expired, the edit link no longer works. Save your work using <strong>▶ Use in Timer</strong> or <strong>⬇️ Download PDF</strong> before closing.</div>
+
+    <!-- ── Finishing ── -->
+    <div class="help-section-sub">Finishing a Draft</div>
+    <div class="help-steps-list">
+        <div class="hsl-item">
+            <div class="hsl-num">A</div>
+            <div class="hsl-body"><strong>Use in Timer directly</strong> — click <em>▶ Use in Timer</em>. The programme loads into the organiser panel, a live session code is generated, and all timer views go live. The draft remains open until you close it.</div>
+        </div>
+        <div class="hsl-item">
+            <div class="hsl-num">B</div>
+            <div class="hsl-body"><strong>Download as PDF first</strong> — click <em>⬇️ Download PDF</em> to get a formatted order-of-service PDF. You can then upload it later from the home screen using <em>📄 Upload PDF</em>.</div>
+        </div>
+        <div class="hsl-item">
+            <div class="hsl-num">C</div>
+            <div class="hsl-body"><strong>Save as template</strong> — click <em>💾 Save as Template</em> to save the programme to your organisation's workspace. It will be available on any device using the same workspace code, for future services.</div>
+        </div>
+    </div>
+
+    <div class="help-tip">💡 You can run <em>Use in Timer</em> and keep the draft open at the same time — useful if you want to make last-minute changes while the timer is running.</div>
+</div>
+
+<!-- ── Reports ── -->
+<div id="help-reports" class="help-panel hidden">
+    <h3 class="help-section-title">📊 Reports</h3>
+    <p>After the service, click <strong>📊 View Report</strong> from the organiser panel to see a full summary.</p>
+
+    <div class="help-option-row">
+        <div class="help-option">
+            <div class="ho-head">💾 CSV Report</div>
+            <p>Downloads a spreadsheet with each speaker's allocated time, actual time, variance, and on-time status. Import into Excel or Google Sheets for further analysis.</p>
+        </div>
+        <div class="help-option">
+            <div class="ho-head">📄 PDF Report</div>
+            <p>Generates a formatted PDF with a colour-coded header, four summary stat cards, a pause log (if pauses were recorded with reasons), and a full speaker detail table with variance highlighted in red/blue/green.</p>
+        </div>
+    </div>
+
+    <div class="help-section-sub">Status Codes</div>
+    <div class="help-control-grid">
+        <div class="hcg-item"><span class="hcg-btn" style="background:#2ecc7120;color:#27ae60;border:1px solid #2ecc71;">On Time</span><span class="hcg-desc">Actual time within ±1 minute of allocated</span></div>
+        <div class="hcg-item"><span class="hcg-btn" style="background:#ff475720;color:#c0392b;border:1px solid #ff4757;">Over Time</span><span class="hcg-desc">Speaker went over their allocated time</span></div>
+        <div class="hcg-item"><span class="hcg-btn" style="background:#3498db20;color:#2980b9;border:1px solid #3498db;">Under Time</span><span class="hcg-desc">Speaker finished more than 1 minute early</span></div>
+        <div class="hcg-item"><span class="hcg-btn" style="background:#95a5a620;color:#7f8c8d;border:1px solid #95a5a6;">Not Used</span><span class="hcg-desc">Slot was skipped (moved past without starting)</span></div>
+    </div>
+</div>
+
+</div>
+
+<!-- Rejoin session picker modal -->
+<div class="pin-modal-overlay hidden" id="rejoinPickerModal" onclick="if(event.target===this)closeRejoinPicker()">
+    <div class="pin-modal-card" style="max-width:420px;">
+        <h3 style="margin-bottom:6px;">📡 Rejoin Session</h3>
+        <p style="color:#666;font-size:0.9em;margin-bottom:20px;">Session <code id="rejoinPickerCode" style="font-size:1em;font-weight:700;"></code> — choose your view:</p>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+            <button id="rejoinAsPresBtn" class="btn btn-primary" style="text-align:left;padding:14px 18px;">
+                📺 <strong>Presentation View</strong><br><span style="font-size:0.82em;opacity:0.8;font-weight:400;">TV / projector full-screen display</span>
+            </button>
+            <button id="rejoinAsPMBtn" class="btn btn-primary" style="text-align:left;padding:14px 18px;background:linear-gradient(135deg,#11998e,#38ef7d);">
+                🎛️ <strong>Programme Manager</strong><br><span style="font-size:0.82em;opacity:0.8;font-weight:400;">Adjust time, reorder, share speaker links</span>
+            </button>
+            <button id="rejoinAsOrgBtn" class="btn btn-danger" style="text-align:left;padding:14px 18px;">
+                🔑 <strong>Take Over as Organiser</strong><br><span style="font-size:0.82em;opacity:0.8;font-weight:400;">Resume timer control on this device</span>
+            </button>
+            <button id="rejoinAsStageBtn" class="btn btn-secondary" style="text-align:left;padding:14px 18px;">
+                🎬 <strong>Stage Manager View</strong><br><span style="font-size:0.82em;opacity:0.8;font-weight:400;">Read-only backstage view</span>
+            </button>
+            <div style="background:#f8f9fa;border:1.5px solid #ddd;border-radius:10px;padding:12px 14px;">
+                <div style="font-weight:700;font-size:0.9em;color:#333;margin-bottom:8px;">👤 Speaker View</div>
+                <div style="font-size:0.82em;color:#888;margin-bottom:10px;">Personal countdown for a speaker</div>
+                <div style="display:flex;gap:8px;">
+                    <input type="number" id="rejoinSpeakerNum" min="1" placeholder="Speaker #"
+                           style="flex:1;padding:9px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:0.95em;"
+                           onkeydown="if(event.key==='Enter')rejoinAsSpeaker()">
+                    <button id="rejoinAsSpeakerBtn" class="btn btn-secondary" onclick="rejoinAsSpeaker()" style="white-space:nowrap;">→ Join</button>
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-secondary" style="width:100%;margin-top:14px;" onclick="closeRejoinPicker()">Cancel</button>
+    </div>
 </div>
 
 <!-- Program Creator Screen -->
@@ -2616,11 +2819,11 @@
 </div>
 
 <!-- Adjust Time Modal -->
+<!-- Adjust Time Modal — lives outside views (organiser use) -->
 <div id="adjustTimeModal" class="modal-overlay hidden" onclick="closeAdjustTimeModal(event)">
     <div class="modal-content" onclick="event.stopPropagation()">
         <h3>⏱️ Adjust Speaker Time</h3>
         <p>Add or subtract time from the current speaker's allocated time</p>
-
         <div class="time-input-group">
             <div style="flex: 1;">
                 <label style="display: block; margin-bottom: 8px;">Minutes</label>
@@ -2631,16 +2834,10 @@
                 <input type="number" id="adjustSeconds" min="0" max="59" value="0" />
             </div>
         </div>
-
         <div style="display: flex; gap: 10px; margin: 20px 0;">
-            <button class="btn btn-success" style="flex: 1;" onclick="setAdjustmentType('add')">
-                ➕ Add Time
-            </button>
-            <button class="btn btn-danger" style="flex: 1;" onclick="setAdjustmentType('subtract')">
-                ➖ Subtract Time
-            </button>
+            <button class="btn btn-success" style="flex: 1;" onclick="setAdjustmentType('add')">➕ Add Time</button>
+            <button class="btn btn-danger" style="flex: 1;" onclick="setAdjustmentType('subtract')">➖ Subtract Time</button>
         </div>
-
         <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
             <div style="color: #666; font-size: 0.9em; margin-bottom: 5px;">Current Allocated:</div>
             <div id="currentAllocatedAdj" style="font-size: 1.5em; font-weight: 600; color: #333;">--:--</div>
@@ -2648,7 +2845,6 @@
             <div id="newAllocatedAdj" style="font-size: 1.5em; font-weight: 600; color: #667eea;">--:--</div>
             <div id="adjustmentType" style="margin-top: 10px; padding: 8px; border-radius: 5px; text-align: center; font-weight: 600; display: none;"></div>
         </div>
-
         <div class="modal-buttons">
             <button class="btn btn-secondary" onclick="closeAdjustTimeModal()">Cancel</button>
             <button class="btn btn-primary" id="confirmAdjustBtn" onclick="confirmAdjustTime()" disabled>Confirm</button>
@@ -2660,6 +2856,105 @@
 <button id="themeToggleBtn" onclick="toggleTheme()" title="Toggle dark/light mode">🌙</button>
 
 <!-- Stage Manager View -->
+<!-- Programme Manager View -->
+<div id="pmView" class="pm-view hidden">
+    <!-- Sticky header -->
+    <div class="pm-header">
+        <div style="flex:1;min-width:0;">
+            <div class="pm-header-title">🎛️ Programme Manager</div>
+            <div class="pm-header-event" id="pmEventName">Loading…</div>
+        </div>
+        <span id="pmFbStatus" class="firebase-status connecting pm-fb-status">
+                <span class="status-dot"></span> Connecting…
+            </span>
+    </div>
+
+    <!-- Stats bar -->
+    <div class="pm-stats">
+        <div class="pm-stat">
+            <div class="pm-stat-val" id="pmEstEnd">--:--</div>
+            <div class="pm-stat-lbl">Est. End</div>
+        </div>
+        <div class="pm-stat">
+            <div class="pm-stat-val" id="pmTimeLeft">--</div>
+            <div class="pm-stat-lbl">Remaining</div>
+        </div>
+        <div class="pm-stat">
+            <div class="pm-stat-val" id="pmVariance">--</div>
+            <div class="pm-stat-lbl">Running</div>
+        </div>
+        <div class="pm-stat">
+            <div class="pm-stat-val" id="pmSlotsDone">0/0</div>
+            <div class="pm-stat-lbl">Slots Done</div>
+        </div>
+    </div>
+
+    <!-- Current speaker -->
+    <div class="pm-current" id="pmCurrentCard">
+        <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
+            <div class="pm-current-timer" id="pmTimer">--:--</div>
+            <div id="pmOvertimeCounter" style="display:none;font-size:0.65em;font-weight:800;color:#ff4757;font-family:'Courier New',monospace;letter-spacing:0.05em;margin-top:2px;"></div>
+            <div id="pmTimesUp" style="display:none;font-size:0.5em;font-weight:900;color:#ff4757;letter-spacing:0.12em;text-transform:uppercase;margin-top:1px;">TIME'S UP!</div>
+        </div>
+        <div class="pm-current-info">
+            <div class="pm-current-name"  id="pmCurrentName">Waiting to start</div>
+            <div class="pm-current-topic" id="pmCurrentTopic"></div>
+            <div class="pm-current-status" id="pmCurrentStatus">Service not started</div>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="pm-controls" id="pmControls">
+        <button class="btn btn-success"   id="pmStartBtn"  onclick="pmAction('start')">▶ Start</button>
+        <button class="btn btn-warning hidden" id="pmPauseBtn"  onclick="pmAction('pause')">⏸ Pause</button>
+        <button class="btn btn-danger  hidden" id="pmResumeBtn" onclick="pmAction('resume')">▶ Resume</button>
+        <button class="btn btn-secondary" id="pmPrevBtn"   onclick="pmAction('prev')" disabled>⏮ Prev</button>
+        <button class="btn btn-primary"   id="pmAdjBtn"    onclick="pmShowAdjust()">⏱ Adjust</button>
+        <button class="btn btn-primary"   id="pmNextBtn"   onclick="pmAction('next')" disabled>⏭ Next</button>
+    </div>
+
+    <!-- Programme list -->
+    <div class="pm-list">
+        <div class="pm-list-label">Programme</div>
+        <div id="pmSlotList"></div>
+    </div>
+
+    <!-- Sticky bottom: share links -->
+    <div class="pm-bottom">
+        <button class="btn btn-secondary" onclick="pmCopyLink('presentation')" style="font-size:0.78em;">📺 Presentation</button>
+        <button class="btn btn-secondary" onclick="pmCopyLink('stage')"        style="font-size:0.78em;">🎬 Stage View</button>
+        <button class="btn btn-secondary" onclick="pmCopyLink('pm')"           style="font-size:0.78em;">🎛️ Share PM</button>
+        <button class="btn btn-primary"   onclick="pmDownloadReport()"         style="font-size:0.78em;">📊 Report</button>
+    </div>
+
+    <!-- Inline adjust time modal for PM (rendered inside this view) -->
+    <div id="pmAdjustModal" class="modal-overlay hidden" onclick="if(event.target===this)closePmAdjust()" style="position:fixed;">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3>⏱️ Adjust Speaker Time</h3>
+            <p>Add or subtract time from the current speaker</p>
+            <div class="time-input-group">
+                <div style="flex:1;">
+                    <label style="display:block;margin-bottom:8px;">Minutes</label>
+                    <input type="number" id="pmAdjMinutes" min="0" max="60" value="5">
+                </div>
+                <div style="flex:1;">
+                    <label style="display:block;margin-bottom:8px;">Seconds</label>
+                    <input type="number" id="pmAdjSeconds" min="0" max="59" value="0">
+                </div>
+            </div>
+            <div style="display:flex;gap:10px;margin:16px 0;">
+                <button class="btn btn-success" style="flex:1;" onclick="setPmAdjType('add')">➕ Add</button>
+                <button class="btn btn-danger"  style="flex:1;" onclick="setPmAdjType('subtract')">➖ Subtract</button>
+            </div>
+            <div id="pmAdjType" style="text-align:center;font-weight:700;font-size:0.9em;margin-bottom:12px;min-height:20px;color:#667eea;"></div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closePmAdjust()">Cancel</button>
+                <button class="btn btn-primary" id="pmAdjConfirmBtn" onclick="confirmPmAdjust()" disabled>Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div id="stageView" class="stage-view hidden">
     <div class="stage-header">
         <span class="sh-event" id="stageEventName">Service Timer</span>
@@ -2698,13 +2993,17 @@
         currentSpeakerIndex: -1,
         timerSeconds: 0,
         timerInterval: null,
+        slotStartedAt:   null,   // wall-clock ms when current slot started/resumed
+        slotBaseSeconds: 0,      // seconds already elapsed at last start/resume
         isPaused: false,
         isRunning: false,
         speakers: [],
         speakerHistory: [],
         showTimeUp: false,
         timeUpInterval: null,
-        sessionCode: null
+        sessionCode: null,
+        pauseLog:    [],
+        actionLog:   []
     };
 
     // ── Firebase ────────────────────────────────────────────────
@@ -2721,6 +3020,17 @@
     const db = firebase.database();
     const BASE_URL = 'https://ayenijeremiaho.github.io/service-timer/';
 
+    // ── Toast notification helper ───────────────────────────
+    function toast(msg, type='success', duration=2800) {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+        const el = document.createElement('div');
+        el.className = 'toast ' + type;
+        el.textContent = msg;
+        container.appendChild(el);
+        setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, duration + 100);
+    }
+
     function generateSessionCode() {
         const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
         let c = 'EVT-';
@@ -2729,20 +3039,65 @@
     }
 
     // Throttle Firebase writes — only write at most once per second
-    let _lastSyncTime = 0;
     let _syncPending  = false;
 
-    function syncToFirebase() {
-        if (!appState.sessionCode) return;
-        if (!appState.event || !appState.event.name) return;
 
-        // Throttle: batch rapid calls into one write per second
-        if (_syncPending) return;
-        _syncPending = true;
-        setTimeout(() => {
-            _syncPending = false;
-            _doFirebaseWrite();
-        }, 800);
+
+    // ── Action log ───────────────────────────────────────────────────
+    function logAction(role, action, detail) {
+        if (!appState.sessionCode) return;
+        const entry = {
+            role:   role,
+            action: action,
+            detail: detail || '',
+            at:     Date.now(),
+            time:   new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', second:'2-digit' }),
+            timerSeconds: appState.timerSeconds, // Add current timer state for debugging
+            currentSpeaker: appState.currentSpeakerIndex >= 0 ? appState.speakers[appState.currentSpeakerIndex]?.name : 'None'
+        };
+        db.ref('sessions/' + appState.sessionCode + '/actionLog').push(entry).catch(() => {});
+
+        // Only log critical errors, not routine actions
+    }
+
+    function validateTimingConsistency() {
+        // Validation function to check timing consistency across views
+        if (appState.currentSpeakerIndex >= 0 && appState.currentSpeakerIndex < appState.speakers.length) {
+            const currentSpeaker = appState.speakers[appState.currentSpeakerIndex];
+            const now = Date.now();
+
+            if (appState.isRunning && !appState.isPaused && appState.slotStartedAt) {
+                const calculatedTime = Math.floor((now - appState.slotStartedAt) / 1000) + (appState.slotBaseSeconds || 0);
+                const timeDiff = Math.abs(calculatedTime - appState.timerSeconds);
+
+                // Only warn for significant drift (>30 seconds) to avoid normal browser timing variations
+                if (timeDiff > 30) {
+                    console.warn('Significant timer synchronization drift detected:', {
+                        calculated: calculatedTime,
+                        stored: appState.timerSeconds,
+                        difference: timeDiff,
+                        speaker: currentSpeaker.name,
+                        note: 'This may indicate system sleep, tab switching, or performance issues'
+                    });
+
+                    // Auto-correct major drift (but only in organizer view)
+                    const isOrganizerView = !window.location.search.includes('view=');
+                    if (timeDiff > 60 && isOrganizerView) {
+                        appState.timerSeconds = calculatedTime;
+                        console.warn('Auto-corrected timer due to major drift (>60s)');
+                        return true; // Indicates correction was made
+                    }
+                } else if (timeDiff > 10) {
+                    // For moderate drift (10-30s), just auto-correct without warning noise
+                    const isOrganizerView = !window.location.search.includes('view=');
+                    if (isOrganizerView) {
+                        appState.timerSeconds = calculatedTime;
+                        return true; // Silent correction
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     function _doFirebaseWrite() {
@@ -2766,18 +3121,38 @@
             timerSeconds:        Number(appState.timerSeconds),
             isRunning:           appState.isRunning  === true,
             isPaused:            appState.isPaused   === true,
+            slotStartedAt:       appState.slotStartedAt  || null,
+            slotBaseSeconds:     Number(appState.slotBaseSeconds || 0),
             speakers:            safeSpeakers,
+            pauseLog:            Array.isArray(appState.pauseLog)  ? appState.pauseLog  : [],
+            actionLog:           Array.isArray(appState.actionLog) ? appState.actionLog : [],
             updatedAt:           Date.now()
         };
 
-        db.ref('sessions/' + appState.sessionCode).set(payload)
-            .then(() => {
-                setFbStatus('connected', 'Live');
-            })
-            .catch(err => {
-                console.error('Firebase write error:', err);
-                setFbStatus('disconnected', 'Sync error');
-            });
+        markOrgWrite(); // record timestamp so organiser listener ignores this echo
+
+        // Enhanced Firebase write with retry logic
+        const writeWithRetry = (retryCount = 0) => {
+            db.ref('sessions/' + appState.sessionCode).set(payload)
+                .then(() => {
+                    setFbStatus('connected', 'Live');
+                    // Firebase write successful - no additional verification needed
+                    // Error handling for write failures is handled in the .catch() below
+                })
+                .catch(err => {
+                    console.error('Firebase write error:', err);
+
+                    // Retry logic for network issues
+                    if (retryCount < 2 && (err.code === 'network-request-failed' || err.code === 'unavailable')) {
+                        setFbStatus('connecting', 'Retrying...');
+                        setTimeout(() => writeWithRetry(retryCount + 1), 2000);
+                    } else {
+                        setFbStatus('disconnected', 'Sync error');
+                    }
+                });
+        };
+
+        writeWithRetry();
     }
 
     // Call immediately (no throttle) for important state changes
@@ -2786,16 +3161,118 @@
         _doFirebaseWrite();
     }
 
+    // Throttled version - only sync if not already pending
+    function syncToFirebaseThrottled() {
+        if (_syncPending) return; // Already have a pending sync
+        _syncPending = true;
+        setTimeout(() => {
+            _doFirebaseWrite();
+        }, 100); // Small delay to batch multiple rapid changes
+    }
+
     let fbListener = null;
+    // Self-tick interval for remote views — keeps display moving between Firebase updates
+    let _remoteTickInterval = null;
+    let _remoteOnDataFn     = null;
+
+    function startRemoteTick(onData) {
+        _remoteOnDataFn = onData;
+        if (_remoteTickInterval) clearInterval(_remoteTickInterval);
+        _remoteTickInterval = setInterval(() => {
+            if (appState.isRunning && !appState.isPaused && appState.slotStartedAt) {
+                const elapsed = Math.floor((Date.now() - appState.slotStartedAt) / 1000);
+                appState.timerSeconds = (appState.slotBaseSeconds || 0) + elapsed;
+                if (_remoteOnDataFn) _remoteOnDataFn(null); // null = tick only, no new data
+            }
+        }, 1000);
+    }
+
     function subscribeToSession(sessionCode, onData) {
         if (fbListener) { fbListener.off(); fbListener = null; }
+        if (_remoteTickInterval) { clearInterval(_remoteTickInterval); _remoteTickInterval = null; }
+
         fbListener = db.ref('sessions/' + sessionCode);
         fbListener.on('value', snap => {
             const data = snap.val();
             if (!data) { setFbStatus('disconnected','Session not found'); return; }
             setFbStatus('connected','Live');
+            // Apply the full snapshot (recomputes timerSeconds from anchor)
             onData(data);
+            // Start/restart local tick so view keeps moving between Firebase writes
+            startRemoteTick(onData);
         }, err => { console.error(err); setFbStatus('disconnected','Error'); });
+    }
+
+    function cleanupNetworkMonitoring() {
+        if (_networkCheckInterval) {
+            clearInterval(_networkCheckInterval);
+            _networkCheckInterval = null;
+        }
+    }
+
+    // Add cleanup when page unloads
+    window.addEventListener('beforeunload', () => {
+        cleanupNetworkMonitoring();
+        if (_remoteTickInterval) {
+            clearInterval(_remoteTickInterval);
+            _remoteTickInterval = null;
+        }
+    });
+
+    let _networkCheckInterval = null;
+    let _lastNetworkCheck = 0;
+
+    function initNetworkMonitoring() {
+        // Monitor browser online/offline events
+        window.addEventListener('online', () => {
+            setFbStatus('connecting', 'Reconnecting...');
+            // Attempt to sync immediately when back online
+            if (appState.sessionCode) {
+                setTimeout(() => {
+                    syncToFirebaseNow();
+                }, 1000);
+            }
+        });
+
+        window.addEventListener('offline', () => {
+            setFbStatus('disconnected', 'Network offline');
+        });
+
+        // Periodic network connectivity check (every 30 seconds)
+        _networkCheckInterval = setInterval(checkNetworkConnectivity, 30000);
+    }
+
+    function checkNetworkConnectivity() {
+        // Simple connectivity test - try to reach Firebase
+        const now = Date.now();
+        if (now - _lastNetworkCheck < 25000) return; // Don't check too frequently
+        _lastNetworkCheck = now;
+
+        if (!navigator.onLine) {
+            setFbStatus('disconnected', 'Network offline');
+            return;
+        }
+
+        // Test actual connectivity by trying a simple Firebase operation
+        if (appState.sessionCode) {
+            const testRef = db.ref('.info/connected');
+            testRef.once('value')
+                .then((snapshot) => {
+                    const connected = snapshot.val();
+                    if (connected) {
+                        // Only update to 'Live' if we're not in an error state
+                        const currentStatus = document.getElementById('fbStatusBadge');
+                        if (currentStatus && !currentStatus.className.includes('disconnected')) {
+                            setFbStatus('connected', 'Live');
+                        }
+                    } else {
+                        setFbStatus('disconnected', 'Offline');
+                    }
+                })
+                .catch(() => {
+                    setFbStatus('disconnected', 'Connection failed');
+                });
+        }
     }
 
     function setFbStatus(state, label) {
@@ -2803,6 +3280,20 @@
             const el = document.getElementById(id);
             if (el) { el.className='firebase-status '+state; el.innerHTML='<span class="status-dot"></span> '+label; }
         });
+
+        // Also update PM view firebase status
+        const pmFbStatus = document.getElementById('pmFbStatus');
+        if (pmFbStatus) {
+            pmFbStatus.className = 'firebase-status ' + state + ' pm-fb-status';
+            pmFbStatus.innerHTML = '<span class="status-dot"></span> ' + label;
+        }
+
+        // Update stage view firebase status
+        const stageFbStatus = document.getElementById('stageFbStatus');
+        if (stageFbStatus) {
+            stageFbStatus.className = 'firebase-status ' + state;
+            stageFbStatus.innerHTML = '<span class="status-dot"></span> ' + label;
+        }
     }
 
     function cleanupOldSessions() {
@@ -2839,8 +3330,9 @@
         if (!appState.sessionCode) return;
         const url = BASE_URL+'?view='+viewType+'&session='+appState.sessionCode;
         navigator.clipboard.writeText(url).then(() => {
-            const btn = document.getElementById('copyPrBtn');
-            if (btn) { const o=btn.innerHTML; btn.innerHTML='✅ Copied!'; btn.classList.add('copied');
+            const idMap = { presentation: 'copyPrBtn', stage: 'copyStageBtn', pm: 'copyPmBtn' };
+            const btn = document.getElementById(idMap[viewType] || 'copyPrBtn');
+            if (btn) { const o=btn.innerHTML; btn.innerHTML='✅ Copied!'; btn.classList.add('copied'); toast('Link copied to clipboard');
                 setTimeout(()=>{btn.innerHTML=o;btn.classList.remove('copied');},2000); }
         });
     }
@@ -2874,7 +3366,7 @@
         const input = document.getElementById('slmLinkInput');
         navigator.clipboard.writeText(input.value).then(() => {
             const btn = document.getElementById('slmCopyBtn');
-            const o = btn.innerHTML; btn.innerHTML='✅ Copied!'; btn.classList.add('copied');
+            const o = btn.innerHTML; btn.innerHTML='✅ Copied!'; btn.classList.add('copied'); toast('Link copied to clipboard');
             setTimeout(()=>{btn.innerHTML=o;btn.classList.remove('copied');},2000);
         });
     }
@@ -2883,14 +3375,29 @@
     function applyFirebaseSnapshot(data) {
         appState.event               = data.event               || null;
         appState.currentSpeakerIndex = data.currentSpeakerIndex != null ? data.currentSpeakerIndex : -1;
-        appState.timerSeconds        = data.timerSeconds        || 0;
         appState.isRunning           = !!data.isRunning;
         appState.isPaused            = !!data.isPaused;
         appState.speakers            = Array.isArray(data.speakers) ? data.speakers : [];
+        appState.slotStartedAt       = data.slotStartedAt   || null;
+        appState.slotBaseSeconds     = data.slotBaseSeconds  || 0;
+        if (Array.isArray(data.pauseLog))  appState.pauseLog  = data.pauseLog;
+        if (Array.isArray(data.actionLog)) appState.actionLog = data.actionLog;
+
+        // Recompute live timerSeconds from the wall-clock anchor
+        // This makes remote views accurate even if Firebase was briefly offline
+        if (appState.isRunning && !appState.isPaused && appState.slotStartedAt) {
+            const elapsed = Math.floor((Date.now() - appState.slotStartedAt) / 1000);
+            appState.timerSeconds = (appState.slotBaseSeconds || 0) + elapsed;
+        } else {
+            appState.timerSeconds = data.timerSeconds || 0;
+        }
     }
 
     // Initialize
     function init() {
+        // Start network monitoring for all views
+        initNetworkMonitoring();
+
         applyStoredTheme();
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -2898,26 +3405,32 @@
         const session = urlParams.get('session');
         const si      = urlParams.get('si');
 
-        const isRemoteView = (view === 'stage' || view === 'presentation' || view === 'speaker') && session;
+        const isRemoteView = (view === 'stage' || view === 'presentation' || view === 'speaker' || view === 'pm') && session;
 
         if (isRemoteView) {
             // ── Remote views: do NOT load localStorage, do NOT run organiser setup ──
             appState.sessionCode = session;
             setFbStatus('connecting', 'Connecting…');
 
-            if (view === 'stage') {
+            if (view === 'pm') {
+                showView('pmView');
+                initPmView(session);
+
+            } else if (view === 'stage') {
                 showView('stageView');
                 subscribeToSession(session, data => {
-                    applyFirebaseSnapshot(data);
+                    if (data) applyFirebaseSnapshot(data);
                     updateStageView();
-                    const sb = document.getElementById('stageFbStatus');
-                    if (sb) { sb.className='firebase-status connected'; sb.innerHTML='<span class="status-dot"></span> Live'; }
+                    if (data) {
+                        const sb = document.getElementById('stageFbStatus');
+                        if (sb) { sb.className='firebase-status connected'; sb.innerHTML='<span class="status-dot"></span> Live'; }
+                    }
                 });
 
             } else if (view === 'presentation') {
                 showView('presentationView');
                 subscribeToSession(session, data => {
-                    applyFirebaseSnapshot(data);
+                    if (data) applyFirebaseSnapshot(data);
                     updatePresentationView();
                 });
 
@@ -2925,7 +3438,7 @@
                 const speakerIdx = (si !== null && si !== undefined) ? parseInt(si) : -1;
                 showView('speakerPortal');
                 subscribeToSession(session, data => {
-                    applyFirebaseSnapshot(data);
+                    if (data) applyFirebaseSnapshot(data);
                     updatePersonalSpeakerView(speakerIdx);
                 });
             }
@@ -2962,13 +3475,15 @@
 
     // Navigation Functions
     function showView(viewId) {
-        const views = ['startupScreen', 'pdfUploadScreen', 'manualEntryScreen', 'organizerPanel', 'presentationView', 'speakerPortal', 'reportView', 'creatorScreen', 'stageView', 'helpScreen'];
+        // Stop remote tick when leaving any remote view
+        if (_remoteTickInterval) { clearInterval(_remoteTickInterval); _remoteTickInterval = null; }
+        const views = ['startupScreen', 'pdfUploadScreen', 'manualEntryScreen', 'organizerPanel', 'presentationView', 'speakerPortal', 'reportView', 'creatorScreen', 'stageView', 'helpScreen', 'pmView'];
         views.forEach(id => {
             document.getElementById(id).classList.add('hidden');
         });
         document.getElementById(viewId).classList.remove('hidden');
         // Hide theme toggle on immersive views
-        const noTheme = ['presentationView','speakerPortal','stageView'];
+        const noTheme = ['presentationView','speakerPortal','stageView','pmView'];
         const themeBtn = document.getElementById('themeToggleBtn');
         if (themeBtn) themeBtn.style.display = noTheme.includes(viewId) ? 'none' : 'flex';
     }
@@ -2985,6 +3500,134 @@
         window.history.pushState({}, '', window.location.pathname + '?view=create');
         showView('creatorScreen');
         initCreator();
+    }
+
+    function rejoinSession() {
+        const raw = document.getElementById('rejoinCodeInput').value.trim().toUpperCase();
+        const errEl = document.getElementById('rejoinError');
+        errEl.textContent = '';
+
+        if (!raw) { errEl.textContent = 'Please enter a session code.'; return; }
+
+        // Accept both EVT- (timer session) and show view chooser
+        const isEvt = /^EVT-[A-Z0-9]{4}$/.test(raw);
+        if (!isEvt) {
+            errEl.textContent = 'Enter a valid session code (e.g. EVT-A3F9).';
+            return;
+        }
+
+        // Verify the session exists in Firebase first
+        errEl.textContent = 'Checking…';
+        db.ref('sessions/' + raw).once('value').then(snap => {
+            if (!snap.val()) {
+                errEl.textContent = 'Session not found. Check the code and try again.';
+                return;
+            }
+            errEl.textContent = '';
+            // Show a picker: which view do they want?
+            showRejoinPicker(raw);
+        }).catch(() => {
+            errEl.textContent = 'Could not connect. Check your internet and try again.';
+        });
+    }
+
+    function showRejoinPicker(sessionCode) {
+        const modal = document.getElementById('rejoinPickerModal');
+        document.getElementById('rejoinPickerCode').textContent = sessionCode;
+        // Wire up buttons
+        document.getElementById('rejoinAsPresBtn').onclick    = () => { closeRejoinPicker(); window.location.href = BASE_URL + '?view=presentation&session=' + sessionCode; };
+        document.getElementById('rejoinAsStageBtn').onclick   = () => { closeRejoinPicker(); window.location.href = BASE_URL + '?view=stage&session=' + sessionCode; };
+        document.getElementById('rejoinAsPMBtn').onclick      = () => { closeRejoinPicker(); window.location.href = BASE_URL + '?view=pm&session=' + sessionCode; };
+        document.getElementById('rejoinAsOrgBtn').onclick     = () => { closeRejoinPicker(); takeOverAsOrganiser(sessionCode); };
+        // Speaker join handled by rejoinAsSpeaker() — stores sessionCode for it
+        document.getElementById('rejoinAsSpeakerBtn')._sessionCode = sessionCode;
+        modal.classList.remove('hidden');
+    }
+
+    function closeRejoinPicker() {
+        document.getElementById('rejoinPickerModal').classList.add('hidden');
+    }
+
+    function takeOverAsOrganiser(sessionCode) {
+        const errEl = document.getElementById('rejoinError');
+        if (errEl) errEl.textContent = 'Loading session…';
+
+        db.ref('sessions/' + sessionCode).once('value').then(snap => {
+            const data = snap.val();
+            if (!data || !data.event) {
+                if (errEl) errEl.textContent = 'Session data missing — cannot take over.';
+                return;
+            }
+            if (errEl) errEl.textContent = '';
+
+            // Recompute timerSeconds from slotStartedAt so we resume at the
+            // correct second even if Firebase is a few seconds stale
+            let timerSeconds = data.timerSeconds || 0;
+            if (data.isRunning && !data.isPaused && data.slotStartedAt) {
+                const elapsed = Math.floor((Date.now() - data.slotStartedAt) / 1000);
+                timerSeconds = (data.slotBaseSeconds || 0) + elapsed;
+            }
+
+            // Stop any existing intervals on this device before taking over
+            if (appState.timerInterval)  clearInterval(appState.timerInterval);
+            if (appState.timeUpInterval) clearInterval(appState.timeUpInterval);
+            stopFbSyncInterval();
+            if (_orgFbListener)      { _orgFbListener.off(); _orgFbListener = null; }
+            stopPendingActionListener();
+            _orgSubscribedSession = null;
+
+            // Load Firebase state into appState
+            appState.event               = data.event;
+            appState.speakers            = Array.isArray(data.speakers) ? data.speakers : [];
+            appState.currentSpeakerIndex = data.currentSpeakerIndex != null ? data.currentSpeakerIndex : -1;
+            appState.timerSeconds        = timerSeconds;
+            appState.isRunning           = !!data.isRunning;
+            appState.isPaused            = !!data.isPaused;
+            appState.sessionCode         = sessionCode;
+            appState.speakerHistory      = [];
+            appState.pauseLog            = data.pauseLog || [];
+            appState.slotStartedAt       = data.slotStartedAt  || null;
+            appState.slotBaseSeconds     = data.slotBaseSeconds || 0;
+            appState.timerInterval       = null;
+            appState.timeUpInterval      = null;
+
+            // Save to localStorage so this device owns the session
+            saveStateToStorage();
+
+            // Restart timer interval if it was running when we took over
+            if (appState.isRunning && !appState.isPaused) {
+                appState.timerInterval = setInterval(updateTimer, 1000);
+                startFbSyncInterval();
+            }
+
+            // Show organiser panel — this also starts the Firebase listeners
+            showView('organizerPanel');
+            renderOrganizerPanel();
+
+            const mins = Math.floor(timerSeconds / 60);
+            const secs = String(timerSeconds % 60).padStart(2, '0');
+            const status = appState.isRunning
+                ? (appState.isPaused ? '⏸ paused at ' : '▶ running at ')
+                : 'not started — ';
+            toast('Organiser resumed — ' + status + mins + ':' + secs, 'success', 4000);
+
+        }).catch(err => {
+            if (errEl) errEl.textContent = 'Could not load session: ' + err.message;
+        });
+    }
+    function rejoinAsSpeaker() {
+        const btn = document.getElementById('rejoinAsSpeakerBtn');
+        const sessionCode = btn._sessionCode;
+        if (!sessionCode) return;
+        const numEl = document.getElementById('rejoinSpeakerNum');
+        const num = parseInt(numEl.value);
+        if (!numEl.value || isNaN(num) || num < 1) {
+            numEl.style.borderColor = '#ff4757';
+            setTimeout(() => numEl.style.borderColor = '', 1500);
+            return;
+        }
+        closeRejoinPicker();
+        window.location.href = BASE_URL + '?view=speaker&session=' + sessionCode + '&si=' + (num - 1);
     }
 
     function backToStartup() {
@@ -3056,14 +3699,11 @@
             `;
 
         try {
-            console.log('Starting PDF extraction for file:', file.name);
             const text = await extractTextFromPDF(file);
-            console.log('PDF text extracted, length:', text.length);
 
             const parsedEvent = parsePDFText(text);
 
             if (parsedEvent && parsedEvent.speakers.length > 0) {
-                console.log('PDF parsed successfully:', parsedEvent);
                 appState.event = parsedEvent;
                 appState.speakers = parsedEvent.speakers;
                 appState.sessionCode = generateSessionCode();
@@ -3071,7 +3711,6 @@
                 showView('organizerPanel');
                 renderOrganizerPanel();
             } else {
-                console.log('PDF parsing returned no speakers');
                 uploadArea.innerHTML = originalContent;
 
                 const useManual = confirm(
@@ -3108,17 +3747,34 @@
             for (let i = 1; i <= pdf.numPages; i++) {
                 const page = await pdf.getPage(i);
                 const textContent = await page.getTextContent();
-                const pageText = textContent.items.map(item => item.str).join(' ');
-                fullText += pageText + '\n';
+
+                // Group text items by their Y coordinate (same Y = same visual row)
+                // item.transform[5] is the Y position on the page
+                const rowMap = {};
+                for (const item of textContent.items) {
+                    if (!item.str.trim()) continue;
+                    // Round Y to nearest 2px to group items on the same line
+                    const y = Math.round(item.transform[5] / 2) * 2;
+                    if (!rowMap[y]) rowMap[y] = [];
+                    rowMap[y].push({ x: item.transform[4], str: item.str });
+                }
+
+                // Sort rows top-to-bottom (higher Y = higher on page in PDF coords)
+                const sortedYs = Object.keys(rowMap)
+                    .map(Number)
+                    .sort((a, b) => b - a); // descending = top to bottom
+
+                for (const y of sortedYs) {
+                    // Sort items left-to-right within each row
+                    const rowItems = rowMap[y].sort((a, b) => a.x - b.x);
+                    const rowText = rowItems.map(it => it.str).join(' ').trim();
+                    if (rowText) fullText += rowText + '\n';
+                }
             }
 
-            console.log('Extracted text:', fullText);
-
-            // Apply regex patterns
+            // Section headers get their own lines (in case they share a line with a date)
             fullText = fullText.replace(/(WORKER'?S?\s*MEETING|FIRST SERVICE|SECOND SERVICE|THIRD SERVICE|FOURTH SERVICE|SUNDAY SERVICE)/gi, '\n$1');
-            fullText = fullText.replace(/(\s)(\d+\s+[A-Z])/g, '\n$2');
 
-            console.log('Processed text:', fullText);
             return fullText;
         } catch (error) {
             console.error('PDF extraction error:', error);
@@ -3127,7 +3783,6 @@
     }
 
     function parsePDFText(text) {
-        console.log('Parsing PDF text...');
         const lines = text.split('\n').filter(line => line.trim());
         const speakers = [];
         let eventName = 'Service Program';
@@ -3145,10 +3800,11 @@
         let currentService = 'General Session';
 
         // Pattern for tabular format: S/N EVENTS START_TIME DURATION END_TIME MINISTER
-        const tableRowPattern = /^\d+\s+(.+?)\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+(\d{2}:\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s*(.*)$/i;
+        // Duration accepts: "05:00", "10:00", "25:00" or "10mins", "5mins" (Workers Meeting style)
+        const tableRowPattern = /^\d+\s+(.+?)\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+(\d{1,2}:\d{2}(?::\d{2})?|\d+\s*mins?)\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s*(.*)$/i;
 
-        // Alternative pattern without S/N
-        const altTablePattern = /^([A-Z][A-Za-z\s&\/]+?)\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+(\d{2}:\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s*(.*)$/i;
+        // Alternative pattern without S/N number — handles Workers Meeting rows
+        const altTablePattern = /^([A-Z][A-Za-z\s&\/'()\-]+?)\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+(\d{1,2}:\d{2}(?::\d{2})?|\d+\s*mins?)\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s*(.*)$/i;
 
         // Minister-only line: a line that looks like a name but has no times (orphaned from previous row)
         const ministerOnlyPattern = /^((?:SIS|BRO|PST|THE|MRS|REV|DR|EVANG?)\s+[A-Z][A-Z\s]+)$/i;
@@ -3166,7 +3822,6 @@
                         ? lastKnownMinister
                         : 'TBD';
                 if (isValid(resolvedMinister)) lastKnownMinister = resolvedMinister;
-                console.log('Flushing pending entry with minister:', resolvedMinister);
                 speakers.push({
                     name: resolvedMinister,
                     topic: `${pendingEntry.service}: ${pendingEntry.topic}`,
@@ -3186,13 +3841,11 @@
             if (servicePattern.test(line)) {
                 flushPending(null);
                 currentService = line.replace(/\s+Sunday.*$/i, '').trim();
-                console.log('Found service section:', currentService);
                 continue;
             }
 
             // Skip header rows
             if (/^S\/N\s+EVENTS\s+START TIME/i.test(line)) {
-                console.log('Skipping header row');
                 continue;
             }
 
@@ -3207,11 +3860,10 @@
             let match = line.match(tableRowPattern) || line.match(altTablePattern);
 
             if (match) {
-                // Before storing this new row, flush any pending entry.
-                // If the pending entry had no minister yet, and this line's minister field
-                // starts with a known prefix, it may actually belong to the previous row —
-                // but the safer assumption is: if the pending row had an empty minister,
-                // peek at whether the current row's minister field looks like a continuation.
+                // Groups differ between tableRowPattern and altTablePattern:
+                // tableRow:  [0]=full, [1]=sn+topic(need trim), [2]=start, [3]=duration, [4]=end, [5]=minister
+                // altTable:  [0]=full, [1]=topic, [2]=start, [3]=duration, [4]=end, [5]=minister
+                // Both patterns now have 5 capture groups in same positions
                 const inlineMinister = match[5] ? match[5].trim() : '';
 
                 // If we have a pending entry with no minister, and the current row also
@@ -3223,12 +3875,16 @@
                     flushPending(null);
                 }
 
-                const topic = match[1].trim();
+                // For tableRowPattern, group[1] starts after S/N but may still have it if regex slips
+                const topic = match[1].trim().replace(/^\d+\s+/, '');
                 const durationStr = match[3].trim();
 
-                // Parse duration
+                // Parse duration — handles "05:00", "10:00", "25:00" and "10mins", "5 mins"
                 let minutes = 15;
-                if (durationStr.includes(':')) {
+                const minLiteral = durationStr.match(/^(\d+)\s*mins?/i);
+                if (minLiteral) {
+                    minutes = parseInt(minLiteral[1]) || 15;
+                } else if (durationStr.includes(':')) {
                     const parts = durationStr.split(':');
                     minutes = parseInt(parts[0]) || 15;
                 } else {
@@ -3244,7 +3900,6 @@
                 if (isValidMinister) {
                     // Minister is on the same line — push directly
                     lastKnownMinister = inlineMinister;
-                    console.log('Found speaker:', inlineMinister, '-', topic, '-', minutes, 'min');
                     speakers.push({
                         name: inlineMinister,
                         topic: `${currentService}: ${topic}`,
@@ -3254,7 +3909,6 @@
                     });
                 } else {
                     // No minister yet — store as pending, next line may have it
-                    console.log('Pending entry (no minister yet):', topic, '-', minutes, 'min');
                     pendingEntry = { topic, minutes, service: currentService };
                 }
             } else if (pendingEntry) {
@@ -3268,11 +3922,9 @@
         // Flush any remaining pending entry
         flushPending(null);
 
-        console.log('Total speakers found:', speakers.length);
 
         // If no speakers found, try alternative parsing
         if (speakers.length === 0) {
-            console.log('No speakers found with table parsing, trying alternative method...');
             const ministerPattern = /^(.+?)\s+(?:\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM)\s+)?(?:\d+mins?\s+)?(?:\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM)\s+)?((?:SIS|BRO|PST|THE|MRS)\s+[A-Z].+)$/i;
 
             for (let i = 0; i < lines.length; i++) {
@@ -3286,7 +3938,6 @@
                     const topic = altMatch[1].trim();
                     const minister = altMatch[2].trim();
                     if (/^S\/N|EVENTS|START TIME|DURATION/i.test(topic)) continue;
-                    console.log('Alternative match:', minister, '-', topic);
                     speakers.push({
                         name: minister,
                         topic: `${currentService}: ${topic}`,
@@ -3299,11 +3950,9 @@
         }
 
         if (speakers.length === 0) {
-            console.log('No speakers could be extracted from PDF');
             return null;
         }
 
-        console.log('Parsing complete. Event:', eventName, 'Speakers:', speakers.length);
         return {
             name: eventName,
             date: new Date().toISOString().split('T')[0],
@@ -3415,12 +4064,13 @@
     function renderOrganizerPanel() {
         if (!appState.event) return;
 
-        console.log('Rendering organizer panel:', {
-            currentSpeakerIndex: appState.currentSpeakerIndex,
-            timerSeconds: appState.timerSeconds,
-            totalSpeakers: appState.speakers.length
-        });
-
+        // Ensure organiser is subscribed to Firebase for remote changes (PM, etc.)
+        // Only subscribes once per session code — re-subscribes if session changes
+        if (appState.sessionCode && appState.sessionCode !== _orgSubscribedSession) {
+            _orgSubscribedSession = appState.sessionCode;
+            subscribeToOrganizerSession(appState.sessionCode);
+            startPendingActionListener(appState.sessionCode);
+        }
         document.getElementById('eventTitle').textContent = appState.event.name;
         document.getElementById('eventDateDisplay').textContent = new Date(appState.event.date).toLocaleDateString();
         if (!appState.sessionCode) { appState.sessionCode = generateSessionCode(); }
@@ -3519,6 +4169,140 @@
         }
     });
 
+    // ── Per-speaker personal view ───────────────────────────────────────
+    function updatePersonalSpeakerView(mySpeakerIndex) {
+        if (!appState.event || !appState.speakers.length) return;
+
+        const evNameEl = document.getElementById('spEventName');
+        if (evNameEl) evNameEl.textContent = appState.event.name || 'Service';
+        const mySpEl = document.getElementById('spMyName');
+        if (mySpEl && mySpeakerIndex >= 0 && appState.speakers[mySpeakerIndex]) {
+            mySpEl.textContent = appState.speakers[mySpeakerIndex].name;
+        }
+
+        const myIdx     = mySpeakerIndex;
+        const currIdx   = appState.currentSpeakerIndex;
+        const mySpeaker = myIdx >= 0 ? appState.speakers[myIdx] : null;
+        const spView    = document.getElementById('speakerPortal');
+
+        function showPanel(id) {
+            ['spWaiting','spLive','spDone'].forEach(pid => {
+                const el = document.getElementById(pid);
+                if (el) el.classList.add('hidden');
+            });
+            const el = document.getElementById(id);
+            if (el) el.classList.remove('hidden');
+        }
+
+        // ── DONE ──────────────────────────────────────────────────────────
+        if (mySpeaker && mySpeaker.status === 'completed') {
+            showPanel('spDone');
+            if (spView) spView.style.background = 'linear-gradient(160deg,#0a3d0a,#1a6b1a)';
+            const alloc    = Math.floor(mySpeaker.allocatedMinutes * 60);
+            const actual   = mySpeaker.actualSeconds || 0;
+            const variance = actual - alloc;
+            const allocEl = document.getElementById('spAllocated');
+            const actEl   = document.getElementById('spActual');
+            const varEl   = document.getElementById('spVariance');
+            if (allocEl) allocEl.textContent = formatTimeDetailed(alloc);
+            if (actEl)   actEl.textContent   = actual > 0 ? formatTimeDetailed(actual) : '--';
+            if (varEl) {
+                varEl.textContent = actual > 0 ? (variance >= 0 ? '+' : '') + formatTimeDetailed(Math.abs(variance)) : '--';
+                varEl.style.color = variance > 30 ? '#ff8a8a' : variance < -30 ? '#90ee90' : 'white';
+            }
+            return;
+        }
+
+        // ── LIVE ──────────────────────────────────────────────────────────
+        if (myIdx >= 0 && currIdx === myIdx && appState.isRunning) {
+            showPanel('spLive');
+            const allocSec   = Math.floor((mySpeaker.allocatedMinutes || 0) * 60);
+            const isOvertime = appState.timerSeconds > allocSec;
+            const dispSec    = isOvertime ? appState.timerSeconds - allocSec : allocSec - appState.timerSeconds;
+            const percent    = Math.min((appState.timerSeconds / Math.max(allocSec,1)) * 100, 100);
+
+            const nameEl    = document.getElementById('spLiveName');
+            const topicEl   = document.getElementById('spLiveTopic');
+            const timerEl   = document.getElementById('spTimer');
+            const otDisp    = document.getElementById('spOvertimeDisplay');
+            const otCounter = document.getElementById('spOvertimeCounter');
+            const labelEl   = document.getElementById('spLabel');
+            const progBar   = document.getElementById('spProgressBar');
+
+            if (nameEl)  nameEl.textContent  = mySpeaker.name  || '';
+            if (topicEl) topicEl.textContent = mySpeaker.topic || '';
+
+            if (isOvertime) {
+                if (spView)  spView.style.background = 'linear-gradient(160deg,#5a0000,#a00000)';
+                if (timerEl) timerEl.classList.add('hidden');
+                if (otDisp)  { otDisp.classList.remove('hidden'); otDisp.style.display = 'flex'; }
+                if (otCounter) otCounter.textContent = '+' + formatTime(dispSec);
+                if (labelEl) labelEl.textContent = 'OVERTIME';
+                if (progBar) { progBar.style.width = '100%'; progBar.classList.add('danger'); }
+            } else {
+                if (spView)  spView.style.background = '';
+                if (timerEl) { timerEl.classList.remove('hidden','warning','danger'); timerEl.textContent = formatTime(dispSec); }
+                if (otDisp)  { otDisp.classList.add('hidden'); otDisp.style.display = 'none'; }
+                if (labelEl) labelEl.textContent = 'Remaining';
+                if (progBar) {
+                    progBar.style.width = percent + '%';
+                    progBar.classList.remove('danger','warning');
+                    if (percent >= 90)      { timerEl && timerEl.classList.add('danger');  progBar.classList.add('danger'); }
+                    else if (percent >= 80) { timerEl && timerEl.classList.add('warning'); progBar.classList.add('warning'); }
+                }
+            }
+            return;
+        }
+
+        // ── WAITING ───────────────────────────────────────────────────────
+        showPanel('spWaiting');
+        if (spView) spView.style.background = '';
+
+        if (myIdx < 0 || !mySpeaker) {
+            const qb = document.getElementById('spQueueBadge');
+            const eb = document.getElementById('spEtaBig');
+            const el = document.getElementById('spEtaLabel');
+            const nb = document.getElementById('spNextBadge');
+            if (qb) qb.textContent = 'Watching live';
+            if (eb) eb.textContent = '--';
+            if (el) el.textContent = 'You are not assigned a slot';
+            if (nb) nb.classList.add('hidden');
+            return;
+        }
+
+        const speakersAhead = Math.max(0, myIdx - Math.max(currIdx, 0));
+        const isNext = currIdx >= 0 && myIdx === currIdx + 1;
+
+        let etaSec = 0;
+        if (currIdx >= 0 && appState.isRunning) {
+            const currAlloc = Math.floor((appState.speakers[currIdx].allocatedMinutes || 0) * 60);
+            etaSec += Math.max(0, currAlloc - appState.timerSeconds);
+        }
+        for (let i = Math.max(currIdx + 1, 0); i < myIdx; i++) {
+            etaSec += Math.floor((appState.speakers[i].allocatedMinutes || 0) * 60);
+        }
+        const etaMins = Math.ceil(etaSec / 60);
+
+        const qbEl = document.getElementById('spQueueBadge');
+        const ebEl = document.getElementById('spEtaBig');
+        const elEl = document.getElementById('spEtaLabel');
+        const nbEl = document.getElementById('spNextBadge');
+
+        if (!appState.isRunning) {
+            if (qbEl) qbEl.textContent = 'Waiting for service to start';
+            if (ebEl) ebEl.textContent = etaMins > 0 ? String(etaMins) : '--';
+            if (elEl) elEl.textContent = etaMins > 0 ? 'estimated minutes before your slot' : 'Service has not started yet';
+        } else {
+            if (qbEl) qbEl.textContent = speakersAhead === 1 ? '1 speaker before you' : speakersAhead + ' speakers before you';
+            if (ebEl) ebEl.textContent = '~' + etaMins;
+            if (elEl) elEl.textContent = 'estimated minutes before your slot';
+        }
+        if (nbEl) {
+            if (isNext) nbEl.classList.remove('hidden');
+            else        nbEl.classList.add('hidden');
+        }
+    }
+
     // ── Stage Manager view ──────────────────────────────────────────────
     function updateStageView() {
         if (!appState.event || !appState.speakers.length) return;
@@ -3606,8 +4390,11 @@
             appState.speakers[0].status = 'active';
         }
 
-        appState.isRunning = true;
-        appState.isPaused = false;
+        appState.isRunning      = true;
+        appState.isPaused       = false;
+        appState.slotStartedAt  = Date.now();   // wall-clock anchor
+        appState.slotBaseSeconds = 0;           // seconds already elapsed when slot started
+        logAction('organiser', 'start', 'Timer started');
 
         document.getElementById('startBtn').classList.add('hidden');
         document.getElementById('pauseBtn').classList.remove('hidden');
@@ -3617,6 +4404,7 @@
         if (!appState.timerInterval) {
             appState.timerInterval = setInterval(updateTimer, 1000);
         }
+        startFbSyncInterval();
 
         saveStateToStorage();
         syncToFirebaseNow();
@@ -3624,12 +4412,14 @@
     }
 
     function pauseTimer() {
-        appState.isPaused = true;
+        appState.isPaused    = true;
+        appState.slotStartedAt = null;
+        logAction('organiser', 'pause', 'Timer paused');
+        stopFbSyncInterval();
         document.getElementById('pauseBtn').classList.add('hidden');
         document.getElementById('resumeBtn').classList.remove('hidden');
         saveStateToStorage();
         syncToFirebaseNow();
-        // Show reason picker
         document.getElementById('pauseReasonModal').classList.remove('hidden');
     }
 
@@ -3646,9 +4436,16 @@
     }
 
     function resumeTimer() {
-        appState.isPaused = false;
+        appState.isPaused        = false;
+        appState.slotStartedAt   = Date.now();
+        appState.slotBaseSeconds = appState.timerSeconds;
+        logAction('organiser', 'resume', 'Timer resumed');
         document.getElementById('resumeBtn').classList.add('hidden');
         document.getElementById('pauseBtn').classList.remove('hidden');
+        if (!appState.timerInterval) {
+            appState.timerInterval = setInterval(updateTimer, 1000);
+        }
+        startFbSyncInterval();
         saveStateToStorage();
         syncToFirebaseNow();
     }
@@ -3672,40 +4469,48 @@
         if (progBar){ progBar.classList.remove('warning','danger'); progBar.style.width = '0%'; }
     }
 
-    function nextSpeaker() {
+    function nextSpeaker(force) {
         clearOvertimeState();
 
         if (appState.currentSpeakerIndex >= 0 && appState.currentSpeakerIndex < appState.speakers.length) {
             const currentSpeaker = appState.speakers[appState.currentSpeakerIndex];
 
-            // Confirm if speaker hasn't used much time
-            const allocatedSeconds = Math.floor(currentSpeaker.allocatedMinutes * 60);
-            if (appState.timerSeconds < allocatedSeconds * 0.5) {
-                const confirmNext = window.confirm(
-                    `${currentSpeaker.name} has only used ${formatTimeDetailed(appState.timerSeconds)} of their ${formatTimeDetailed(allocatedSeconds)} allocated time.\n\nAre you sure you want to move to the next speaker?`
-                );
-                if (!confirmNext) return;
+            // Confirm if speaker hasn't used much time — skip if called with force=true (from PM)
+            if (!force) {
+                const allocatedSeconds = Math.floor(currentSpeaker.allocatedMinutes * 60);
+                if (appState.timerSeconds < allocatedSeconds * 0.5) {
+                    const confirmNext = window.confirm(
+                        `${currentSpeaker.name} has only used ${formatTimeDetailed(appState.timerSeconds)} of their ${formatTimeDetailed(allocatedSeconds)} allocated time.\n\nAre you sure you want to move to the next speaker?`
+                    );
+                    if (!confirmNext) return;
+                }
             }
 
-            // Save current speaker state to history
+            // Calculate the exact actual time used (this is what goes in the report)
+            let actualTimeUsed = appState.timerSeconds;
+
+            // If timer was running, get the most up-to-date time including any elapsed seconds
+            if (appState.isRunning && !appState.isPaused && appState.slotStartedAt) {
+                const elapsed = Math.floor((Date.now() - appState.slotStartedAt) / 1000);
+                actualTimeUsed = (appState.slotBaseSeconds || 0) + elapsed;
+            }
+
+            // Save current speaker state to history with precise timing
             appState.speakerHistory.push({
                 index: appState.currentSpeakerIndex,
-                timerSeconds: appState.timerSeconds,
-                actualSeconds: currentSpeaker.actualSeconds,
-                status: currentSpeaker.status
+                timerSeconds: actualTimeUsed, // Use the calculated actual time
+                actualSeconds: actualTimeUsed, // Ensure consistency
+                status: currentSpeaker.status,
+                endedAt: Date.now() // Record when this speaker slot ended
             });
 
-            // Save actual time for current speaker (in seconds)
-            currentSpeaker.actualSeconds = appState.timerSeconds;
-            currentSpeaker.actualMinutes = Math.floor(appState.timerSeconds / 60);
+            // Save actual time for current speaker (this goes into the report)
+            currentSpeaker.actualSeconds = actualTimeUsed;
+            currentSpeaker.actualMinutes = Math.floor(actualTimeUsed / 60);
             currentSpeaker.status = 'completed';
+            currentSpeaker.endedAt = Date.now(); // Track completion time
 
-            console.log('Speaker completed:', {
-                name: currentSpeaker.name,
-                allocated: formatTimeDetailed(allocatedSeconds),
-                actual: formatTimeDetailed(appState.timerSeconds),
-                status: currentSpeaker.status
-            });
+            logAction('organiser', 'next', `Moved from: ${currentSpeaker.name} (used ${formatTimeDetailed(actualTimeUsed)})`);
         }
 
         // Move to next speaker
@@ -3713,30 +4518,41 @@
 
         if (appState.currentSpeakerIndex < appState.speakers.length) {
             const nextSpeaker = appState.speakers[appState.currentSpeakerIndex];
-            nextSpeaker.status = 'active';
-            appState.timerSeconds = 0;
+            nextSpeaker.status        = 'active';
+            nextSpeaker.startedAt     = Date.now(); // Track when this speaker started
 
-            console.log('Moving to next speaker:', {
-                index: appState.currentSpeakerIndex,
-                name: nextSpeaker.name,
-                allocated: Math.floor(nextSpeaker.allocatedMinutes * 60)
-            });
+            // Reset timer for new speaker
+            appState.timerSeconds     = 0;
+            appState.slotStartedAt    = Date.now(); // new anchor for new slot
+            appState.slotBaseSeconds  = 0;
 
+            // Force immediate sync to ensure all remote views update consistently
             saveStateToStorage();
             syncToFirebaseNow();
-            renderOrganizerPanel();
+
+            // Brief delay to ensure Firebase sync, then render
+            setTimeout(() => {
+                renderOrganizerPanel();
+
+                // Verify sync status
+                if (appState.sessionCode) {
+                    setFbStatus('connected', 'Live');
+                }
+            }, 100);
+
         } else {
             // All speakers done
-            console.log('All speakers completed');
             stopTimer();
+            appState.sessionEndedAt = Date.now(); // Record session completion
+            saveStateToStorage();
             syncToFirebaseNow();
-            alert('All speakers completed!');
+            toast('All speakers completed!', 'success', 4000);
         }
     }
 
     function previousSpeaker() {
         if (appState.speakerHistory.length === 0) {
-            alert('Cannot go back - no previous speaker');
+            toast('No previous speaker to go back to', 'info'); return;
             return;
         }
 
@@ -3760,12 +4576,15 @@
         const remainingSeconds = allocatedSeconds - usedSeconds;
 
         // Start from remaining time (negative means countdown from remaining)
-        appState.timerSeconds = usedSeconds;
+        appState.timerSeconds    = usedSeconds;
+        // Re-anchor so remote views compute correct restored time
+        appState.slotStartedAt   = Date.now() - (usedSeconds * 1000);
+        appState.slotBaseSeconds = 0;
 
         saveStateToStorage();
+        syncToFirebaseNow();
         renderOrganizerPanel();
-
-        alert(`Returned to ${speaker.name}. Timer restored to ${formatTimeDetailed(usedSeconds)} used.`);
+        toast(`Returned to ${speaker.name} — ${formatTimeDetailed(usedSeconds)} elapsed`, 'info', 3000);
     }
 
     function stopTimer() {
@@ -3773,8 +4592,10 @@
             clearInterval(appState.timerInterval);
             appState.timerInterval = null;
         }
-        appState.isRunning = false;
-        appState.isPaused = false;
+        stopFbSyncInterval();
+        appState.isRunning     = false;
+        appState.isPaused      = false;
+        appState.slotStartedAt = null;
 
         document.getElementById('startBtn').classList.remove('hidden');
         document.getElementById('pauseBtn').classList.add('hidden');
@@ -3783,13 +4604,192 @@
         document.getElementById('prevBtn').disabled = true;
 
         saveStateToStorage();
+        syncToFirebaseNow();
+    }
+
+    // Separate Firebase sync ticker — writes every 3s, never blocks the clock
+    let _fbSyncInterval = null;
+    function startFbSyncInterval() {
+        if (_fbSyncInterval) clearInterval(_fbSyncInterval);
+        _fbSyncInterval = setInterval(() => {
+            if (appState.isRunning) {
+                // Save to localStorage silently (fast, synchronous)
+                localStorage.setItem('serviceTimerState', JSON.stringify({
+                    ...appState,
+                    timerInterval: null,
+                    timeUpInterval: null
+                }));
+                // Fire-and-forget Firebase write — if it fails, clock is unaffected
+                _doFirebaseWrite();
+            }
+        }, 3000);
+    }
+    function stopFbSyncInterval() {
+        if (_fbSyncInterval) { clearInterval(_fbSyncInterval); _fbSyncInterval = null; }
     }
 
     function updateTimer() {
         if (!appState.isPaused && appState.isRunning) {
-            appState.timerSeconds++;
-            saveStateToStorage();
+            // Validate timing consistency before updating
+            const corrected = validateTimingConsistency();
+
+            if (!corrected) {
+                appState.timerSeconds++;
+            }
+
             updateTimerDisplay();
+
+            // Periodically sync to Firebase (every 5 seconds) to ensure remote views stay current
+            if (appState.timerSeconds % 5 === 0) {
+                syncToFirebaseThrottled();
+            }
+        }
+    }
+
+    // ── PM command listener (replaces polling) ───────────────────────────
+    // Uses a persistent on('value') listener instead of once() polling.
+    // Firebase pushes pendingAction writes to this listener in ~50ms —
+    // no 1-3 second delay.
+    let _pendingActionListener = null;
+
+    function startPendingActionListener(sessionCode) {
+        if (_pendingActionListener) { _pendingActionListener.off(); _pendingActionListener = null; }
+        if (!sessionCode) return;
+        _pendingActionListener = db.ref('sessions/' + sessionCode + '/pendingAction');
+        _pendingActionListener.on('value', snap => {
+            const cmd = snap.val();
+            if (!cmd || !cmd.action) return;
+            // Ignore stale commands (older than 10 seconds)
+            if (Date.now() - (cmd.requestedAt || 0) > 10000) {
+                snap.ref.remove();
+                return;
+            }
+            // Clear immediately to prevent double-execution on reconnect
+            snap.ref.remove();
+            executePmCommand(cmd);
+        });
+    }
+
+    function stopPendingActionListener() {
+        if (_pendingActionListener) { _pendingActionListener.off(); _pendingActionListener = null; }
+    }
+
+    // ── Organiser Firebase listener ──────────────────────────────────────
+    // Keeps the organiser display in sync when the PM view makes changes.
+    // Guards against overwriting the organiser's own live timerSeconds.
+    let _lastOrgWrite = 0;        // timestamp of our last Firebase write
+    let _orgSubscribedSession = null; // session code we are currently subscribed to
+    let _orgFbListener = null;    // Firebase listener ref for cleanup
+    function markOrgWrite() { _lastOrgWrite = Date.now(); }
+
+    function subscribeToOrganizerSession(sessionCode) {
+        // Detach any existing listener
+        if (_orgFbListener) { _orgFbListener.off(); _orgFbListener = null; }
+
+        _orgFbListener = db.ref('sessions/' + sessionCode);
+        _orgFbListener.on('value', snap => {
+            const data = snap.val();
+            if (!data) return;
+
+            // Ignore our own writes (within 2s window)
+            const remoteUpdatedAt = data.updatedAt || 0;
+            if (remoteUpdatedAt <= _lastOrgWrite + 2000) return;
+
+            // Check if anything structural changed
+            const remoteIdx      = data.currentSpeakerIndex;
+            const remoteRunning  = !!data.isRunning;
+            const remotePaused   = !!data.isPaused;
+            const remoteSpeakers = Array.isArray(data.speakers) ? data.speakers : [];
+
+            const speakersChanged = JSON.stringify(remoteSpeakers.map(s => ({
+                n: s.name, t: s.topic, a: s.allocatedMinutes, st: s.status
+            }))) !== JSON.stringify((appState.speakers || []).map(s => ({
+                n: s.name, t: s.topic, a: s.allocatedMinutes, st: s.status
+            })));
+
+            const stateChanged = remoteIdx     !== appState.currentSpeakerIndex ||
+                remoteRunning !== appState.isRunning ||
+                remotePaused  !== appState.isPaused  ||
+                speakersChanged;
+
+            if (!stateChanged) return;
+
+            // Apply structural changes but preserve the live timer clock
+            const savedTimerSeconds  = appState.timerSeconds;
+            const savedInterval      = appState.timerInterval;
+            const savedSlotStartedAt = appState.slotStartedAt;
+            const savedSlotBase      = appState.slotBaseSeconds;
+
+            appState.currentSpeakerIndex = remoteIdx;
+            appState.isRunning           = remoteRunning;
+            appState.isPaused            = remotePaused;
+            appState.speakers            = remoteSpeakers;
+            if (Array.isArray(data.pauseLog))  appState.pauseLog  = data.pauseLog;
+            if (Array.isArray(data.actionLog)) appState.actionLog = data.actionLog;
+
+            // Restore live clock (never let Firebase overwrite the organiser's tick)
+            appState.timerSeconds    = savedTimerSeconds;
+            appState.timerInterval   = savedInterval;
+            appState.slotStartedAt   = savedSlotStartedAt;
+            appState.slotBaseSeconds = savedSlotBase;
+
+            if (appState.event) {
+                renderOrganizerPanel();
+                updateTimerDisplay();
+            }
+        }, err => { console.error('Organiser FB listener error:', err); });
+    }
+
+    function executePmCommand(cmd) {
+        switch (cmd.action) {
+            case 'start':
+                if (!appState.isRunning) { logAction('pm','start','Timer started by PM'); startTimer(); }
+                break;
+            case 'pause':
+                if (appState.isRunning && !appState.isPaused) { logAction('pm','pause','Timer paused by PM'); pauseTimer(); }
+                break;
+            case 'resume':
+                if (appState.isPaused) { logAction('pm','resume','Timer resumed by PM'); resumeTimer(); }
+                break;
+            case 'next':
+                if (appState.isRunning) {
+                    const _cur = appState.speakers[appState.currentSpeakerIndex];
+                    if (_cur) logAction('pm', 'next', 'Moved from: ' + _cur.name);
+                    nextSpeaker(true);
+                }
+                break;
+            case 'prev': {
+                const _curP = appState.speakers[appState.currentSpeakerIndex];
+                logAction('pm', 'prev', 'Went back from: ' + (_curP ? _curP.name : ''));
+                previousSpeaker();
+                break;
+            }
+            case 'reorder': {
+                const sp = appState.speakers;
+                const { fromIdx, toIdx } = cmd;
+                if (fromIdx >= 0 && toIdx >= 0 && fromIdx < sp.length && toIdx < sp.length) {
+                    if (sp[fromIdx].status === 'upcoming' && sp[toIdx].status === 'upcoming') {
+                        [sp[fromIdx], sp[toIdx]] = [sp[toIdx], sp[fromIdx]];
+                        saveStateToStorage();
+                        syncToFirebaseNow();
+                        renderOrganizerPanel();
+                    }
+                }
+                break;
+            }
+            case 'adjust': {
+                const i = appState.currentSpeakerIndex;
+                if (i >= 0 && appState.speakers[i]) {
+                    const delta = cmd.deltaSecs || 0;
+                    const curSecs = Math.floor((appState.speakers[i].allocatedMinutes || 0) * 60);
+                    appState.speakers[i].allocatedMinutes = Math.max(60, curSecs + delta) / 60;
+                    logAction('pm', 'adjust', (delta > 0 ? '+' : '') + Math.round(delta/60) + 'min for ' + appState.speakers[i].name);
+                    saveStateToStorage();
+                    syncToFirebaseNow();
+                    renderOrganizerPanel();
+                }
+                break;
+            }
         }
     }
 
@@ -3809,7 +4809,9 @@
             appState.timerSeconds - allocatedSeconds :
             allocatedSeconds - appState.timerSeconds;
 
-        document.getElementById('currentSpeaker').textContent = speaker.name;
+        document.getElementById('currentSpeaker').innerHTML =
+            `<span id="currentSpeakerName">${speaker.name}</span>
+             <button class="edit-speaker-btn" onclick="editCurrentSpeakerName()" title="Edit speaker name">✏️</button>`;
         document.getElementById('currentTopic').textContent = speaker.topic;
         document.getElementById('timerValue').textContent = formatTime(displaySeconds);
         updateEndTimeBar();
@@ -3840,6 +4842,87 @@
                 progressBar.classList.add('warning');
             }
         }
+    }
+
+    function editCurrentSpeakerName() {
+        if (appState.currentSpeakerIndex < 0 || appState.currentSpeakerIndex >= appState.speakers.length) {
+            toast('No active speaker to edit', 'warning');
+            return;
+        }
+
+        const speaker = appState.speakers[appState.currentSpeakerIndex];
+        const currentName = speaker.name;
+        const nameSpan = document.getElementById('currentSpeakerName');
+
+        if (!nameSpan) {
+            console.error('Speaker name element not found');
+            return;
+        }
+
+        // Create inline input field
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = currentName;
+        input.maxLength = 100;
+        input.className = 'speaker-name-edit-input';
+        input.style.cssText = `
+            font-size: inherit;
+            background: rgba(255,255,255,0.9);
+            border: 2px solid #4CAF50;
+            border-radius: 4px;
+            padding: 2px 6px;
+            margin: 0;
+            outline: none;
+            min-width: 200px;
+            color: #333;
+        `;
+
+        // Save function
+        const saveName = () => {
+            const newName = input.value.trim();
+            if (newName && newName !== currentName) {
+                if (newName.length > 100) {
+                    toast('Speaker name too long (max 100 characters)', 'error');
+                    return;
+                }
+
+                speaker.name = newName;
+                logAction('organiser', 'edit', `Speaker name changed from "${currentName}" to "${newName}"`);
+                saveStateToStorage();
+                syncToFirebaseNow();
+                updateTimerDisplay();
+                renderOrganizerPanel();
+                toast(`Speaker name updated to "${newName}"`, 'success', 2000);
+            } else {
+                // Revert to original name display
+                nameSpan.textContent = currentName;
+            }
+        };
+
+        // Cancel function
+        const cancelEdit = () => {
+            nameSpan.textContent = currentName;
+        };
+
+        // Replace span content with input
+        nameSpan.innerHTML = '';
+        nameSpan.appendChild(input);
+        input.focus();
+        input.select();
+
+        // Handle keyboard events
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                saveName();
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                cancelEdit();
+            }
+        });
+
+        // Handle focus loss
+        input.addEventListener('blur', saveName);
     }
 
     function updateEndTimeBar() {
@@ -4025,170 +5108,45 @@
     }
 
     // Speaker Portal Functions
-    function openSpeakerPortal() {
-        // No-op: speakers use individual links via the 🔗 Share button on each row
-    }
+
 
     // Legacy stub (no longer used for remote views)
-    function updateSpeakerView() {}
 
-    function updatePersonalSpeakerView(mySpeakerIndex) {
-        if (!appState.event || !appState.speakers.length) return;
-
-        const pv = document.getElementById('presentationView');
-        if (pv) pv.classList.remove('overtime-mode'); // ensure clean bg
-
-        // Set header names
-        const evNameEl = document.getElementById('spEventName');
-        if (evNameEl) evNameEl.textContent = appState.event ? appState.event.name : 'Service';
-        const mySpEl = document.getElementById('spMyName');
-        if (mySpEl && mySpeakerIndex >= 0 && appState.speakers[mySpeakerIndex]) {
-            mySpEl.textContent = appState.speakers[mySpeakerIndex].name;
-        }
-
-        const myIdx   = mySpeakerIndex;
-        const currIdx = appState.currentSpeakerIndex;
-        const mySpeaker = myIdx >= 0 ? appState.speakers[myIdx] : null;
-
-        const spWaiting = document.getElementById('spWaiting');
-        const spLive    = document.getElementById('spLive');
-        const spDone    = document.getElementById('spDone');
-        const spView    = document.getElementById('speakerPortal');
-
-        function showPanel(id) {
-            [spWaiting, spLive, spDone].forEach(el => { if(el) el.classList.add('hidden'); });
-            const el = document.getElementById(id);
-            if (el) el.classList.remove('hidden');
-        }
-
-        // ── DONE ──────────────────────────────────────────────────
-        if (mySpeaker && mySpeaker.status === 'completed') {
-            showPanel('spDone');
-            spView.style.background = 'linear-gradient(160deg,#0a3d0a,#1a6b1a)';
-            const alloc = Math.floor(mySpeaker.allocatedMinutes * 60);
-            const actual = mySpeaker.actualSeconds || 0;
-            const variance = actual - alloc;
-            document.getElementById('spAllocated').textContent = formatTimeDetailed(alloc);
-            document.getElementById('spActual').textContent    = actual > 0 ? formatTimeDetailed(actual) : '--';
-            const varEl = document.getElementById('spVariance');
-            varEl.textContent = actual > 0 ? (variance >= 0 ? '+' : '') + formatTimeDetailed(Math.abs(variance)) : '--';
-            varEl.style.color  = variance > 30 ? '#ff8a8a' : variance < -30 ? '#90ee90' : 'white';
-            return;
-        }
-
-        // ── LIVE ──────────────────────────────────────────────────
-        if (myIdx >= 0 && currIdx === myIdx && appState.isRunning) {
-            showPanel('spLive');
-            const allocSec   = Math.floor(mySpeaker.allocatedMinutes * 60);
-            const isOvertime = appState.timerSeconds > allocSec;
-            const dispSec    = isOvertime ? appState.timerSeconds - allocSec : allocSec - appState.timerSeconds;
-            const percent    = Math.min((appState.timerSeconds / allocSec) * 100, 100);
-
-            document.getElementById('spLiveName').textContent  = mySpeaker.name;
-            document.getElementById('spLiveTopic').textContent = mySpeaker.topic;
-
-            const timerEl   = document.getElementById('spTimer');
-            const otDisp    = document.getElementById('spOvertimeDisplay');
-            const otCounter = document.getElementById('spOvertimeCounter');
-            const labelEl   = document.getElementById('spLabel');
-            const progBar   = document.getElementById('spProgressBar');
-
-            if (isOvertime) {
-                spView.style.background = 'linear-gradient(160deg,#5a0000,#a00000)';
-                timerEl.classList.add('hidden');
-                otDisp.classList.remove('hidden'); otDisp.style.display='flex';
-                otCounter.textContent = '+' + formatTime(dispSec);
-                labelEl.textContent = 'OVERTIME';
-                progBar.style.width = '100%';
-                progBar.classList.add('danger');
-            } else {
-                spView.style.background = '';
-                timerEl.classList.remove('hidden','warning','danger');
-                otDisp.classList.add('hidden'); otDisp.style.display='none';
-                timerEl.textContent = formatTime(dispSec);
-                labelEl.textContent = 'Remaining';
-                progBar.style.width  = percent + '%';
-                progBar.classList.remove('danger');
-                if (percent >= 90) { timerEl.classList.add('danger'); progBar.classList.add('danger'); }
-                else if (percent >= 80) { timerEl.classList.add('warning'); progBar.classList.add('warning'); }
-            }
-            return;
-        }
-
-        // ── WAITING ───────────────────────────────────────────────
-        showPanel('spWaiting');
-        spView.style.background = '';
-
-        if (myIdx < 0 || !mySpeaker) {
-            document.getElementById('spQueueBadge').textContent = 'Watching live';
-            document.getElementById('spEtaBig').textContent     = '--';
-            document.getElementById('spEtaLabel').textContent   = 'You are not assigned a slot';
-            document.getElementById('spNextBadge').classList.add('hidden');
-            return;
-        }
-
-        // Populate slot identity block
-        const wTopicEl = document.getElementById('spWaitTopicName');
-        if (wTopicEl && mySpeaker) wTopicEl.textContent = mySpeaker.topic || mySpeaker.name;
-        else if (wTopicEl) wTopicEl.textContent = '—';
-
-        // How many speakers are ahead?
-        const speakersAhead = Math.max(0, myIdx - Math.max(currIdx, 0));
-        const isNext = currIdx >= 0 && myIdx === currIdx + 1;
-
-        // Estimate wait: sum remaining time of current + all upcoming before me
-        let etaSec = 0;
-        if (currIdx >= 0 && appState.isRunning) {
-            const currAlloc = Math.floor(appState.speakers[currIdx].allocatedMinutes * 60);
-            etaSec += Math.max(0, currAlloc - appState.timerSeconds);
-        }
-        for (let i = Math.max(currIdx+1, 0); i < myIdx; i++) {
-            etaSec += Math.floor(appState.speakers[i].allocatedMinutes * 60);
-        }
-        const etaMins = Math.ceil(etaSec / 60);
-
-        if (!appState.isRunning) {
-            document.getElementById('spQueueBadge').textContent = 'Waiting for service to start';
-            document.getElementById('spEtaBig').textContent     = etaMins > 0 ? etaMins : '--';
-            document.getElementById('spEtaLabel').textContent   = etaMins > 0 ? 'estimated minutes before your slot' : 'Service has not started yet';
-        } else if (speakersAhead === 0 && !isNext) {
-            // Current speaker is me but timer hasn't been activated yet for my slot
-            document.getElementById('spQueueBadge').textContent = 'Your turn is next';
-            document.getElementById('spEtaBig').textContent     = '~' + etaMins;
-            document.getElementById('spEtaLabel').textContent   = 'estimated minutes before your slot';
-        } else {
-            document.getElementById('spQueueBadge').textContent =
-                speakersAhead === 1 ? '1 speaker before you' : speakersAhead + ' speakers before you';
-            document.getElementById('spEtaBig').textContent     = '~' + etaMins;
-            document.getElementById('spEtaLabel').textContent   = 'estimated minutes before your slot';
-        }
-
-        const nextBadge  = document.getElementById('spNextBadge');
-        const waitingDiv = document.getElementById('spWaiting');
-        if (isNext) {
-            nextBadge.classList.remove('hidden');
-            if (waitingDiv) waitingDiv.classList.add('is-next');
-        } else {
-            nextBadge.classList.add('hidden');
-            if (waitingDiv) waitingDiv.classList.remove('is-next');
-        }
-    }
 
     // State Management
     function saveStateToStorage() {
-        localStorage.setItem('serviceTimerState', JSON.stringify(appState));
-        syncToFirebase();
+        // localStorage only — Firebase is written by the 3-second interval
+        // and by syncToFirebaseNow() on critical state changes
+        try {
+            localStorage.setItem('serviceTimerState', JSON.stringify({
+                ...appState,
+                timerInterval: null,
+                timeUpInterval: null
+            }));
+        } catch(e) { console.error('localStorage write failed:', e); }
     }
 
     function loadStateFromStorage() {
         const saved = localStorage.getItem('serviceTimerState');
         if (saved) {
-            const loaded = JSON.parse(saved);
-            appState = { ...appState, ...loaded };
+            try {
+                const loaded = JSON.parse(saved);
+                appState = { ...appState, ...loaded };
 
-            // Restart timer if it was running
-            if (appState.isRunning && !appState.timerInterval) {
-                appState.timerInterval = setInterval(updateTimer, 1000);
+                // Recompute timerSeconds from wall-clock anchor if running
+                // This recovers the correct time even after a tab crash or refresh
+                if (appState.isRunning && !appState.isPaused && appState.slotStartedAt) {
+                    const elapsed = Math.floor((Date.now() - appState.slotStartedAt) / 1000);
+                    appState.timerSeconds = (appState.slotBaseSeconds || 0) + elapsed;
+                }
+
+                // Restart the timer interval
+                if (appState.isRunning && !appState.isPaused && !appState.timerInterval) {
+                    appState.timerInterval = setInterval(updateTimer, 1000);
+                    startFbSyncInterval();
+                }
+            } catch(e) {
+                console.error('Failed to restore state:', e);
             }
         }
     }
@@ -4207,13 +5165,19 @@
 
     function resetApp() {
         if (window.confirm('Are you sure you want to create a new event? This will clear the current event.')) {
-            if (appState.timerInterval) clearInterval(appState.timerInterval);
+            if (appState.timerInterval)  clearInterval(appState.timerInterval);
+            if (appState.timeUpInterval) clearInterval(appState.timeUpInterval);
+            stopFbSyncInterval();
+            if (_remoteTickInterval) { clearInterval(_remoteTickInterval); _remoteTickInterval = null; }
+            if (_orgFbListener)         { _orgFbListener.off(); _orgFbListener = null; _orgSubscribedSession = null; }
+            stopPendingActionListener();
             if (appState.sessionCode) db.ref('sessions/'+appState.sessionCode).remove().catch(console.error);
             appState = {
                 event:null, currentSpeakerIndex:-1, timerSeconds:0, timerInterval:null,
                 isPaused:false, isRunning:false, speakers:[], speakerHistory:[],
                 showTimeUp:false, timeUpInterval:null, sessionCode:null,
-                pauseLog:[], lastPauseReason:null
+                pauseLog:[], actionLog:[], lastPauseReason:null,
+                slotStartedAt: null, slotBaseSeconds: 0
             };
             localStorage.removeItem('serviceTimerState');
             showView('startupScreen');
@@ -4333,17 +5297,6 @@
         });
 
         // Log report data for verification
-        console.log('Report Generated:', {
-            totalAllocated: formatTimeDetailed(totalAllocatedSeconds),
-            totalActual: formatTimeDetailed(totalActualSeconds),
-            variance: formatTimeDetailed(Math.abs(varianceSeconds)),
-            speakers: appState.speakers.map(s => ({
-                name: s.name,
-                allocated: formatTimeDetailed(Math.floor(s.allocatedMinutes * 60)),
-                actual: s.actualSeconds ? formatTimeDetailed(s.actualSeconds) : 'Not Used',
-                variance: s.actualSeconds ? formatTimeDetailed(Math.abs(s.actualSeconds - Math.floor(s.allocatedMinutes * 60))) : 'N/A'
-            }))
-        });
     }
 
     function downloadReport() {
@@ -4564,6 +5517,31 @@
         doc.setFontSize(7); doc.setTextColor(160,160,160); doc.setFont('helvetica','normal');
         doc.text('Service Timer  •  ' + BASE_URL, pageW/2, pageH - 8, { align:'center' });
 
+        // ── Action log table ──────────────────────────────────
+        const actionLogEntries = Object.values(appState.actionLog || {});
+        if (actionLogEntries.length > 0) {
+            tableStartY = (doc.lastAutoTable ? doc.lastAutoTable.finalY : tableStartY) + 12;
+            if (tableStartY > pageH - 40) { doc.addPage(); tableStartY = 20; }
+            doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(80, 80, 80);
+            doc.text('Action Log', margin, tableStartY);
+            tableStartY += 5;
+            doc.autoTable({
+                startY: tableStartY,
+                head: [['Time', 'By', 'Action', 'Detail']],
+                body: actionLogEntries.map(e => [
+                    e.time  || '',
+                    (e.role || '').charAt(0).toUpperCase() + (e.role || '').slice(1),
+                    e.action || '',
+                    e.detail || ''
+                ]),
+                theme: 'striped',
+                headStyles: { fillColor: [80,80,80], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+                columnStyles: { 0:{cellWidth:30}, 1:{cellWidth:24}, 2:{cellWidth:22}, 3:{cellWidth:'auto'} },
+                bodyStyles: { fontSize: 8 },
+                margin: { left: margin, right: margin }
+            });
+        }
+
         const safeDate = appState.event.date || new Date().toISOString().split('T')[0];
         doc.save('Event_Report_' + eventName.replace(/[^a-z0-9]/gi,'_') + '_' + safeDate + '.pdf');
     }
@@ -4572,8 +5550,17 @@
     let adjustmentMode = null; // 'add' or 'subtract'
 
     function showAdjustTimeModal() {
+        // If presentationView is fullscreen, move modal inside it so it renders above
+        const modal = document.getElementById('adjustTimeModal');
+        const pv = document.getElementById('presentationView');
+        const isPresFS = document.fullscreenElement === pv || document.webkitFullscreenElement === pv;
+        if (isPresFS && modal.parentElement !== pv) {
+            pv.appendChild(modal);
+        } else if (!isPresFS && modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
         if (appState.currentSpeakerIndex < 0 || appState.currentSpeakerIndex >= appState.speakers.length) {
-            alert('No active speaker to adjust time for');
+            toast('No active speaker to adjust time for', 'info'); return;
             return;
         }
 
@@ -4642,23 +5629,24 @@
 
     function closeAdjustTimeModal(event) {
         if (!event || event.target.id === 'adjustTimeModal') {
-            document.getElementById('adjustTimeModal').classList.add('hidden');
+            const modal = document.getElementById('adjustTimeModal');
+            modal.classList.add('hidden');
+            // Move back to body so it doesn't stay inside a view
+            if (modal.parentElement !== document.body) document.body.appendChild(modal);
             adjustmentMode = null;
         }
     }
 
     function confirmAdjustTime() {
         if (!adjustmentMode) {
-            alert('Please select Add or Subtract');
-            return;
+            toast('Please select Add or Subtract', 'info'); return;
         }
 
         const adjustMin = parseInt(document.getElementById('adjustMinutes').value) || 0;
         const adjustSec = parseInt(document.getElementById('adjustSeconds').value) || 0;
 
         if (adjustMin === 0 && adjustSec === 0) {
-            alert('Please enter time to adjust');
-            return;
+            toast('Please enter time to adjust', 'info'); return;
         }
 
         const speaker = appState.speakers[appState.currentSpeakerIndex];
@@ -4671,20 +5659,26 @@
         } else {
             newAllocatedSeconds = Math.max(60, currentAllocatedSeconds - adjustSeconds); // Minimum 1 minute
             if (newAllocatedSeconds < currentAllocatedSeconds - adjustSeconds) {
-                alert('Cannot reduce time below 1 minute');
-                return;
+                toast('Cannot reduce time below 1 minute', 'info'); return;
             }
         }
 
         // Update allocated time
         speaker.allocatedMinutes = Math.ceil(newAllocatedSeconds / 60);
 
+        // Re-anchor slotStartedAt so remote views compute the correct time after adjustment
+        if (appState.isRunning && !appState.isPaused) {
+            appState.slotStartedAt   = Date.now() - (appState.timerSeconds * 1000);
+            appState.slotBaseSeconds = 0;
+        }
+
         saveStateToStorage();
+        syncToFirebaseNow();
         renderOrganizerPanel();
         closeAdjustTimeModal();
 
         const action = adjustmentMode === 'add' ? 'Added' : 'Subtracted';
-        alert(`${action} ${adjustMin} min ${adjustSec} sec ${adjustmentMode === 'add' ? 'to' : 'from'} ${speaker.name}'s time.\nNew allocated time: ${formatTimeDetailed(newAllocatedSeconds)}`);
+        toast(`${action} ${adjustMin}m ${adjustSec}s — new allocation: ${formatTimeDetailed(newAllocatedSeconds)}`, 'info', 3500);
     }
 
     // Fullscreen Functions
@@ -5389,16 +6383,6 @@
         });
     }
 
-    // Track which row each input belongs to and report to presence
-    function attachRowPresenceListeners() {
-        document.querySelectorAll('.creator-row').forEach((rowEl, idx) => {
-            rowEl.querySelectorAll('input').forEach(input => {
-                input.addEventListener('focus', () => updateMyPresenceRow(idx));
-                input.addEventListener('blur',  () => updateMyPresenceRow(-1));
-            });
-        });
-    }
-
     // ── Start draft session ───────────────────────────────────
     function startDraftSession() {
         // Open the start draft modal instead of using prompts
@@ -5784,7 +6768,7 @@
                 .then(() => {
                     loadTemplates();
                     const badge = document.getElementById('orgCodeBadge');
-                    if (badge) { const o = badge.textContent; badge.textContent = '\u2705 Saved!'; setTimeout(() => badge.textContent = o, 1500); }
+                    if (badge) { const o = badge.textContent; badge.textContent = '\u2705 Saved!'; toast('Template saved'); setTimeout(() => badge.textContent = o, 1500); }
                 })
                 .catch(err => alert('Could not save template: ' + err.message));
         });
@@ -5814,6 +6798,284 @@
     console.info('Firebase rules: drafts/$draftId and templates/$orgCode need .read+.write true');
 
     // ═══════════════════════════════════════════════════════
+    // PROGRAMME MANAGER VIEW
+    // ═══════════════════════════════════════════════════════
+
+    let _pmSessionCode = null;
+    let _pmAdjType     = null;
+
+    function initPmView(sessionCode) {
+        _pmSessionCode = sessionCode;
+        subscribeToSession(sessionCode, data => {
+            if (data) applyFirebaseSnapshot(data);
+            updatePmView();
+            if (data) {
+                const fbSt = document.getElementById('pmFbStatus');
+                if (fbSt) { fbSt.className = 'firebase-status connected pm-fb-status'; fbSt.innerHTML = '<span class="status-dot"></span> Live'; }
+            }
+        });
+    }
+
+    function updatePmView() {
+        if (!appState.event) return;
+        const sp  = appState.speakers || [];
+        const idx = appState.currentSpeakerIndex;
+        const cur = (idx >= 0) ? sp[idx] : null;
+
+        // Header event name
+        const evEl = document.getElementById('pmEventName');
+        if (evEl) evEl.textContent = appState.event.name || 'Service Timer';
+
+        // Stats — est end time, time remaining, variance, slots done
+        let totalRemSec = 0;
+        sp.forEach(s => {
+            if (s.status === 'upcoming') totalRemSec += Math.floor((s.allocatedMinutes || 0) * 60);
+            else if (s.status === 'active') totalRemSec += Math.max(0, Math.floor((s.allocatedMinutes || 0) * 60) - appState.timerSeconds);
+        });
+        const estEndDate = new Date(Date.now() + totalRemSec * 1000);
+        const hh   = estEndDate.getHours() % 12 || 12;
+        const mm   = String(estEndDate.getMinutes()).padStart(2,'0');
+        const ampm = estEndDate.getHours() >= 12 ? 'PM' : 'AM';
+
+        let allocTotal = 0, actualTotal = 0;
+        sp.forEach(s => { allocTotal += Math.floor((s.allocatedMinutes||0)*60); actualTotal += (s.actualSeconds||0); });
+        const varSec = actualTotal - allocTotal;
+        const done   = sp.filter(s => s.status === 'completed').length;
+
+        const pmEstEnd = document.getElementById('pmEstEnd');
+        const pmLeft   = document.getElementById('pmTimeLeft');
+        const pmVar    = document.getElementById('pmVariance');
+        const pmSlots  = document.getElementById('pmSlotsDone');
+        if (pmEstEnd) pmEstEnd.textContent = appState.isRunning ? `${hh}:${mm} ${ampm}` : '--:--';
+        if (pmLeft)   pmLeft.textContent   = appState.isRunning ? pmFmtSec(totalRemSec) : '--';
+        if (pmVar) {
+            const absVar = Math.abs(varSec);
+            pmVar.textContent = !appState.isRunning ? '--' : absVar < 60 ? 'On Time' : (varSec > 0 ? '+' : '-') + pmFmtSec(absVar);
+            pmVar.style.color = varSec > 60 ? '#ff4757' : varSec < -60 ? '#3498db' : '#2ecc71';
+        }
+        if (pmSlots)  pmSlots.textContent  = done + '/' + sp.length;
+
+        // Current speaker card + timer display
+        const t        = appState.timerSeconds;
+        const allocSecs = cur ? Math.floor((cur.allocatedMinutes || 0) * 60) : 0;
+        const isOvertime = !!(cur && appState.isRunning && t > allocSecs);
+        const pct        = allocSecs > 0 ? (t / allocSecs) * 100 : 0;
+
+        // Timer: counts down remaining; on overtime hides and shows TIME'S UP
+        const timerEl = document.getElementById('pmTimer');
+        if (timerEl) {
+            if (isOvertime) {
+                timerEl.style.display = 'none';
+            } else {
+                timerEl.style.display = '';
+                timerEl.textContent = pmFmtSec(allocSecs - t);
+            }
+            timerEl.className   = 'pm-current-timer';
+            if (isOvertime || pct >= 90) timerEl.classList.add('danger');
+            else if (pct >= 80)          timerEl.classList.add('warning');
+        }
+
+        // Overtime counter (+MM:SS) and TIME'S UP badge
+        const otCounter = document.getElementById('pmOvertimeCounter');
+        const timesUpEl = document.getElementById('pmTimesUp');
+        const pmCard    = document.getElementById('pmCurrentCard');
+        if (isOvertime) {
+            const overSecs = t - allocSecs;
+            if (otCounter) { otCounter.textContent = '+' + pmFmtSec(overSecs); otCounter.style.display = 'block'; }
+            if (timesUpEl) timesUpEl.style.display = 'block';
+            if (pmCard)    pmCard.classList.add('overtime');
+        } else {
+            if (otCounter) otCounter.style.display = 'none';
+            if (timesUpEl) timesUpEl.style.display = 'none';
+            if (pmCard)    pmCard.classList.remove('overtime');
+        }
+
+        const nameEl  = document.getElementById('pmCurrentName');
+        const topicEl = document.getElementById('pmCurrentTopic');
+        const statEl  = document.getElementById('pmCurrentStatus');
+        if (nameEl)  nameEl.textContent  = cur ? (cur.name  || 'TBD') : 'No active speaker';
+        if (topicEl) topicEl.textContent = cur ? (cur.topic || '')    : '';
+        if (statEl) {
+            if (isOvertime) {
+                statEl.textContent = 'OVERTIME';
+                statEl.style.color = '#ffaaaa';
+            } else {
+                statEl.textContent = appState.isRunning
+                    ? (appState.isPaused ? 'Paused' : 'Running')
+                    : 'Waiting to start';
+                statEl.style.color = '';
+            }
+        }
+
+        // Control buttons
+        const startBtn  = document.getElementById('pmStartBtn');
+        const pauseBtn  = document.getElementById('pmPauseBtn');
+        const resumeBtn = document.getElementById('pmResumeBtn');
+        const prevBtn   = document.getElementById('pmPrevBtn');
+        const nextBtn   = document.getElementById('pmNextBtn');
+        if (startBtn)  startBtn.classList.toggle('hidden',  appState.isRunning);
+        if (pauseBtn)  pauseBtn.classList.toggle('hidden',  !appState.isRunning || appState.isPaused);
+        if (resumeBtn) resumeBtn.classList.toggle('hidden', !appState.isPaused);
+        if (prevBtn)   prevBtn.disabled  = (idx <= 0);
+        if (nextBtn)   nextBtn.disabled  = (!appState.isRunning || idx < 0 || idx >= sp.length - 1);
+
+        // Slot list
+        renderPmSlotList(sp, idx);
+    }
+
+    function pmFmtSec(sec) {
+        sec = Math.max(0, Math.floor(sec));
+        return String(Math.floor(sec/60)).padStart(2,'0') + ':' + String(sec%60).padStart(2,'0');
+    }
+
+    function renderPmSlotList(speakers, activeIdx) {
+        const list = document.getElementById('pmSlotList');
+        if (!list) return;
+        list.innerHTML = '';
+        speakers.forEach((sp, i) => {
+            const isActive    = sp.status === 'active';
+            const isCompleted = sp.status === 'completed';
+            const isUpcoming  = sp.status === 'upcoming';
+            const div = document.createElement('div');
+            div.className = 'pm-slot' + (isActive ? ' active' : isCompleted ? ' completed' : '');
+            const durMins = Math.round((sp.allocatedMinutes || 0) * 10) / 10;
+
+            // Only upcoming slots past the active one can be reordered
+            const canMoveUp   = isUpcoming && i > activeIdx + 1;
+            const canMoveDown = isUpcoming && i < speakers.length - 1 && speakers[i+1]?.status === 'upcoming';
+
+            div.innerHTML = `
+                    <span class="pm-slot-num">${i + 1}</span>
+                    <div class="pm-slot-info">
+                        <div class="pm-slot-name">${(sp.name  || 'TBD').replace(/</g,'&lt;')}</div>
+                        <div class="pm-slot-topic">${(sp.topic || ''  ).replace(/</g,'&lt;')}</div>
+                    </div>
+                    <span class="pm-slot-dur">${durMins}m</span>
+                    <div class="pm-slot-actions">
+                        ${canMoveUp   ? `<button class="pm-slot-btn move" onclick="pmMoveSlot(${i},'up')"   title="Move up">▲</button>`   : ''}
+                        ${canMoveDown ? `<button class="pm-slot-btn move" onclick="pmMoveSlot(${i},'down')" title="Move down">▼</button>` : ''}
+                        <button class="pm-slot-btn" onclick="pmCopySpeakerLink(${i})" title="Copy speaker link">🔗</button>
+                    </div>`;
+            list.appendChild(div);
+        });
+    }
+
+    // ── PM write actions — write a command; organiser executes it ────
+    function pmAction(action) {
+        if (!_pmSessionCode) return;
+
+        // For 'next', check if the current speaker is under 50% — show PM-side confirm
+        if (action === 'next') {
+            const idx = appState.currentSpeakerIndex;
+            const cur = (idx >= 0) ? appState.speakers[idx] : null;
+            if (cur) {
+                const allocSecs = Math.floor((cur.allocatedMinutes || 0) * 60);
+                if (allocSecs > 0 && appState.timerSeconds < allocSecs * 0.5) {
+                    const used = Math.floor(appState.timerSeconds / 60) + ':' +
+                        String(appState.timerSeconds % 60).padStart(2,'0');
+                    const alloc = Math.floor(allocSecs / 60) + ':' +
+                        String(allocSecs % 60).padStart(2,'0');
+                    if (!window.confirm(
+                        cur.name + ' has only used ' + used + ' of ' + alloc + '.\n\nAdvance to next speaker?'
+                    )) return;
+                }
+            }
+        }
+
+        const cmd = { action, requestedAt: Date.now(), requestedBy: 'pm' };
+        db.ref('sessions/' + _pmSessionCode + '/pendingAction').set(cmd)
+            .catch(err => console.error('PM action error:', err));
+        const map = { start:'Starting…', pause:'Pausing…', resume:'Resuming…', next:'Advancing to next…', prev:'Going back…' };
+        if (map[action]) toast(map[action], 'info', 1500);
+    }
+
+    function pmMoveSlot(idx, dir) {
+        if (!_pmSessionCode) return;
+        const swap = dir === 'up' ? idx - 1 : idx + 1;
+        db.ref('sessions/' + _pmSessionCode + '/pendingAction')
+            .set({ action: 'reorder', fromIdx: idx, toIdx: swap, requestedAt: Date.now(), requestedBy: 'pm' })
+            .catch(console.error);
+    }
+
+    // pmWriteBack retired — PM commands go via pendingAction
+    function pmWriteBack() {}
+
+    // ── PM adjust time ───────────────────────────────────────
+    function pmShowAdjust() {
+        if (!appState.isRunning || appState.currentSpeakerIndex < 0) {
+            toast('Start the timer first', 'info');
+            return;
+        }
+        _pmAdjType = null;
+        document.getElementById('pmAdjMinutes').value = '5';
+        document.getElementById('pmAdjSeconds').value = '0';
+        document.getElementById('pmAdjType').textContent = '';
+        document.getElementById('pmAdjConfirmBtn').disabled = true;
+        document.getElementById('pmAdjustModal').classList.remove('hidden');
+    }
+    function closePmAdjust() {
+        document.getElementById('pmAdjustModal').classList.add('hidden');
+    }
+    function setPmAdjType(type) {
+        _pmAdjType = type;
+        document.getElementById('pmAdjType').textContent = type === 'add' ? '➕ Adding time to current slot' : '➖ Subtracting time from current slot';
+        document.getElementById('pmAdjConfirmBtn').disabled = false;
+    }
+    function confirmPmAdjust() {
+        if (!_pmAdjType || !_pmSessionCode) return;
+        const mins  = parseInt(document.getElementById('pmAdjMinutes').value) || 0;
+        const secs  = parseInt(document.getElementById('pmAdjSeconds').value) || 0;
+        const delta = (mins * 60 + secs) * (_pmAdjType === 'add' ? 1 : -1);
+        db.ref('sessions/' + _pmSessionCode + '/pendingAction')
+            .set({ action: 'adjust', deltaSecs: delta, requestedAt: Date.now(), requestedBy: 'pm' })
+            .catch(console.error);
+        closePmAdjust();
+        toast((_pmAdjType === 'add' ? 'Adding ' : 'Subtracting ') + mins + 'm ' + secs + 's', 'info', 2000);
+    }
+
+    // ── PM share links ───────────────────────────────────────
+    function pmDownloadReport() {
+        if (!appState.event || !appState.speakers.length) {
+            toast('No session data to report on', 'info'); return;
+        }
+        downloadReportPDF();
+    }
+
+    function pmCopyLink(viewType) {
+        if (!_pmSessionCode) return;
+        const url = BASE_URL + '?view=' + viewType + '&session=' + _pmSessionCode;
+        navigator.clipboard.writeText(url).then(() => {
+            // Find button by partial text match
+            document.querySelectorAll('.pm-bottom .btn').forEach(btn => {
+                const t = btn.textContent;
+                const match = (viewType === 'pm' && t.includes('PM')) ||
+                    (viewType === 'stage' && t.includes('Stage')) ||
+                    (viewType === 'presentation' && t.includes('Pres'));
+                if (match) {
+                    const o = btn.innerHTML;
+                    btn.innerHTML = '✅ Copied!';
+                    setTimeout(() => btn.innerHTML = o, 2000);
+                }
+            });
+        });
+    }
+
+    function pmCopySpeakerLink(speakerIdx) {
+        if (!_pmSessionCode) return;
+        const url = BASE_URL + '?view=speaker&session=' + _pmSessionCode + '&si=' + speakerIdx;
+        navigator.clipboard.writeText(url).then(() => {
+            // Flash the 🔗 button for that row
+            const btns = document.querySelectorAll('#pmSlotList .pm-slot-btn');
+            btns.forEach(btn => {
+                if (btn.getAttribute('onclick') === `pmCopySpeakerLink(${speakerIdx})`) {
+                    const o = btn.textContent; btn.textContent = '✅';
+                    setTimeout(() => btn.textContent = o, 1500);
+                }
+            });
+        });
+    }
+
+    // ═══════════════════════════════════════════════════════
 
     // Initialize app when page loads
     window.addEventListener('load', init);
@@ -5832,12 +7094,18 @@
 
     // Prevent accidental page refresh
     window.addEventListener('beforeunload', (e) => {
-        if (appState.isRunning || (appState.event && appState.speakers.some(s => s.status === 'active' || s.status === 'completed'))) {
+        const isPmActive = !!_pmSessionCode;
+        const isOrgActive = appState.isRunning ||
+            (appState.event && appState.speakers.some(s => s.status === 'active' || s.status === 'completed'));
+        if (isOrgActive || isPmActive) {
             e.preventDefault();
-            e.returnValue = 'You have an active event. Are you sure you want to leave? Your progress may be lost.';
+            e.returnValue = isPmActive
+                ? 'The Programme Manager is connected to a live session. Are you sure you want to leave?'
+                : 'You have an active event. Your progress is saved — reload to continue.';
             return e.returnValue;
         }
     });
 </script>
+<div id="toastContainer"></div>
 </body>
 </html>
