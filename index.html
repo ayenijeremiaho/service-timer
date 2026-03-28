@@ -995,6 +995,28 @@
             letter-spacing: 0.1em;
         }
         .creator-row.break-row .cr-row-num { color: #f39c12; }
+
+        /* ── Service-complete overlay (all views) ── */
+        .service-complete-overlay {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: white; text-align: center; padding: 40px 30px;
+            z-index: 50; border-radius: inherit;
+            animation: scFadeIn 0.6s ease;
+        }
+        @keyframes scFadeIn { from { opacity:0; transform:scale(0.97); } to { opacity:1; transform:scale(1); } }
+        .sc-icon   { font-size: 4em; margin-bottom: 16px; }
+        .sc-title  { font-size: 2.2em; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.02em; }
+        .sc-event  { font-size: 1.1em; color: rgba(255,255,255,0.7); margin-bottom: 20px; }
+        .sc-msg    { font-size: 1.05em; color: rgba(255,255,255,0.85); line-height: 1.6;
+            max-width: 480px; margin-bottom: 28px; }
+        .sc-love   { font-size: 1.3em; color: #ff6b9d; font-weight: 700; margin-bottom: 28px; }
+        .sc-report { background: white; color: #0f3460; border: none; border-radius: 10px;
+            padding: 12px 28px; font-size: 1em; font-weight: 700; cursor: pointer;
+            margin-top: 8px; transition: transform 0.15s; }
+        .sc-report:hover { transform: scale(1.04); }
         .creator-row.section-row {
             border-left-color: #2c3e50;
             background: linear-gradient(90deg, #2c3e50 0%, #34495e 100%);
@@ -2160,6 +2182,18 @@
                 <!-- Speaker items will be added here -->
             </div>
         </div>
+
+        <!-- Action log -->
+        <div id="actionLogPanel" style="margin-top:24px;padding-top:20px;border-top:2px solid #e0e0e0;">
+            <h3 style="font-size:1em;color:#666;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+                📋 Action Log
+                <span style="font-size:0.8em;font-weight:400;color:#aaa;">(who did what)</span>
+            </h3>
+            <div id="actionLogList" style="font-size:0.82em;color:#555;max-height:220px;overflow-y:auto;
+                    background:#f8f9fa;border-radius:8px;padding:10px 12px;border:1.5px solid #e0e0e0;">
+                <span style="color:#bbb;">No actions yet.</span>
+            </div>
+        </div>
     </div>
 
     <!-- Presentation View -->
@@ -3092,8 +3126,9 @@
         showTimeUp: false,
         timeUpInterval: null,
         sessionCode: null,
-        pauseLog:    [],
-        actionLog:   []
+        pauseLog:       [],
+        actionLog:      [],
+        serviceComplete: false
     };
 
     // ── Firebase ────────────────────────────────────────────────
@@ -3172,6 +3207,7 @@
             speakers:            safeSpeakers,
             pauseLog:            Array.isArray(appState.pauseLog)  ? appState.pauseLog  : [],
             actionLog:           Array.isArray(appState.actionLog) ? appState.actionLog : [],
+            serviceComplete:     appState.serviceComplete === true,
             updatedAt:           Date.now()
         };
 
@@ -3318,6 +3354,7 @@
         appState.slotBaseSeconds     = data.slotBaseSeconds  || 0;
         if (Array.isArray(data.pauseLog))  appState.pauseLog  = data.pauseLog;
         if (Array.isArray(data.actionLog)) appState.actionLog = data.actionLog;
+        if (data.serviceComplete)          appState.serviceComplete = true;
 
         // Recompute live timerSeconds from the wall-clock anchor
         // This makes remote views accurate even if Firebase was briefly offline
@@ -4079,6 +4116,27 @@
         });
 
         updateTimerDisplay();
+
+        // Action log rendering
+        const logList = document.getElementById('actionLogList');
+        if (logList) {
+            const entries = Object.values(appState.actionLog || {});
+            if (!entries.length) {
+                logList.innerHTML = '<span style="color:#bbb;">No actions yet.</span>';
+            } else {
+                entries.sort((a, b) => (b.at || 0) - (a.at || 0));
+                logList.innerHTML = entries.map(e => {
+                    const roleColor = e.role === 'pm' ? '#e67e22' : '#667eea';
+                    const roleLabel = e.role === 'pm' ? 'PM' : 'Organiser';
+                    return '<div style="padding:5px 0;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:baseline;">'
+                        + '<span style="color:#999;min-width:70px;flex-shrink:0;">' + (e.time||'') + '</span>'
+                        + '<span style="color:' + roleColor + ';font-weight:700;min-width:65px;flex-shrink:0;">' + roleLabel + '</span>'
+                        + '<span style="color:#444;">' + (e.action||'') + '</span>'
+                        + '<span style="color:#888;margin-left:6px;">' + (e.detail||'') + '</span>'
+                        + '</div>';
+                }).join('');
+            }
+        }
     }
 
     // ── Edit Speaker / Slot ────────────────────────────────────────────
@@ -4183,6 +4241,25 @@
         const currIdx   = appState.currentSpeakerIndex;
         const mySpeaker = myIdx >= 0 ? appState.speakers[myIdx] : null;
         const spView    = document.getElementById('speakerPortal');
+
+        // ── Service complete ──────────────────────────────────────────────
+        let spComplete = document.getElementById('spServiceComplete');
+        if (appState.serviceComplete) {
+            if (!spComplete) {
+                spComplete = document.createElement('div');
+                spComplete.id = 'spServiceComplete';
+                spComplete.className = 'service-complete-overlay';
+                spComplete.innerHTML =
+                    '<div class="sc-icon">&#x1f64f;</div>' +
+                    '<div class="sc-title">SERVICE ENDED</div>' +
+                    '<div class="sc-event">' + (appState.event.name||'') + '</div>' +
+                    '<div class="sc-msg">The service has come to a close.<br>Thank you for your participation today.</div>' +
+                    '<div class="sc-love">We love you! &#x2764;&#xfe0f;</div>';
+                if (spView) { spView.style.position = 'relative'; spView.appendChild(spComplete); }
+            }
+            return;
+        }
+        if (spComplete) spComplete.remove();
 
         function showPanel(id) {
             ['spWaiting','spLive','spDone'].forEach(pid => {
@@ -4309,6 +4386,28 @@
         // Header
         const evEl = document.getElementById('stageEventName');
         if (evEl) evEl.textContent = appState.event.name;
+
+        // ── Service complete ──────────────────────────────────────────────
+        const stageEl = document.getElementById('stageView');
+        let svComplete = document.getElementById('svServiceComplete');
+        if (appState.serviceComplete) {
+            if (!svComplete) {
+                svComplete = document.createElement('div');
+                svComplete.id = 'svServiceComplete';
+                svComplete.className = 'service-complete-overlay';
+                svComplete.innerHTML =
+                    '<div class="sc-icon">&#x2705;</div>' +
+                    '<div class="sc-title">SERVICE ENDED</div>' +
+                    '<div class="sc-event">' + (appState.event.name||'') + '</div>' +
+                    '<div class="sc-msg">All slots completed. The service has ended.</div>' +
+                    '<div class="sc-love">We love you! &#x2764;&#xfe0f;</div>' +
+                    '<button class="sc-report" onclick="pmDownloadReport()">&#x1f4ca; Download Report</button>';
+                stageEl.style.position = 'relative';
+                stageEl.appendChild(svComplete);
+            }
+            return;
+        }
+        if (svComplete) svComplete.remove();
 
         const currIdx = appState.currentSpeakerIndex;
         const curr    = currIdx >= 0 ? appState.speakers[currIdx] : null;
@@ -4517,9 +4616,11 @@
             renderOrganizerPanel();
         } else {
             // All speakers done
+            appState.serviceComplete = true;
             stopTimer();
             syncToFirebaseNow();
-            toast('All speakers completed!', 'success', 4000);
+            toast('Service complete! All slots finished.', 'success', 5000);
+            renderOrganizerPanel();
         }
     }
 
@@ -4688,6 +4789,7 @@
             appState.speakers            = remoteSpeakers;
             if (Array.isArray(data.pauseLog))  appState.pauseLog  = data.pauseLog;
             if (Array.isArray(data.actionLog)) appState.actionLog = data.actionLog;
+            if (data.serviceComplete)          appState.serviceComplete = true;
 
             // Restore live clock (never let Firebase overwrite the organiser's tick)
             appState.timerSeconds    = savedTimerSeconds;
@@ -4894,6 +4996,27 @@
         document.getElementById('presentationEventTitle').textContent = appState.event.name;
         document.getElementById('presentationEventDate').textContent = new Date(appState.event.date).toLocaleDateString();
 
+        // ── Service complete screen ───────────────────────────────────────
+        const pvEl = document.getElementById('presentationView');
+        let pvComplete = document.getElementById('pvServiceComplete');
+        if (appState.serviceComplete) {
+            if (!pvComplete) {
+                pvComplete = document.createElement('div');
+                pvComplete.id = 'pvServiceComplete';
+                pvComplete.className = 'service-complete-overlay';
+                pvComplete.innerHTML =
+                    '<div class="sc-icon">&#x2728;</div>' +
+                    '<div class="sc-title">SERVICE COMPLETE</div>' +
+                    '<div class="sc-event">' + (appState.event.name||'') + '</div>' +
+                    '<div class="sc-msg">Every slot has been completed.<br>Thank you all for being here today.</div>' +
+                    '<div class="sc-love">We love you! &#x2764;&#xfe0f;</div>';
+                pvEl.style.position = 'relative';
+                pvEl.appendChild(pvComplete);
+            }
+            return;
+        }
+        if (pvComplete) pvComplete.remove();
+
         // Show waiting message if no active speaker OR timer hasn't started
         if (appState.currentSpeakerIndex < 0 || !appState.isRunning) {
             document.getElementById('waitingMessage').classList.remove('hidden');
@@ -5055,7 +5178,7 @@
                 event:null, currentSpeakerIndex:-1, timerSeconds:0, timerInterval:null,
                 isPaused:false, isRunning:false, speakers:[], speakerHistory:[],
                 showTimeUp:false, timeUpInterval:null, sessionCode:null,
-                pauseLog:[], actionLog:[], lastPauseReason:null,
+                pauseLog:[], actionLog:[], lastPauseReason:null, serviceComplete:false,
                 slotStartedAt: null, slotBaseSeconds: 0
             };
             localStorage.removeItem('serviceTimerState');
@@ -7250,6 +7373,29 @@
 
     function updatePmView() {
         if (!appState.event) return;
+
+        // ── Service complete ──────────────────────────────────────────────
+        const pmEl     = document.getElementById('pmView');
+        let pmComplete = document.getElementById('pmServiceComplete');
+        if (appState.serviceComplete) {
+            if (!pmComplete) {
+                pmComplete = document.createElement('div');
+                pmComplete.id = 'pmServiceComplete';
+                pmComplete.className = 'service-complete-overlay';
+                pmComplete.innerHTML =
+                    '<div class="sc-icon">&#x1f3c1;</div>' +
+                    '<div class="sc-title">SERVICE COMPLETE</div>' +
+                    '<div class="sc-event">' + (appState.event.name||'') + '</div>' +
+                    '<div class="sc-msg">All programme slots have been completed.<br>Thank you for managing this service.</div>' +
+                    '<div class="sc-love">We love you! &#x2764;&#xfe0f;</div>' +
+                    '<button class="sc-report" onclick="pmDownloadReport()">&#x1f4ca; Download Report</button>';
+                pmEl.style.position = 'relative';
+                pmEl.appendChild(pmComplete);
+            }
+            return;
+        }
+        if (pmComplete) pmComplete.remove();
+
         const sp  = appState.speakers || [];
         const idx = appState.currentSpeakerIndex;
         const cur = (idx >= 0) ? sp[idx] : null;

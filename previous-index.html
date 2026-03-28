@@ -257,27 +257,6 @@
             font-size: 1.2em;
             opacity: 0.9;
             margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .edit-speaker-btn {
-            background: none;
-            border: none;
-            font-size: 0.8em;
-            cursor: pointer;
-            padding: 4px 6px;
-            border-radius: 4px;
-            opacity: 0.6;
-            transition: all 0.2s ease;
-        }
-
-        .edit-speaker-btn:hover {
-            opacity: 1;
-            background: rgba(255,255,255,0.1);
-            transform: scale(1.1);
         }
 
         .current-topic {
@@ -1016,6 +995,74 @@
             letter-spacing: 0.1em;
         }
         .creator-row.break-row .cr-row-num { color: #f39c12; }
+        .creator-row.section-row {
+            border-left-color: #2c3e50;
+            background: linear-gradient(90deg, #2c3e50 0%, #34495e 100%);
+            color: white; padding: 10px 14px;
+        }
+        .creator-row.section-row .cr-row-num { color: #ecf0f1; font-weight:700; }
+        /* ── Reorder buttons ── */
+        .cr-reorder { display:flex; gap:2px; }
+        .cr-reorder button {
+            background:none; border:1.5px solid #ddd; border-radius:4px;
+            color:#aaa; font-size:0.7em; cursor:pointer; padding:1px 5px; line-height:1.4;
+        }
+        .cr-reorder button:hover { background:#f0f0f0; color:#555; border-color:#bbb; }
+        .creator-row.section-row .cr-reorder button {
+            border-color:rgba(255,255,255,0.3); color:rgba(255,255,255,0.6);
+        }
+        .creator-row.section-row .cr-reorder button:hover {
+            background:rgba(255,255,255,0.15); color:white;
+        }
+        /* ── Section footer — "add items below this section" ── */
+        .section-footer {
+            margin-top:4px; margin-bottom:6px; padding:4px 8px;
+            background:#f0f4ff; border:1.5px dashed #c5d0f0; border-radius:8px;
+            display:flex; gap:6px; align-items:center; flex-wrap:wrap;
+        }
+        .section-footer .sf-label {
+            font-size:0.72em; font-weight:700; color:#7a8abf;
+            text-transform:uppercase; letter-spacing:0.07em; flex:1; min-width:80px;
+        }
+        .section-footer button {
+            font-size:0.75em; padding:3px 9px; border-radius:6px;
+            border:1.5px solid #c5d0f0; background:white; color:#667eea;
+            cursor:pointer; white-space:nowrap;
+        }
+        .section-footer button:hover { background:#667eea; color:white; border-color:#667eea; }
+        /* ── Add-bar improvements ── */
+        .creator-add-bar { border-top:2px dashed #ddd; }
+        .creator-add-bar .btn-section {
+            background: linear-gradient(135deg,#2c3e50,#34495e);
+            color:white; border:none; font-size:0.82em; padding:8px 14px;
+            border-radius:8px; cursor:pointer; font-weight:600;
+        }
+        .creator-add-bar .btn-section:hover { opacity:0.85; }
+        /* ── Row card ── improved header */
+        .cr-header { margin-bottom:8px; }
+        .cr-row-badge {
+            display:inline-flex; align-items:center; gap:5px;
+            font-size:0.72em; font-weight:700; color:#667eea;
+            text-transform:uppercase; letter-spacing:0.08em;
+        }
+        .cr-header-right { display:flex; gap:6px; align-items:center; }
+        .creator-row.section-row .remove-btn { color: rgba(255,255,255,0.6); border-color: rgba(255,255,255,0.3); }
+        .creator-row.section-row .remove-btn:hover { color:#ff6b6b; border-color:#ff6b6b; }
+        .creator-row.section-row input {
+            background: rgba(255,255,255,0.15); color:white;
+            border: 1.5px solid rgba(255,255,255,0.3); font-weight:700; font-size:1em;
+        }
+        .creator-row.section-row input::placeholder { color: rgba(255,255,255,0.5); }
+        .creator-options-bar {
+            display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+            padding:10px 14px; background:#f8f9fa; border-radius:10px;
+            margin-bottom:14px; border:1.5px solid #e0e0e0;
+        }
+        .creator-options-bar label {
+            display:flex; align-items:center; gap:6px;
+            font-size:0.88em; font-weight:600; color:#555; cursor:pointer; user-select:none;
+        }
+        .creator-options-bar input[type="checkbox"] { width:16px; height:16px; cursor:pointer; }
         /* Field group with label above input — stacks on mobile */
         .cr-fields {
             display: flex;
@@ -1140,18 +1187,8 @@
         }
         .firebase-status.connected    { background:#d4edda; color:#155724; }
         .firebase-status.connecting   { background:#fff3cd; color:#856404; }
-        .firebase-status.disconnected {
-            background:#f8d7da;
-            color:#721c24;
-            animation: pulse-red 2s ease-in-out infinite;
-            font-weight: 700;
-        }
+        .firebase-status.disconnected { background:#f8d7da; color:#721c24; }
         .status-dot { width:8px; height:8px; border-radius:50%; background:currentColor; }
-
-        @keyframes pulse-red {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
 
         /* ── Per-speaker modal ── */
         .speaker-links-modal {
@@ -2733,11 +2770,22 @@
     <!-- Rows -->
     <div style="margin-top:30px;padding-top:24px;border-top:2px solid #e0e0e0;">
         <h3 style="color:#333;font-size:1.2em;margin-bottom:16px;">Programme Items</h3>
+        <!-- Minister autocomplete datalist (populated dynamically) -->
+        <datalist id="ministerNames"></datalist>
+        <!-- Options row: back-up toggle -->
+        <div style="margin-bottom:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <label title="Include a Back-Up Minister column" style="display:flex;align-items:center;gap:6px;font-size:0.88em;font-weight:600;color:#555;cursor:pointer;">
+                <input type="checkbox" id="backupColToggle" onchange="toggleBackupFields();creatorRefreshPreview()" style="width:16px;height:16px;">
+                Back-Up Column
+            </label>
+            <span style="font-size:0.78em;color:#aaa;margin-left:auto;">Tip: use ▲▼ to reorder rows</span>
+        </div>
         <div id="creatorRows"></div>
-        <!-- Add buttons — always visible below the list -->
+        <!-- Add bar — always visible below the list -->
         <div class="creator-add-bar" id="creatorAddBarFixed">
-            <button class="btn btn-primary" onclick="creatorAddRow()" style="flex:1;">+ Add Item</button>
-            <button class="btn btn-secondary" onclick="creatorAddBreak()">☕ Add Break</button>
+            <button class="btn btn-primary" onclick="creatorAddRow()" style="flex:2;">+ Add Item</button>
+            <button class="btn btn-secondary" onclick="creatorAddBreak()" style="flex:1;">☕ Break</button>
+            <button class="btn-section creator-add-bar" onclick="creatorAddSection()" style="flex:1;background:linear-gradient(135deg,#2c3e50,#34495e);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.88em;padding:8px 10px;">&#128194; Add Section</button>
         </div>
     </div>
 
@@ -2751,7 +2799,49 @@
                 <button class="btn btn-primary" onclick="creatorUseDirectly()">▶ Use in Timer</button>
             </div>
         </div>
+        <!-- Preview options — live controls that affect the preview rendering -->
+        <div class="creator-options-bar" id="creatorOptionsBar" style="margin-bottom:10px;">
+            <label title="Alternate row shading">
+                <input type="checkbox" id="altRowToggle" onchange="creatorRefreshPreview()">
+                Alt Shading
+            </label>
+            <label title="Choose accent colour for EVENTS, DURATION, MINISTER columns">
+                Colour:
+                <input type="color" id="accentColour" value="#ffe600" style="width:36px;height:24px;padding:1px;border:1.5px solid #ddd;border-radius:4px;cursor:pointer;" onchange="creatorRefreshPreview()">
+            </label>
+            <label title="No colour — black &amp; white output">
+                <input type="checkbox" id="noColourToggle" onchange="creatorRefreshPreview()">
+                B&amp;W
+            </label>
+        </div>
         <div id="creatorPreview" style="overflow-x:auto;border-radius:10px;border:2px solid #e0e0e0;"></div>
+    </div>
+</div>
+
+<!-- Edit Speaker modal -->
+<div class="modal-overlay hidden" id="editSpeakerModal" onclick="if(event.target===this)closeEditSpeaker()">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width:460px;width:90%;">
+        <h3 style="margin-bottom:6px;">✏️ Edit Speaker / Slot</h3>
+        <p style="color:#888;font-size:0.88em;margin-bottom:20px;">Changes take effect immediately and sync to all views.</p>
+        <div class="form-group" style="margin-bottom:16px;">
+            <label>Name / Minister</label>
+            <input type="text" id="editSpeakerName" placeholder="e.g. PST Abraham Omosaide"
+                   style="width:100%;padding:10px 12px;border:2px solid #e0e0e0;border-radius:8px;font-size:1em;box-sizing:border-box;">
+        </div>
+        <div class="form-group" style="margin-bottom:16px;">
+            <label>Topic / Event</label>
+            <input type="text" id="editSpeakerTopic" placeholder="e.g. Word"
+                   style="width:100%;padding:10px 12px;border:2px solid #e0e0e0;border-radius:8px;font-size:1em;box-sizing:border-box;">
+        </div>
+        <div class="form-group" style="margin-bottom:24px;">
+            <label>Allocated Time (minutes)</label>
+            <input type="number" id="editSpeakerMins" min="1" max="180" value="15"
+                   style="width:110px;padding:10px 12px;border:2px solid #e0e0e0;border-radius:8px;font-size:1em;text-align:center;">
+        </div>
+        <div class="modal-buttons" style="display:flex;gap:10px;">
+            <button class="btn btn-secondary" style="flex:1;" onclick="closeEditSpeaker()">Cancel</button>
+            <button class="btn btn-primary"   style="flex:2;" onclick="saveEditSpeaker()">✅ Save Changes</button>
+        </div>
     </div>
 </div>
 
@@ -3051,53 +3141,9 @@
             action: action,
             detail: detail || '',
             at:     Date.now(),
-            time:   new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', second:'2-digit' }),
-            timerSeconds: appState.timerSeconds, // Add current timer state for debugging
-            currentSpeaker: appState.currentSpeakerIndex >= 0 ? appState.speakers[appState.currentSpeakerIndex]?.name : 'None'
+            time:   new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', second:'2-digit' })
         };
         db.ref('sessions/' + appState.sessionCode + '/actionLog').push(entry).catch(() => {});
-
-        // Only log critical errors, not routine actions
-    }
-
-    function validateTimingConsistency() {
-        // Validation function to check timing consistency across views
-        if (appState.currentSpeakerIndex >= 0 && appState.currentSpeakerIndex < appState.speakers.length) {
-            const currentSpeaker = appState.speakers[appState.currentSpeakerIndex];
-            const now = Date.now();
-
-            if (appState.isRunning && !appState.isPaused && appState.slotStartedAt) {
-                const calculatedTime = Math.floor((now - appState.slotStartedAt) / 1000) + (appState.slotBaseSeconds || 0);
-                const timeDiff = Math.abs(calculatedTime - appState.timerSeconds);
-
-                // Only warn for significant drift (>30 seconds) to avoid normal browser timing variations
-                if (timeDiff > 30) {
-                    console.warn('Significant timer synchronization drift detected:', {
-                        calculated: calculatedTime,
-                        stored: appState.timerSeconds,
-                        difference: timeDiff,
-                        speaker: currentSpeaker.name,
-                        note: 'This may indicate system sleep, tab switching, or performance issues'
-                    });
-
-                    // Auto-correct major drift (but only in organizer view)
-                    const isOrganizerView = !window.location.search.includes('view=');
-                    if (timeDiff > 60 && isOrganizerView) {
-                        appState.timerSeconds = calculatedTime;
-                        console.warn('Auto-corrected timer due to major drift (>60s)');
-                        return true; // Indicates correction was made
-                    }
-                } else if (timeDiff > 10) {
-                    // For moderate drift (10-30s), just auto-correct without warning noise
-                    const isOrganizerView = !window.location.search.includes('view=');
-                    if (isOrganizerView) {
-                        appState.timerSeconds = calculatedTime;
-                        return true; // Silent correction
-                    }
-                }
-            }
-        }
-        return false;
     }
 
     function _doFirebaseWrite() {
@@ -3130,44 +3176,20 @@
         };
 
         markOrgWrite(); // record timestamp so organiser listener ignores this echo
-
-        // Enhanced Firebase write with retry logic
-        const writeWithRetry = (retryCount = 0) => {
-            db.ref('sessions/' + appState.sessionCode).set(payload)
-                .then(() => {
-                    setFbStatus('connected', 'Live');
-                    // Firebase write successful - no additional verification needed
-                    // Error handling for write failures is handled in the .catch() below
-                })
-                .catch(err => {
-                    console.error('Firebase write error:', err);
-
-                    // Retry logic for network issues
-                    if (retryCount < 2 && (err.code === 'network-request-failed' || err.code === 'unavailable')) {
-                        setFbStatus('connecting', 'Retrying...');
-                        setTimeout(() => writeWithRetry(retryCount + 1), 2000);
-                    } else {
-                        setFbStatus('disconnected', 'Sync error');
-                    }
-                });
-        };
-
-        writeWithRetry();
+        db.ref('sessions/' + appState.sessionCode).set(payload)
+            .then(() => {
+                setFbStatus('connected', 'Live');
+            })
+            .catch(err => {
+                console.error('Firebase write error:', err);
+                setFbStatus('disconnected', 'Sync error');
+            });
     }
 
     // Call immediately (no throttle) for important state changes
     function syncToFirebaseNow() {
         _syncPending = false;
         _doFirebaseWrite();
-    }
-
-    // Throttled version - only sync if not already pending
-    function syncToFirebaseThrottled() {
-        if (_syncPending) return; // Already have a pending sync
-        _syncPending = true;
-        setTimeout(() => {
-            _doFirebaseWrite();
-        }, 100); // Small delay to batch multiple rapid changes
     }
 
     let fbListener = null;
@@ -3203,97 +3225,11 @@
         }, err => { console.error(err); setFbStatus('disconnected','Error'); });
     }
 
-    function cleanupNetworkMonitoring() {
-        if (_networkCheckInterval) {
-            clearInterval(_networkCheckInterval);
-            _networkCheckInterval = null;
-        }
-    }
-
-    // Add cleanup when page unloads
-    window.addEventListener('beforeunload', () => {
-        cleanupNetworkMonitoring();
-        if (_remoteTickInterval) {
-            clearInterval(_remoteTickInterval);
-            _remoteTickInterval = null;
-        }
-    });
-
-    let _networkCheckInterval = null;
-    let _lastNetworkCheck = 0;
-
-    function initNetworkMonitoring() {
-        // Monitor browser online/offline events
-        window.addEventListener('online', () => {
-            setFbStatus('connecting', 'Reconnecting...');
-            // Attempt to sync immediately when back online
-            if (appState.sessionCode) {
-                setTimeout(() => {
-                    syncToFirebaseNow();
-                }, 1000);
-            }
-        });
-
-        window.addEventListener('offline', () => {
-            setFbStatus('disconnected', 'Network offline');
-        });
-
-        // Periodic network connectivity check (every 30 seconds)
-        _networkCheckInterval = setInterval(checkNetworkConnectivity, 30000);
-    }
-
-    function checkNetworkConnectivity() {
-        // Simple connectivity test - try to reach Firebase
-        const now = Date.now();
-        if (now - _lastNetworkCheck < 25000) return; // Don't check too frequently
-        _lastNetworkCheck = now;
-
-        if (!navigator.onLine) {
-            setFbStatus('disconnected', 'Network offline');
-            return;
-        }
-
-        // Test actual connectivity by trying a simple Firebase operation
-        if (appState.sessionCode) {
-            const testRef = db.ref('.info/connected');
-            testRef.once('value')
-                .then((snapshot) => {
-                    const connected = snapshot.val();
-                    if (connected) {
-                        // Only update to 'Live' if we're not in an error state
-                        const currentStatus = document.getElementById('fbStatusBadge');
-                        if (currentStatus && !currentStatus.className.includes('disconnected')) {
-                            setFbStatus('connected', 'Live');
-                        }
-                    } else {
-                        setFbStatus('disconnected', 'Offline');
-                    }
-                })
-                .catch(() => {
-                    setFbStatus('disconnected', 'Connection failed');
-                });
-        }
-    }
-
     function setFbStatus(state, label) {
         ['fbStatusBadge','spConnStatus'].forEach(id => {
             const el = document.getElementById(id);
             if (el) { el.className='firebase-status '+state; el.innerHTML='<span class="status-dot"></span> '+label; }
         });
-
-        // Also update PM view firebase status
-        const pmFbStatus = document.getElementById('pmFbStatus');
-        if (pmFbStatus) {
-            pmFbStatus.className = 'firebase-status ' + state + ' pm-fb-status';
-            pmFbStatus.innerHTML = '<span class="status-dot"></span> ' + label;
-        }
-
-        // Update stage view firebase status
-        const stageFbStatus = document.getElementById('stageFbStatus');
-        if (stageFbStatus) {
-            stageFbStatus.className = 'firebase-status ' + state;
-            stageFbStatus.innerHTML = '<span class="status-dot"></span> ' + label;
-        }
     }
 
     function cleanupOldSessions() {
@@ -3395,9 +3331,6 @@
 
     // Initialize
     function init() {
-        // Start network monitoring for all views
-        initNetworkMonitoring();
-
         applyStoredTheme();
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -3811,6 +3744,7 @@
 
         let pendingEntry = null; // holds a parsed row waiting to resolve its minister
         let lastKnownMinister = null; // carry forward minister for consecutive shared rows
+        let nextMinister = null; // minister name seen BEFORE its data row (e.g. CHOIR above row 2)
 
         const flushPending = (minister) => {
             if (pendingEntry) {
@@ -3840,6 +3774,7 @@
             // Check if this is a service header
             if (servicePattern.test(line)) {
                 flushPending(null);
+                nextMinister = null;
                 currentService = line.replace(/\s+Sunday.*$/i, '').trim();
                 continue;
             }
@@ -3849,10 +3784,29 @@
                 continue;
             }
 
+            // Strip || backup column separator before checking minister name lines
+            const lineForMinister = line.split('||')[0].trim();
+
             // Check if this line is a standalone minister name (orphaned from previous row)
-            const ministerOnly = line.match(ministerOnlyPattern);
-            if (ministerOnly && pendingEntry) {
-                flushPending(ministerOnly[1].trim());
+            const ministerOnly = lineForMinister.match(ministerOnlyPattern);
+            if (ministerOnly) {
+                const name = ministerOnly[1].trim();
+                if (pendingEntry) {
+                    // Resolves the row above
+                    flushPending(name);
+                } else {
+                    // No pending row — this name belongs to the NEXT row (e.g. CHOIR above Praise & Worship)
+                    nextMinister = name;
+                }
+                continue;
+            }
+
+            // Also check for bare single-word minister names with no prefix (e.g. "CHOIR")
+            // that appear before their data row — only when no pendingEntry
+            if (!pendingEntry && /^[A-Z][A-Z\s]+$/.test(lineForMinister) &&
+                lineForMinister.length >= 3 && lineForMinister.length <= 40 &&
+                !tableRowPattern.test(line) && !altTablePattern.test(line)) {
+                nextMinister = lineForMinister;
                 continue;
             }
 
@@ -3860,18 +3814,11 @@
             let match = line.match(tableRowPattern) || line.match(altTablePattern);
 
             if (match) {
-                // Groups differ between tableRowPattern and altTablePattern:
-                // tableRow:  [0]=full, [1]=sn+topic(need trim), [2]=start, [3]=duration, [4]=end, [5]=minister
-                // altTable:  [0]=full, [1]=topic, [2]=start, [3]=duration, [4]=end, [5]=minister
-                // Both patterns now have 5 capture groups in same positions
-                const inlineMinister = match[5] ? match[5].trim() : '';
+                // Strip BACK-UP column if || separator is present
+                const rawMinister    = match[5] ? match[5].trim() : '';
+                const inlineMinister = rawMinister.split('||')[0].trim();
 
-                // If we have a pending entry with no minister, and the current row also
-                // has no inline minister, flush pending as TBD before processing current.
-                // If current row DOES have a minister, check if it could belong to pending.
                 if (pendingEntry) {
-                    // Heuristic: if inlineMinister is non-empty and valid, it belongs to THIS row.
-                    // Flush the pending row without a minister only if we can't use this one.
                     flushPending(null);
                 }
 
@@ -3897,11 +3844,15 @@
                     /^[A-Z]/i.test(inlineMinister) &&
                     inlineMinister !== 'TRUE';
 
-                if (isValidMinister) {
-                    // Minister is on the same line — push directly
-                    lastKnownMinister = inlineMinister;
+                // Use inline minister, or the nextMinister lookahead if we saw a name before this row
+                const resolvedInline = isValidMinister ? inlineMinister : (nextMinister || null);
+                nextMinister = null; // consume it
+
+                if (resolvedInline) {
+                    // Minister resolved — push directly
+                    lastKnownMinister = resolvedInline;
                     speakers.push({
-                        name: inlineMinister,
+                        name: resolvedInline,
                         topic: `${currentService}: ${topic}`,
                         allocatedMinutes: minutes,
                         actualMinutes: 0,
@@ -3913,9 +3864,14 @@
                 }
             } else if (pendingEntry) {
                 // This line didn't match a table row — check if it's a minister name for pending
-                if (line.length >= 3 && /^[A-Z]/i.test(line) && line !== 'TRUE' && !/^\d/.test(line)) {
-                    flushPending(line);
+                // Strip || backup column and leading/trailing parens before checking
+                const cleanLine = lineForMinister.replace(/^\(|\)$/g, '').trim();
+                if (cleanLine.length >= 3 && /^[A-Z]/i.test(cleanLine) && cleanLine !== 'TRUE' && !/^\d/.test(cleanLine)) {
+                    flushPending(cleanLine);
                 }
+            } else {
+                // Not a table row, not a pending resolution — ignore (continuation text, totals, etc.)
+                nextMinister = null;
             }
         }
 
@@ -4108,6 +4064,7 @@
                     </div>
                     <div class="speaker-status" style="display:flex;align-items:center;gap:14px;">
                         <button class="session-link-btn" onclick="openSpeakerLinksModal(${index})" title="Share link with speaker">🔗 Share</button>
+                        ${speaker.status !== 'completed' ? `<button class="session-link-btn" onclick="openEditSpeaker(${index})" title="Edit name, topic or time" style="background:#f0f4ff;border-color:#c5d0f0;color:#667eea;">✏️ Edit</button>` : ''}
                         <div>
                             <span class="status-badge ${speaker.status}">${speaker.status.toUpperCase()}</span>
                             <div class="time-info">
@@ -4122,6 +4079,48 @@
         });
 
         updateTimerDisplay();
+    }
+
+    // ── Edit Speaker / Slot ────────────────────────────────────────────
+    let _editSpeakerIdx = -1;
+
+    function openEditSpeaker(index) {
+        const sp = appState.speakers[index];
+        if (!sp) return;
+        _editSpeakerIdx = index;
+        document.getElementById('editSpeakerName').value  = sp.name  || '';
+        document.getElementById('editSpeakerTopic').value = sp.topic || '';
+        document.getElementById('editSpeakerMins').value  = Math.round(sp.allocatedMinutes) || 5;
+        document.getElementById('editSpeakerModal').classList.remove('hidden');
+        setTimeout(() => document.getElementById('editSpeakerName').focus(), 50);
+    }
+
+    function closeEditSpeaker() {
+        document.getElementById('editSpeakerModal').classList.add('hidden');
+        _editSpeakerIdx = -1;
+    }
+
+    function saveEditSpeaker() {
+        const idx = _editSpeakerIdx;
+        if (idx < 0 || idx >= appState.speakers.length) { closeEditSpeaker(); return; }
+
+        const name  = document.getElementById('editSpeakerName').value.trim();
+        const topic = document.getElementById('editSpeakerTopic').value.trim();
+        const mins  = parseFloat(document.getElementById('editSpeakerMins').value) || 5;
+
+        if (!name)  { toast('Please enter a name', 'info'); document.getElementById('editSpeakerName').focus(); return; }
+        if (!topic) { toast('Please enter a topic', 'info'); document.getElementById('editSpeakerTopic').focus(); return; }
+
+        appState.speakers[idx].name             = name;
+        appState.speakers[idx].topic            = topic;
+        appState.speakers[idx].allocatedMinutes = mins;
+
+        logAction('organiser', 'edit', `Updated slot ${idx+1}: ${name} — ${topic} (${mins}min)`);
+        saveStateToStorage();
+        syncToFirebaseNow();
+        renderOrganizerPanel();
+        closeEditSpeaker();
+        toast(`Slot updated: ${name}`, 'success', 2500);
     }
 
     // ── Feature 6: Speaker reordering ─────────────────────────────────
@@ -4486,31 +4485,20 @@
                 }
             }
 
-            // Calculate the exact actual time used (this is what goes in the report)
-            let actualTimeUsed = appState.timerSeconds;
-
-            // If timer was running, get the most up-to-date time including any elapsed seconds
-            if (appState.isRunning && !appState.isPaused && appState.slotStartedAt) {
-                const elapsed = Math.floor((Date.now() - appState.slotStartedAt) / 1000);
-                actualTimeUsed = (appState.slotBaseSeconds || 0) + elapsed;
-            }
-
-            // Save current speaker state to history with precise timing
+            // Save current speaker state to history
             appState.speakerHistory.push({
                 index: appState.currentSpeakerIndex,
-                timerSeconds: actualTimeUsed, // Use the calculated actual time
-                actualSeconds: actualTimeUsed, // Ensure consistency
-                status: currentSpeaker.status,
-                endedAt: Date.now() // Record when this speaker slot ended
+                timerSeconds: appState.timerSeconds,
+                actualSeconds: currentSpeaker.actualSeconds,
+                status: currentSpeaker.status
             });
 
-            // Save actual time for current speaker (this goes into the report)
-            currentSpeaker.actualSeconds = actualTimeUsed;
-            currentSpeaker.actualMinutes = Math.floor(actualTimeUsed / 60);
+            // Save actual time for current speaker (in seconds)
+            currentSpeaker.actualSeconds = appState.timerSeconds;
+            currentSpeaker.actualMinutes = Math.floor(appState.timerSeconds / 60);
             currentSpeaker.status = 'completed';
-            currentSpeaker.endedAt = Date.now(); // Track completion time
+            logAction('organiser', 'next', 'Moved from: ' + currentSpeaker.name);
 
-            logAction('organiser', 'next', `Moved from: ${currentSpeaker.name} (used ${formatTimeDetailed(actualTimeUsed)})`);
         }
 
         // Move to next speaker
@@ -4519,32 +4507,17 @@
         if (appState.currentSpeakerIndex < appState.speakers.length) {
             const nextSpeaker = appState.speakers[appState.currentSpeakerIndex];
             nextSpeaker.status        = 'active';
-            nextSpeaker.startedAt     = Date.now(); // Track when this speaker started
-
-            // Reset timer for new speaker
             appState.timerSeconds     = 0;
             appState.slotStartedAt    = Date.now(); // new anchor for new slot
             appState.slotBaseSeconds  = 0;
 
-            // Force immediate sync to ensure all remote views update consistently
+
             saveStateToStorage();
             syncToFirebaseNow();
-
-            // Brief delay to ensure Firebase sync, then render
-            setTimeout(() => {
-                renderOrganizerPanel();
-
-                // Verify sync status
-                if (appState.sessionCode) {
-                    setFbStatus('connected', 'Live');
-                }
-            }, 100);
-
+            renderOrganizerPanel();
         } else {
             // All speakers done
             stopTimer();
-            appState.sessionEndedAt = Date.now(); // Record session completion
-            saveStateToStorage();
             syncToFirebaseNow();
             toast('All speakers completed!', 'success', 4000);
         }
@@ -4630,19 +4603,8 @@
 
     function updateTimer() {
         if (!appState.isPaused && appState.isRunning) {
-            // Validate timing consistency before updating
-            const corrected = validateTimingConsistency();
-
-            if (!corrected) {
-                appState.timerSeconds++;
-            }
-
+            appState.timerSeconds++;
             updateTimerDisplay();
-
-            // Periodically sync to Firebase (every 5 seconds) to ensure remote views stay current
-            if (appState.timerSeconds % 5 === 0) {
-                syncToFirebaseThrottled();
-            }
         }
     }
 
@@ -4809,9 +4771,7 @@
             appState.timerSeconds - allocatedSeconds :
             allocatedSeconds - appState.timerSeconds;
 
-        document.getElementById('currentSpeaker').innerHTML =
-            `<span id="currentSpeakerName">${speaker.name}</span>
-             <button class="edit-speaker-btn" onclick="editCurrentSpeakerName()" title="Edit speaker name">✏️</button>`;
+        document.getElementById('currentSpeaker').textContent = speaker.name;
         document.getElementById('currentTopic').textContent = speaker.topic;
         document.getElementById('timerValue').textContent = formatTime(displaySeconds);
         updateEndTimeBar();
@@ -4842,87 +4802,6 @@
                 progressBar.classList.add('warning');
             }
         }
-    }
-
-    function editCurrentSpeakerName() {
-        if (appState.currentSpeakerIndex < 0 || appState.currentSpeakerIndex >= appState.speakers.length) {
-            toast('No active speaker to edit', 'warning');
-            return;
-        }
-
-        const speaker = appState.speakers[appState.currentSpeakerIndex];
-        const currentName = speaker.name;
-        const nameSpan = document.getElementById('currentSpeakerName');
-
-        if (!nameSpan) {
-            console.error('Speaker name element not found');
-            return;
-        }
-
-        // Create inline input field
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.value = currentName;
-        input.maxLength = 100;
-        input.className = 'speaker-name-edit-input';
-        input.style.cssText = `
-            font-size: inherit;
-            background: rgba(255,255,255,0.9);
-            border: 2px solid #4CAF50;
-            border-radius: 4px;
-            padding: 2px 6px;
-            margin: 0;
-            outline: none;
-            min-width: 200px;
-            color: #333;
-        `;
-
-        // Save function
-        const saveName = () => {
-            const newName = input.value.trim();
-            if (newName && newName !== currentName) {
-                if (newName.length > 100) {
-                    toast('Speaker name too long (max 100 characters)', 'error');
-                    return;
-                }
-
-                speaker.name = newName;
-                logAction('organiser', 'edit', `Speaker name changed from "${currentName}" to "${newName}"`);
-                saveStateToStorage();
-                syncToFirebaseNow();
-                updateTimerDisplay();
-                renderOrganizerPanel();
-                toast(`Speaker name updated to "${newName}"`, 'success', 2000);
-            } else {
-                // Revert to original name display
-                nameSpan.textContent = currentName;
-            }
-        };
-
-        // Cancel function
-        const cancelEdit = () => {
-            nameSpan.textContent = currentName;
-        };
-
-        // Replace span content with input
-        nameSpan.innerHTML = '';
-        nameSpan.appendChild(input);
-        input.focus();
-        input.select();
-
-        // Handle keyboard events
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                saveName();
-            } else if (e.key === 'Escape') {
-                e.preventDefault();
-                cancelEdit();
-            }
-        });
-
-        // Handle focus loss
-        input.addEventListener('blur', saveName);
     }
 
     function updateEndTimeBar() {
@@ -5772,6 +5651,7 @@
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('creatorEventDate').value = today;
         if (document.getElementById('creatorRows').children.length === 0) {
+            creatorAddRow('First Service', '', 0, false, true);
             creatorAddRow('Opening Prayer', '', 5);
             creatorAddRow('Praise & Worship', 'CHOIR', 25);
             creatorAddRow('Bible Reading', '', 5);
@@ -5788,20 +5668,61 @@
         if (draftCode) joinDraftFromUrl(draftCode);
     }
 
-    function creatorAddRow(topic='', minister='', duration=10, isBreak=false) {
+    function creatorAddRow(topic='', minister='', duration=10, isBreak=false, isSection=false, backup='') {
         creatorRowCount++;
         const id = creatorRowCount;
         const container = document.getElementById('creatorRows');
         const div = document.createElement('div');
-        div.className = 'creator-row' + (isBreak ? ' break-row' : '');
+        let rowClass = 'creator-row';
+        if (isBreak)   rowClass += ' break-row';
+        if (isSection) rowClass += ' section-row';
+        div.className = rowClass;
         div.id = 'creator-row-' + id;
         const rowNum = container.children.length + 1;
+
+        if (isSection) {
+            div.innerHTML = `
+                    <div class="cr-header">
+                        <span class="cr-row-badge">&#128194; SECTION HEADER</span>
+                        <div class="cr-header-right">
+                            <div class="cr-reorder">
+                                <button onclick="creatorMoveRow(${id},'up')" title="Move up">&#9650;</button>
+                                <button onclick="creatorMoveRow(${id},'down')" title="Move down">&#9660;</button>
+                            </div>
+                            <button class="remove-btn" onclick="creatorRemoveRow(${id})">&#x2715; Remove</button>
+                        </div>
+                    </div>
+                    <div class="cr-fields">
+                        <div class="cr-field" style="flex:1;">
+                            <label style="color:rgba(255,255,255,0.8);">Section Name</label>
+                            <input type="text" placeholder="e.g. Workers Meeting, First Service…" value="${topic}"
+                                oninput="creatorRefreshPreview();draftFieldChanged();">
+                        </div>
+                    </div>`;
+            div.dataset.isBreak   = '0';
+            div.dataset.isSection = '1';
+            container.appendChild(div);
+            reanchorSectionFooters();
+            const rowIndex = Array.from(container.children).indexOf(div);
+            div.querySelectorAll('input').forEach(inp => {
+                inp.addEventListener('focus', () => updateMyPresenceRow(rowIndex));
+                inp.addEventListener('blur',  () => updateMyPresenceRow(-1));
+            });
+            creatorRefreshPreview();
+            return;
+        }
 
         if (isBreak) {
             div.innerHTML = `
                     <div class="cr-header">
-                        <span class="cr-row-num">☕ Break</span>
-                        <button class="remove-btn" onclick="creatorRemoveRow(${id})">✕ Remove</button>
+                        <span class="cr-row-badge">&#9749; Break</span>
+                        <div class="cr-header-right">
+                            <div class="cr-reorder">
+                                <button onclick="creatorMoveRow(${id},'up')" title="Move up">&#9650;</button>
+                                <button onclick="creatorMoveRow(${id},'down')" title="Move down">&#9660;</button>
+                            </div>
+                            <button class="remove-btn" onclick="creatorRemoveRow(${id})">&#x2715; Remove</button>
+                        </div>
                     </div>
                     <div class="cr-fields break-fields">
                         <div class="cr-field">
@@ -5818,8 +5739,14 @@
         } else {
             div.innerHTML = `
                     <div class="cr-header">
-                        <span class="cr-row-num">Item ${rowNum}</span>
-                        <button class="remove-btn" onclick="creatorRemoveRow(${id})">✕ Remove</button>
+                        <span class="cr-row-badge">Item ${rowNum}</span>
+                        <div class="cr-header-right">
+                            <div class="cr-reorder">
+                                <button onclick="creatorMoveRow(${id},'up')" title="Move up">&#9650;</button>
+                                <button onclick="creatorMoveRow(${id},'down')" title="Move down">&#9660;</button>
+                            </div>
+                            <button class="remove-btn" onclick="creatorRemoveRow(${id})">&#x2715; Remove</button>
+                        </div>
                     </div>
                     <div class="cr-fields">
                         <div class="cr-field">
@@ -5830,9 +5757,18 @@
                         <div class="cr-field">
                             <label>Minister / Person</label>
                             <input type="text" placeholder="e.g. Sis Tofunmi" value="${minister}"
-                                oninput="creatorRefreshPreview();draftFieldChanged();">
+                                list="ministerNames"
+                                oninput="creatorRefreshPreview();draftFieldChanged();updateMinisterDatalist();"
+                                onchange="updateMinisterDatalist();">
                         </div>
-                        <div class="cr-field">
+                        <div class="cr-field cr-field-backup" style="display:none;">
+                            <label>Back-Up Minister</label>
+                            <input type="text" placeholder="e.g. Bro Johnson" value="${backup||''}"
+                                list="ministerNames"
+                                oninput="creatorRefreshPreview();draftFieldChanged();updateMinisterDatalist();"
+                                onchange="updateMinisterDatalist();">
+                        </div>
+                        <div class="cr-field" style="max-width:90px;">
                             <label>Duration (min)</label>
                             <input type="number" min="1" max="120" value="${duration}"
                                 oninput="creatorRefreshPreview();draftFieldChanged();" style="text-align:center;">
@@ -5840,7 +5776,8 @@
                     </div>`;
         }
 
-        div.dataset.isBreak = isBreak ? '1' : '0';
+        div.dataset.isBreak   = isBreak   ? '1' : '0';
+        div.dataset.isSection = '0';
         container.appendChild(div);
 
         // Attach presence tracking
@@ -5850,23 +5787,305 @@
             input.addEventListener('blur',  () => updateMyPresenceRow(-1));
         });
 
+        // Respect current backup-column toggle state for newly added rows
+        toggleBackupFields();
+        reanchorSectionFooters();
         creatorRefreshPreview();
     }
 
     function creatorAddBreak() {
-        creatorAddRow('Break / Interval', '', 10, true);
+        creatorAddRow('Break / Interval', '', 10, true, false);
+    }
+
+    function creatorMoveRow(id, dir) {
+        const el  = document.getElementById('creator-row-' + id);
+        const sfc = el ? el.nextElementSibling : null; // possible section-footer
+        if (!el) return;
+        const container = document.getElementById('creatorRows');
+        const allRows   = Array.from(container.children);
+        const idx       = allRows.indexOf(el);
+
+        // Figure out the "unit" to move: row + its section-footer (if any)
+        const unit = [el];
+        // A section-footer immediately follows a section-row
+        if (sfc && sfc.classList.contains('section-footer')) unit.push(sfc);
+
+        if (dir === 'up') {
+            // Find the element before the unit
+            let prevEl = unit[0].previousElementSibling;
+            if (!prevEl) return;
+            // If prev is a section-footer, skip it too
+            if (prevEl.classList.contains('section-footer')) prevEl = prevEl.previousElementSibling;
+            if (!prevEl) return;
+            container.insertBefore(unit[unit.length-1], prevEl);
+            container.insertBefore(unit[0], unit[unit.length-1]);
+            if (unit.length > 1) container.insertBefore(unit[1], unit[0].nextElementSibling);
+        } else {
+            // Find the element after the unit
+            let nextEl = unit[unit.length-1].nextElementSibling;
+            if (!nextEl) return;
+            // If next is a section-footer, step over it
+            if (nextEl.classList.contains('section-footer')) nextEl = nextEl.nextElementSibling;
+            if (!nextEl) return;
+            // Also step over the nextEl's own section-footer
+            const nextSfc = nextEl.nextElementSibling;
+            const nextUnit = nextSfc && nextSfc.classList.contains('section-footer') ? nextSfc : null;
+            const anchor = nextUnit ? nextUnit.nextElementSibling : nextEl.nextElementSibling;
+            if (anchor) {
+                unit.forEach(u => container.insertBefore(u, anchor));
+            } else {
+                unit.forEach(u => container.appendChild(u));
+            }
+        }
+        // Renumber
+        let itemNum = 1;
+        document.querySelectorAll('.creator-row:not(.break-row):not(.section-row)').forEach(row => {
+            const lbl = row.querySelector('.cr-row-num, .cr-row-badge');
+            if (lbl) lbl.textContent = 'Item ' + itemNum++;
+        });
+        reanchorSectionFooters();
+        creatorRefreshPreview();
+        draftFieldChanged();
+    }
+
+    function creatorAddSection() {
+        creatorAddRow('', '', 0, false, true);
+        const rows = document.querySelectorAll('.creator-row.section-row');
+        const last = rows[rows.length - 1];
+        if (last) { const inp = last.querySelector('input'); if (inp) setTimeout(() => inp.focus(), 50); }
+    }
+
+    function creatorInsertSectionAfter(afterEl) {
+        // Insert a new section row immediately after afterEl
+        const container = document.getElementById('creatorRows');
+        creatorRowCount++;
+        const id  = creatorRowCount;
+        const div = document.createElement('div');
+        div.className = 'creator-row section-row';
+        div.id = 'creator-row-' + id;
+        div.innerHTML = `
+                <div class="cr-header">
+                    <span class="cr-row-badge">&#128194; SECTION HEADER</span>
+                    <div class="cr-header-right">
+                        <div class="cr-reorder">
+                            <button onclick="creatorMoveRow(${id},'up')" title="Move up">&#9650;</button>
+                            <button onclick="creatorMoveRow(${id},'down')" title="Move down">&#9660;</button>
+                        </div>
+                        <button class="remove-btn" onclick="creatorRemoveRow(${id})">&#x2715; Remove</button>
+                    </div>
+                </div>
+                <div class="cr-fields">
+                    <div class="cr-field" style="flex:1;">
+                        <label style="color:rgba(255,255,255,0.8);">Section Name</label>
+                        <input type="text" placeholder="e.g. Workers Meeting, First Service…" value=""
+                            oninput="creatorRefreshPreview();draftFieldChanged();">
+                    </div>
+                </div>`;
+        div.dataset.isBreak   = '0';
+        div.dataset.isSection = '1';
+        // Insert after afterEl (and after its section-footer if present)
+        let insertAfter = afterEl;
+        if (insertAfter.nextElementSibling && insertAfter.nextElementSibling.classList.contains('section-footer')) {
+            insertAfter = insertAfter.nextElementSibling;
+        }
+        if (insertAfter.nextElementSibling) {
+            container.insertBefore(div, insertAfter.nextElementSibling);
+        } else {
+            container.appendChild(div);
+        }
+        reanchorSectionFooters();
+        const inp = div.querySelector('input');
+        if (inp) setTimeout(() => inp.focus(), 50);
+        creatorRefreshPreview();
+        draftFieldChanged();
+    }
+
+    function creatorInsertSectionFooter(sectionEl) {
+        // Remove any existing footer for this section first
+        const id = sectionEl.id.replace('creator-row-', '');
+        const existing = document.querySelector('.section-footer[data-for-section="' + id + '"]');
+        if (existing) existing.remove();
+
+        const footer = document.createElement('div');
+        footer.className = 'section-footer';
+        footer.dataset.forSection = id;
+        footer.innerHTML = `
+                <span class="sf-label">In this section</span>
+                <button onclick="creatorAddItemInSection(this)" title="Add item here">+ Item</button>
+                <button onclick="creatorAddBreakInSection(this)" title="Add break here">&#9749; Break</button>
+                <button onclick="creatorInsertSectionAfter(this.closest('.section-footer').previousElementSibling)" title="Add section below">&#128194; Add Section</button>`;
+        sectionEl.insertAdjacentElement('afterend', footer);
+    }
+
+    // Reanchor all section footers so each one sits immediately after its section row.
+    // Called after every DOM mutation (add, remove, move).
+    function reanchorSectionFooters() {
+        const container = document.getElementById('creatorRows');
+        if (!container) return;
+
+        // Detach all footers first
+        const footers = {};
+        container.querySelectorAll('.section-footer').forEach(f => {
+            footers[f.dataset.forSection] = f;
+            f.remove();
+        });
+
+        // Build a flat list of all non-footer children
+        const children = Array.from(container.children);
+        const sectionEls = children.filter(el => el.dataset && el.dataset.isSection === '1');
+
+        sectionEls.forEach((sectionEl, si) => {
+            const id = sectionEl.id.replace('creator-row-', '');
+            const nextSection = sectionEls[si + 1] || null;
+
+            // Walk forward from the section header to find the last item in this section
+            // (everything before the next section row)
+            let insertAfter = sectionEl;
+            const secIdx = children.indexOf(sectionEl);
+            const nextIdx = nextSection ? children.indexOf(nextSection) : children.length;
+            for (let i = secIdx + 1; i < nextIdx; i++) {
+                insertAfter = children[i];
+            }
+
+            // Get or recreate the footer
+            let footer = footers[id];
+            if (!footer) {
+                footer = document.createElement('div');
+                footer.className = 'section-footer';
+                footer.dataset.forSection = id;
+                footer.innerHTML = `
+                        <span class="sf-label">In this section</span>
+                        <button onclick="creatorAddItemInSection(this)" title="Add item here">+ Item</button>
+                        <button onclick="creatorAddBreakInSection(this)" title="Add break here">&#9749; Break</button>
+                        <button onclick="creatorInsertSectionAfter(this.closest('.section-footer').previousElementSibling)" title="Add section below">&#128194; Add Section</button>`;
+            }
+
+            // Insert footer after the last item in this section
+            if (insertAfter.nextSibling) {
+                container.insertBefore(footer, insertAfter.nextSibling);
+            } else {
+                container.appendChild(footer);
+            }
+            delete footers[id];
+        });
+        // Orphaned footers (section deleted) are discarded
+    }
+    function creatorAddItemInSection(btn) {
+        const footer = btn.closest('.section-footer');
+        const container = document.getElementById('creatorRows');
+        creatorRowCount++;
+        const id = creatorRowCount;
+        const rowNum = document.querySelectorAll('.creator-row:not(.break-row):not(.section-row)').length + 1;
+        const div = document.createElement('div');
+        div.className = 'creator-row';
+        div.id = 'creator-row-' + id;
+        div.dataset.isBreak   = '0';
+        div.dataset.isSection = '0';
+        div.innerHTML = `
+                <div class="cr-header">
+                    <span class="cr-row-badge">Item \${rowNum}</span>
+                    <div class="cr-header-right">
+                        <div class="cr-reorder">
+                            <button onclick="creatorMoveRow(${id},'up')" title="Move up">&#9650;</button>
+                            <button onclick="creatorMoveRow(${id},'down')" title="Move down">&#9660;</button>
+                        </div>
+                        <button class="remove-btn" onclick="creatorRemoveRow(${id})">&#x2715; Remove</button>
+                    </div>
+                </div>
+                <div class="cr-fields">
+                    <div class="cr-field">
+                        <label>Event / Topic *</label>
+                        <input type="text" placeholder="e.g. Opening Prayer" value=""
+                            oninput="creatorRefreshPreview();draftFieldChanged();">
+                    </div>
+                    <div class="cr-field">
+                        <label>Minister / Person</label>
+                        <input type="text" placeholder="e.g. Sis Tofunmi" value=""
+                            list="ministerNames"
+                            oninput="creatorRefreshPreview();draftFieldChanged();updateMinisterDatalist();"
+                            onchange="updateMinisterDatalist();">
+                    </div>
+                    <div class="cr-field cr-field-backup" style="display:none;">
+                        <label>Back-Up Minister</label>
+                        <input type="text" placeholder="e.g. Bro Johnson" value=""
+                            list="ministerNames"
+                            oninput="creatorRefreshPreview();draftFieldChanged();updateMinisterDatalist();"
+                            onchange="updateMinisterDatalist();">
+                    </div>
+                    <div class="cr-field" style="max-width:90px;">
+                        <label>Duration (min)</label>
+                        <input type="number" min="1" max="120" value="10"
+                            oninput="creatorRefreshPreview();draftFieldChanged();" style="text-align:center;">
+                    </div>
+                </div>`;
+        // Insert before the section footer
+        container.insertBefore(div, footer);
+        toggleBackupFields();
+        // Renumber
+        let n = 1;
+        document.querySelectorAll('.creator-row:not(.break-row):not(.section-row)').forEach(r => {
+            const lbl = r.querySelector('.cr-row-badge');
+            if (lbl) lbl.textContent = 'Item ' + n++;
+        });
+        reanchorSectionFooters();
+        creatorRefreshPreview();
+        draftFieldChanged();
+        div.querySelector('input').focus();
+    }
+
+    function creatorAddBreakInSection(btn) {
+        const footer = btn.closest('.section-footer');
+        const container = document.getElementById('creatorRows');
+        creatorRowCount++;
+        const id = creatorRowCount;
+        const div = document.createElement('div');
+        div.className = 'creator-row break-row';
+        div.id = 'creator-row-' + id;
+        div.dataset.isBreak   = '1';
+        div.dataset.isSection = '0';
+        div.innerHTML = `
+                <div class="cr-header">
+                    <span class="cr-row-badge">&#9749; Break</span>
+                    <div class="cr-header-right">
+                        <div class="cr-reorder">
+                            <button onclick="creatorMoveRow(${id},'up')" title="Move up">&#9650;</button>
+                            <button onclick="creatorMoveRow(${id},'down')" title="Move down">&#9660;</button>
+                        </div>
+                        <button class="remove-btn" onclick="creatorRemoveRow(${id})">&#x2715; Remove</button>
+                    </div>
+                </div>
+                <div class="cr-fields break-fields">
+                    <div class="cr-field">
+                        <label>Description</label>
+                        <input type="text" placeholder="e.g. Interval" value="Break / Interval"
+                            oninput="creatorRefreshPreview();draftFieldChanged();">
+                    </div>
+                    <div class="cr-field">
+                        <label>Duration (min)</label>
+                        <input type="number" min="1" max="120" value="10"
+                            oninput="creatorRefreshPreview();draftFieldChanged();" style="text-align:center;">
+                    </div>
+                </div>`;
+        container.insertBefore(div, footer);
+        reanchorSectionFooters();
+        creatorRefreshPreview();
+        draftFieldChanged();
     }
 
     function creatorRemoveRow(id) {
         const el = document.getElementById('creator-row-' + id);
         if (el) {
+            // Also remove the associated section-footer if this is a section row
+            const next = el.nextElementSibling;
+            if (next && next.classList.contains('section-footer')) next.remove();
             el.remove();
             // Renumber remaining item labels
             let itemNum = 1;
-            document.querySelectorAll('.creator-row:not(.break-row)').forEach(row => {
-                const lbl = row.querySelector('.cr-row-num');
+            document.querySelectorAll('.creator-row:not(.break-row):not(.section-row)').forEach(row => {
+                const lbl = row.querySelector('.cr-row-badge, .cr-row-num');
                 if (lbl) lbl.textContent = 'Item ' + itemNum++;
             });
+            reanchorSectionFooters();
             creatorRefreshPreview();
             draftFieldChanged();
         }
@@ -5875,16 +6094,23 @@
     function creatorGetRows() {
         const rows = [];
         document.querySelectorAll('.creator-row').forEach(div => {
-            const inputs = div.querySelectorAll('input');
-            const isBreak = div.dataset.isBreak === '1';
-            const topic    = inputs[0].value.trim();
+            const inputs    = div.querySelectorAll('input');
+            const isBreak   = div.dataset.isBreak   === '1';
+            const isSection = div.dataset.isSection === '1';
+            const topic     = inputs[0] ? inputs[0].value.trim() : '';
+            if (isSection) {
+                rows.push({ topic: topic || 'Section', minister: '', duration: 0, isBreak: false, isSection: true });
+                return;
+            }
             const minister = isBreak ? '—' : (inputs[1] ? inputs[1].value.trim() : '');
-            const duration = parseInt(isBreak ? inputs[1].value : (inputs[2] ? inputs[2].value : inputs[1].value)) || 5;
-            if (topic) rows.push({ topic, minister, duration, isBreak });
+            // inputs[2] = backup (hidden when backup col off), inputs[3] = duration for non-break
+            // For break rows: inputs[1]=duration. For normal: inputs[1]=minister, inputs[2]=backup, inputs[3]=duration
+            const backup   = isBreak ? '' : (inputs[2] ? inputs[2].value.trim() : '');
+            const duration = parseInt(isBreak ? inputs[1].value : (inputs[3] ? inputs[3].value : inputs[2] ? inputs[2].value : '')) || 5;
+            if (topic || isBreak) rows.push({ topic, minister, backup, duration, isBreak, isSection: false });
         });
         return rows;
     }
-
     function creatorGetStartTime() {
         const val = document.getElementById('creatorStartTime').value || '18:30';
         const [h, m] = val.split(':').map(Number);
@@ -5899,68 +6125,118 @@
         return `${h12}:${String(m).padStart(2,'0')}:00 ${ampm}`;
     }
 
+    function toggleBackupFields() {
+        const show = document.getElementById('backupColToggle') && document.getElementById('backupColToggle').checked;
+        document.querySelectorAll('.cr-field-backup').forEach(el => {
+            el.style.display = show ? '' : 'none';
+        });
+    }
+
+    function updateMinisterDatalist() {
+        const dl = document.getElementById('ministerNames');
+        if (!dl) return;
+        const seen = new Set();
+        document.querySelectorAll('.creator-row:not(.break-row):not(.section-row) input[list="ministerNames"]').forEach(inp => {
+            const v = inp.value.trim();
+            if (v.length >= 2) seen.add(v);
+        });
+        dl.innerHTML = '';
+        seen.forEach(name => {
+            const opt = document.createElement('option');
+            opt.value = name;
+            dl.appendChild(opt);
+        });
+    }
+
     function creatorBuildTableData() {
         const rows  = creatorGetRows();
         let cursor  = creatorGetStartTime();
         const data  = [];
-        rows.forEach((r, i) => {
-            const start = minutesToTime12(cursor);
+        let itemNum = 0;
+        rows.forEach(r => {
+            if (r.isSection) {
+                // Reset numbering for each new section
+                itemNum = 0;
+                data.push({ isSection:true, topic:r.topic, sn:'', start:'', duration:'', end:'', minister:'' });
+                return;
+            }
+            // Workers Meeting rows (no section yet) have no S/N
+            const hasSection = data.some(d => d.isSection);
+            if (!hasSection) {
+                // unnumbered section (Workers Meeting style)
+                const start  = minutesToTime12(cursor);
+                cursor += r.duration;
+                const end    = minutesToTime12(cursor);
+                const durStr = String(r.duration).padStart(2,'0') + ':00';
+                data.push({ sn:'', topic:r.topic, start, duration:durStr, end,
+                    minister:r.minister||'', backup:r.backup||'', isBreak:!!r.isBreak, isSection:false });
+                return;
+            }
+            itemNum++;
+            const start  = minutesToTime12(cursor);
             cursor += r.duration;
-            const end = minutesToTime12(cursor);
+            const end    = minutesToTime12(cursor);
             const durStr = String(r.duration).padStart(2,'0') + ':00';
-            data.push({
-                sn: i + 1,
-                topic: r.topic,
-                start,
-                duration: durStr,
-                end,
-                minister: r.minister || '',
-                isBreak: r.isBreak
-            });
+            data.push({ sn:itemNum, topic:r.topic, start, duration:durStr, end,
+                minister:r.minister||'', backup:r.backup||'', isBreak:!!r.isBreak, isSection:false });
         });
         return { data, totalMins: cursor - creatorGetStartTime() };
     }
 
     function creatorRefreshPreview() {
-        const eventName = document.getElementById('creatorEventName').value || '(Event Name)';
-        const rawDate   = document.getElementById('creatorEventDate').value;
-        const dateStr   = rawDate ? new Date(rawDate + 'T00:00:00').toLocaleDateString('en-GB', {weekday:'long', year:'numeric', month:'long', day:'numeric'}) : '(Date)';
+        const eventName  = document.getElementById('creatorEventName').value || '(Event Name)';
+        const rawDate    = document.getElementById('creatorEventDate').value;
+        const altRowEl   = document.getElementById('altRowToggle');
+        const useAltRows = altRowEl && altRowEl.checked;
         const { data, totalMins } = creatorBuildTableData();
         const totalH = Math.floor(totalMins/60);
         const totalM = totalMins % 60;
         const totalStr = totalH > 0 ? `${totalH}h ${totalM}m` : `${totalM}m`;
-
+        const showBackup  = document.getElementById('backupColToggle') && document.getElementById('backupColToggle').checked;
+        const bwMode      = document.getElementById('noColourToggle') && document.getElementById('noColourToggle').checked;
+        const accentEl    = document.getElementById('accentColour');
+        const accentHex   = (accentEl && accentEl.value) || '#ffe600';
+        const accentStyle = bwMode ? '' : `background:${accentHex};`;
         let html = `<table>
-                <thead>
-                    <tr>
-                        <th style="width:40px;">S/N</th>
-                        <th>EVENTS</th>
-                        <th style="width:115px;">START TIME</th>
-                        <th style="width:90px;">DURATION</th>
-                        <th style="width:115px;">END TIME</th>
-                        <th>MINISTER</th>
-                    </tr>
-                </thead>
-                <tbody>`;
+                <thead><tr>
+                    <th style="width:36px;background:#e8e8e8;">S/N</th>
+                    <th style="${accentStyle}">EVENTS</th>
+                    <th style="width:100px;background:#e8e8e8;">START TIME</th>
+                    <th style="width:70px;${accentStyle}">DURATION</th>
+                    <th style="width:100px;background:#e8e8e8;">END TIME</th>
+                    <th style="${accentStyle}">MINISTER</th>
+                    ${showBackup ? `<th style="${accentStyle}">BACK-UP</th>` : ''}
+                </tr></thead><tbody>`;
+        let dataRowIdx = 0;
         data.forEach(r => {
-            const cls = r.isBreak ? 'break-row' : '';
-            html += `<tr class="${cls}">
-                    <td style="text-align:center;">${r.sn}</td>
-                    <td>${r.topic}</td>
-                    <td>${r.start}</td>
-                    <td style="text-align:center;">${r.duration}</td>
-                    <td>${r.end}</td>
-                    <td>${r.minister}</td>
+            if (r.isSection) {
+                const cols = showBackup ? 7 : 6;
+                html += `<tr><td colspan="${cols}" style="background:#2c3e50;color:white;font-weight:700;text-align:center;letter-spacing:0.1em;padding:7px 12px;font-size:0.88em;text-transform:uppercase;">📂 ${r.topic}</td></tr>`;
+                return;
+            }
+            const isAlt     = useAltRows && (dataRowIdx % 2 === 1);
+            const baseBg    = isAlt ? 'background:#f2f2f2;' : '';
+            const acBg      = bwMode ? baseBg : (isAlt ? `background:${accentHex}cc;` : `background:${accentHex};`);
+            const cls       = r.isBreak ? 'class="break-row"' : '';
+            html += `<tr ${cls}>
+                    <td style="text-align:center;${baseBg}">${r.sn}</td>
+                    <td style="${acBg}">${r.topic}</td>
+                    <td style="text-align:center;${baseBg}">${r.start}</td>
+                    <td style="text-align:center;${acBg};width:60px;">${r.duration}</td>
+                    <td style="text-align:center;${baseBg}">${r.end}</td>
+                    <td style="${acBg}">${r.minister}</td>
+                    ${showBackup ? `<td style="${acBg}">${r.backup||''}</td>` : ''}
                 </tr>`;
+            dataRowIdx++;
         });
+        const trailCols = showBackup ? 3 : 2;
         html += `<tr class="total-row">
                 <td colspan="3" style="text-align:right;padding-right:16px;">TOTAL</td>
                 <td style="text-align:center;">${totalStr}</td>
-                <td colspan="2"></td>
+                <td colspan="${trailCols}"></td>
             </tr></tbody></table>`;
         document.getElementById('creatorPreview').innerHTML = html;
     }
-
     function creatorDownloadPDF() {
         const { jsPDF } = window.jspdf;
         const eventName = document.getElementById('creatorEventName').value.trim() || 'Service Program';
@@ -5968,61 +6244,213 @@
         const dateStr   = rawDate
             ? new Date(rawDate + 'T00:00:00').toLocaleDateString('en-GB', {weekday:'long', year:'numeric', month:'long', day:'numeric'})
             : new Date().toLocaleDateString('en-GB', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
-        const { data, totalMins } = creatorBuildTableData();
-
+        const { data } = creatorBuildTableData();
         if (data.length === 0) { alert('Please add at least one programme item.'); return; }
 
-        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+        // ── Options ───────────────────────────────────────────────────────
+        const useAlt    = document.getElementById('altRowToggle')    && document.getElementById('altRowToggle').checked;
+        const useBackup = document.getElementById('backupColToggle') && document.getElementById('backupColToggle').checked;
+        const noBW      = document.getElementById('noColourToggle')  && document.getElementById('noColourToggle').checked;
+        const accentHex = (document.getElementById('accentColour') && document.getElementById('accentColour').value) || '#ffe600';
+
+        function hexToRgb(hex) {
+            return [parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16)];
+        }
+        // Perceived luminance — determines white vs black text on a background
+        function isLight(rgb) {
+            return (0.299*rgb[0] + 0.587*rgb[1] + 0.114*rgb[2]) > 160;
+        }
+
+        const accent     = noBW ? [255,255,255] : hexToRgb(accentHex);
+        const accentDark = noBW ? [220,220,220] : accent.map(v => Math.max(0, v - 35));
+        // Text colour on accent cells: black on light accent, white on dark accent
+        const accentText = isLight(accent) ? [0,0,0] : [255,255,255];
+        const altBg      = useAlt ? [245,245,245] : [255,255,255];
+
+        // ── Colour constants ──────────────────────────────────────────────
+        // Section band: B&W = dark navy; colour = strongly darkened accent
+        const BAND_BG   = noBW ? [30,40,60] : accent.map(v => Math.max(0, Math.round(v * 0.45)));
+        const BAND_TEXT = isLight(BAND_BG) ? [0,0,0] : [255,255,255];
+        const COL_HDR   = [235,235,235];
+        const BREAK_BG  = [255,243,205];
+        const TOTAL_BG  = [220,237,220];
+        const WHITE     = [255,255,255];
+        const BAND_H    = 10;
+
+        // Accent columns: EVENTS=1, DURATION=3, MINISTER=5, BACKUP=6
+        // S/N=0, START TIME=2, END TIME=4 are NOT accented
+        const accentCols = useBackup ? new Set([1,3,5,6]) : new Set([1,3,5]);
+
+        // ── Column layout ─────────────────────────────────────────────────
+        const colDefs = useBackup
+            ? [12, 50, 22, 16, 22, 38, 'auto']
+            : [12, 62, 24, 17, 24, 'auto'];
+        const headRow = useBackup
+            ? ['S/N','EVENTS','START TIME','DURATION','END TIME','MINISTER','BACK-UP']
+            : ['S/N','EVENTS','START TIME','DURATION','END TIME','MINISTER'];
+
+        // ── Document setup ────────────────────────────────────────────────
+        const doc   = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
         const pageW = doc.internal.pageSize.getWidth();
+        const margin = 8;
 
-        // ── Header: event name as main title, date on right ──
-        doc.setFontSize(13);
+        // ── Page title ────────────────────────────────────────────────────
+        doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
-        doc.text(eventName.toUpperCase(), pageW / 2, 18, { align: 'center' });
-
-        // Sub-header: theme label left, date right
-        doc.setFontSize(10);
+        doc.setTextColor(0,0,0);
+        doc.text(eventName.toUpperCase(), pageW / 2, 13, { align: 'center' });
+        doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
-        doc.text('ORDER OF PROGRAM', pageW * 0.28, 27, { align: 'center' });
-        doc.text(dateStr, pageW * 0.75, 27, { align: 'center' });
+        doc.setTextColor(80,80,80);
+        doc.text(dateStr, pageW / 2, 19, { align: 'center' });
+        doc.setTextColor(0,0,0);
+        doc.setDrawColor(180,180,180);
+        doc.setLineWidth(0.3);
+        doc.line(margin, 21, pageW - margin, 21);
 
-        // ── Table ──
-        const totalH = Math.floor(totalMins/60);
-        const totalM = totalMins % 60;
-        const totalStr = (totalH > 0 ? String(totalH).padStart(2,'0') + ':' : '0:') + String(totalM).padStart(2,'0') + ':00';
-
-        const tableBody = data.map(r => [r.sn, r.topic, r.start, r.duration, r.end, r.minister]);
-        tableBody.push(['', '', '', totalStr, data[data.length-1].end, 'TRUE']);
-
-        doc.autoTable({
-            startY: 33,
-            head: [['S/N', 'EVENTS', 'START TIME', 'DURATION', 'END TIME', 'MINISTER']],
-            body: tableBody,
-            theme: 'grid',
-            headStyles: { fillColor: [80, 80, 80], textColor: 255, fontStyle: 'bold', halign: 'center', fontSize: 9 },
-            columnStyles: {
-                0: { halign: 'center', cellWidth: 12 },
-                1: { cellWidth: 70 },
-                2: { halign: 'center', cellWidth: 35 },
-                3: { halign: 'center', cellWidth: 25 },
-                4: { halign: 'center', cellWidth: 35 },
-                5: { cellWidth: 'auto' }
-            },
-            bodyStyles: { fontSize: 9 },
-            didParseCell: function(hookData) {
-                const rowIdx = hookData.row.index;
-                if (rowIdx < data.length && data[rowIdx] && data[rowIdx].isBreak) {
-                    hookData.cell.styles.fillColor = [255, 243, 205];
-                    hookData.cell.styles.fontStyle = 'italic';
-                }
-                // Total row styling
-                if (hookData.row.index === data.length) {
-                    hookData.cell.styles.fillColor = [220, 237, 220];
-                    hookData.cell.styles.fontStyle = 'bold';
-                }
-            },
-            margin: { left: 10, right: 10 }
+        // ── Split data into sections ──────────────────────────────────────
+        const sections = [];
+        let curSection = null;
+        data.forEach(row => {
+            if (row.isSection) {
+                if (curSection) sections.push(curSection);
+                curSection = { title: row.topic, rows: [] };
+            } else {
+                if (!curSection) curSection = { title: '', rows: [] };
+                curSection.rows.push(row);
+            }
         });
+        if (curSection) sections.push(curSection);
+
+        let curY = 23;
+
+        sections.forEach((section) => {
+            const secTitle = (section.title || 'Programme').toUpperCase();
+            const tableX   = margin;
+            const tableW   = pageW - margin * 2;
+
+            // ── Section band drawn directly — no willDrawCell overlap issues ──
+            doc.setFillColor(BAND_BG[0], BAND_BG[1], BAND_BG[2]);
+            doc.rect(tableX, curY, tableW, BAND_H, 'F');
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(BAND_TEXT[0], BAND_TEXT[1], BAND_TEXT[2]);
+            doc.text(secTitle, tableX + tableW / 2, curY + BAND_H * 0.65, { align: 'center' });
+            // Reset text state
+            doc.setTextColor(0,0,0);
+            doc.setFont('helvetica', 'normal');
+
+            curY += BAND_H + 0.5;
+
+            // ── Table body ────────────────────────────────────────────────
+            const tableBody = [];
+            section.rows.forEach(r => {
+                const row = [r.sn !== undefined ? r.sn : '', r.topic, r.start, r.duration, r.end, r.minister || ''];
+                if (useBackup) row.push(r.isBreak ? '' : (r.backup || ''));
+                tableBody.push(row);
+            });
+
+            const sectionMins = section.rows.filter(r => !r.isBreak).reduce((s, r) => {
+                const parts = String(r.duration).split(':');
+                return s + (parseInt(parts[0]) || 0);
+            }, 0);
+            const th = Math.floor(sectionMins / 60), tm = sectionMins % 60;
+            const totalStr = (th > 0 ? String(th).padStart(2,'0') + ':' : '0:') + String(tm).padStart(2,'0') + ':00';
+            const lastRow  = section.rows.filter(r => !r.isBreak).slice(-1)[0];
+            const totalRow = ['', '', '', totalStr, lastRow ? lastRow.end : '', ''];
+            if (useBackup) totalRow.push('');
+            tableBody.push(totalRow);
+
+            const sectionTotalIdx = tableBody.length - 1;
+
+            doc.autoTable({
+                startY: curY,
+                head:   [headRow],
+                body:   tableBody,
+                theme:  'grid',
+
+                headStyles: {
+                    fillColor:   COL_HDR,
+                    textColor:   [60,60,60],
+                    fontStyle:   'bold',
+                    halign:      'center',
+                    fontSize:    7.5,
+                    cellPadding: { top:2.5, bottom:2.5, left:2, right:2 },
+                    lineColor:   [150,150,150],
+                    lineWidth:   0.3
+                },
+
+                columnStyles: (() => {
+                    const cs = {};
+                    colDefs.forEach((w, i) => { cs[i] = { halign: i === 1 ? 'left' : 'center', cellWidth: w }; });
+                    return cs;
+                })(),
+
+                bodyStyles: {
+                    fontSize:    7.5,
+                    cellPadding: { top:2, bottom:2, left:2, right:2 },
+                    lineColor:   [190,190,190],
+                    lineWidth:   0.25
+                },
+
+                didParseCell: function(hookData) {
+                    const ri  = hookData.row.index;
+                    const ci  = hookData.column.index;
+                    const isH = hookData.section === 'head';
+
+                    if (isH) {
+                        if (accentCols.has(ci)) {
+                            // Accent column headers use the chosen colour
+                            hookData.cell.styles.fillColor = accent;
+                            hookData.cell.styles.textColor = accentText;
+                        } else {
+                            // S/N, START TIME, END TIME: neutral grey header
+                            hookData.cell.styles.fillColor = COL_HDR;
+                            hookData.cell.styles.textColor = [60,60,60];
+                        }
+                        return;
+                    }
+
+                    // Total row
+                    if (ri === sectionTotalIdx) {
+                        hookData.cell.styles.fillColor = TOTAL_BG;
+                        hookData.cell.styles.fontStyle = 'bold';
+                        hookData.cell.styles.textColor = [30,70,30];
+                        return;
+                    }
+
+                    const row = section.rows[ri];
+                    if (!row) return;
+
+                    // Break rows
+                    if (row.isBreak) {
+                        hookData.cell.styles.fillColor = BREAK_BG;
+                        hookData.cell.styles.fontStyle = 'italic';
+                        hookData.cell.styles.textColor = [100,80,0];
+                        return;
+                    }
+
+                    // Normal data rows
+                    if (accentCols.has(ci)) {
+                        hookData.cell.styles.fillColor = (useAlt && ri % 2 === 1) ? accentDark : accent;
+                        hookData.cell.styles.textColor = accentText;
+                    } else {
+                        hookData.cell.styles.fillColor = (useAlt && ri % 2 === 1) ? altBg : WHITE;
+                        hookData.cell.styles.textColor = [0,0,0];
+                    }
+                },
+
+                margin:     { left: margin, right: margin },
+                tableWidth: tableW
+            });
+
+            curY = doc.lastAutoTable.finalY + 4;
+        });
+
+        // Outer border
+        doc.setDrawColor(100,100,100);
+        doc.setLineWidth(0.5);
+        doc.rect(margin, 22, pageW - margin * 2, curY - 22);
 
         const safeDate = rawDate || new Date().toISOString().split('T')[0];
         doc.save(`Order_of_Service_${eventName.replace(/[^a-z0-9]/gi,'_')}_${safeDate}.pdf`);
@@ -6033,7 +6461,7 @@
         const rawDate   = document.getElementById('creatorEventDate').value;
         if (!eventName) { alert('Please enter an event name.'); document.getElementById('creatorEventName').focus(); return; }
         if (!rawDate)   { alert('Please select an event date.'); document.getElementById('creatorEventDate').focus(); return; }
-        const rows = creatorGetRows().filter(r => !r.isBreak && r.topic);
+        const rows = creatorGetRows().filter(r => !r.isBreak && !r.isSection && r.topic);
         if (rows.length === 0) { alert('Please add at least one programme item with a topic.'); return; }
 
         // If a collaborative draft is active, ask what to do with it
@@ -6138,18 +6566,22 @@
     function serializeRows() {
         return creatorGetRows().map((r,i) => ({
             idx: i, topic: r.topic, minister: r.minister,
-            duration: r.duration, isBreak: r.isBreak ? 1 : 0
+            backup: r.backup || '',
+            duration: r.duration,
+            isBreak:   r.isBreak   ? 1 : 0,
+            isSection: r.isSection ? 1 : 0
         }));
     }
-
     function deserializeRows(rows) {
         const container = document.getElementById('creatorRows');
         container.innerHTML = '';
         creatorRowCount = 0;
-        (rows || []).forEach(r => creatorAddRow(r.topic, r.minister || '', r.duration, r.isBreak === 1));
+        (rows || []).forEach(r => creatorAddRow(
+            r.topic, r.minister || '', r.duration || 0,
+            r.isBreak === 1, r.isSection === 1, r.backup || ''
+        ));
+        reanchorSectionFooters();
     }
-
-    // ── Draft sync helpers ────────────────────────────────────
     function draftPayload() {
         return {
             eventName:  document.getElementById('creatorEventName').value || '',
